@@ -61,7 +61,7 @@ public class User {
 	private boolean isDeleted;
 	
 	@ManyToMany(mappedBy = "users")
-	private final List<UserType> userTypes = new ArrayList<>();		
+	private final List<Role> roles = new ArrayList<>();
 		
 }
 

@@ -2,12 +2,10 @@ package com.toqqa.domain;
 
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
@@ -15,6 +13,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "category")
+@NoArgsConstructor
 public class Category {
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -26,4 +25,8 @@ public class Category {
 	@OneToMany(mappedBy = "category")
 	private List<SubCategory> subCategories;
 
+	@ManyToMany
+	@JoinTable(name = "category_sme",joinColumns = @JoinColumn(name = "cat_id"),
+			inverseJoinColumns = @JoinColumn(name = "sme_id"))
+	private List<Sme> smes;
 }

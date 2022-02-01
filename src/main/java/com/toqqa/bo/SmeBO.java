@@ -22,8 +22,6 @@ public class SmeBO {
 	private String state;
 	private String country;
 	private String businessLogo;
-	private Category businessCatagory;
-	private SubCategory businessSubCatagory;
 	private String description;
 	private boolean isDeleted;
 	private String typeOfBusiness;
@@ -40,8 +38,6 @@ public class SmeBO {
 		this.state = sme.getState();
 		this.country = sme.getCountry();
 		this.businessLogo = sme.getBusinessLogo();
-		this.businessCatagory = sme.getBusinessCatagory();
-		this.businessSubCatagory = sme.getBusinessSubCatagory();
 		this.description = sme.getDescription();
 		this.isDeleted = sme.isDeleted();
 		this.typeOfBusiness = sme.getTypeOfBusiness();

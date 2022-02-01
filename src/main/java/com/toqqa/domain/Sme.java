@@ -1,14 +1,13 @@
 package com.toqqa.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "sme")
@@ -27,8 +26,12 @@ public class Sme {
 	private String state;
 	private String country;
 	private String businessLogo;
-	private Category businessCatagory;
-	private SubCategory businessSubCatagory;
+
+	@ManyToMany(mappedBy = "smes")
+	private List<Category> businessCatagory;
+
+	@ManyToMany(mappedBy = "smes")
+	private List<SubCategory> businessSubCatagory;
 	private String description;
 	private boolean isDeleted;
 	private String typeOfBusiness;

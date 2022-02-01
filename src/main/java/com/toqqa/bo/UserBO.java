@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class UserBO {
 
-	private String Id;
+	private String id;
 	
 	private String firstName;
 	
@@ -35,7 +35,7 @@ public class UserBO {
 	
 	public void UserBo(User user)
 	{
-		this.Id=user.getId();
+		this.id=user.getId();
 		this.firstName=user.getFirstName();
 		this.lastName=user.getLastName();
 		this.email=user.getEmail();

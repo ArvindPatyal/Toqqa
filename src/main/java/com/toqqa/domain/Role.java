@@ -11,6 +11,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
@@ -18,17 +20,19 @@ import lombok.Data;
 @Data
 @Entity
 @Table
-public class UserType {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Role {
 	
     @Id
 	@GeneratedValue(generator = "uuid2")
 	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")	
-	private String Id;
+	private String id;
 	
-	private String userType;
+	private String role;
 	
 	@ManyToMany
-	@JoinTable(name = "user_userType",joinColumns= @JoinColumn(name = "userType_id"),
+	@JoinTable(name = "user_roles",joinColumns= @JoinColumn(name = "role_id"),
 	inverseJoinColumns = @JoinColumn(name = "user_id"))
 	private final List<User> users = new ArrayList<>();
 }
