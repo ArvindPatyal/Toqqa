@@ -28,12 +28,7 @@ public class UserSignUp {
     private String phone;
 
     @NotNull
-    @NotBlank
-    private String houseNumber;
-
-    @NotNull
-    @NotBlank
-    private String street;
+    private String address;
 
     @NotNull
     @NotBlank

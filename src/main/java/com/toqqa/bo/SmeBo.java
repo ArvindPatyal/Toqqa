@@ -1,8 +1,6 @@
 package com.toqqa.bo;
 
-import com.toqqa.domain.Category;
 import com.toqqa.domain.Sme;
-import com.toqqa.domain.SubCategory;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SmeBO {
+public class SmeBo {
 	private String id;
 	private String nameOfBusiness;
 	private String shopNumber;

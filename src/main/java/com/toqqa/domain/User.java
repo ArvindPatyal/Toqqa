@@ -13,13 +13,15 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 
 @Entity
-@Data
 @Table(name="user_info")
+@Data
 public class User {
 	
 	@Id
@@ -44,10 +46,15 @@ public class User {
 	@Column(unique = true)	
 	private String phone;				
 	
-	private String houseNumber;
+	/*private String houseNumber;
 	
-	private String street;
-	
+	private String street;*/
+
+	@NotNull
+	private String password;
+
+	private String address;
+
 	private String city;
 	
 	private String postCode;
@@ -61,7 +68,7 @@ public class User {
 	private boolean isDeleted;
 	
 	@ManyToMany(mappedBy = "users")
-	private final List<Role> roles = new ArrayList<>();
+	private List<Role> roles = new ArrayList<>();
 		
 }
 

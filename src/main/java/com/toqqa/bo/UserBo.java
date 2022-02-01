@@ -5,7 +5,7 @@ import com.toqqa.domain.User;
 import lombok.Data;
 
 @Data
-public class UserBO {
+public class UserBo {
 
 	private String id;
 	
@@ -17,9 +17,7 @@ public class UserBO {
 	
 	private String phone;					
 	
-	private String houseNumber;
-	
-	private String street;
+	private String address;
 	
 	private String city;
 	
@@ -33,15 +31,14 @@ public class UserBO {
 	
 	private boolean isDeleted;
 	
-	public void UserBo(User user)
+	public UserBo(User user)
 	{
 		this.id=user.getId();
 		this.firstName=user.getFirstName();
 		this.lastName=user.getLastName();
 		this.email=user.getEmail();
 		this.phone=user.getPhone();		
-		this.houseNumber=user.getHouseNumber();
-		this.street=user.getStreet();
+		this.address=user.getAddress();
 		this.city=user.getCity();
 		this.postCode=user.getPostCode();
 		this.state=user.getState();

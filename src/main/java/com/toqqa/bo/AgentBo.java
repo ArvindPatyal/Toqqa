@@ -1,6 +1,6 @@
 package com.toqqa.bo;
 
-public class AgentBO {
+public class AgentBo {
 	
 	private String name;
 }
