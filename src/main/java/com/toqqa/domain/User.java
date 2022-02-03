@@ -3,12 +3,7 @@ package com.toqqa.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -41,9 +36,8 @@ public class User {
 	
 	@Column(unique = true,nullable = true)
 	private String email;
-	
-	@NotNull
-	@Column(unique = true)	
+
+	@Column(unique = true,nullable = true)
 	private String phone;				
 	
 	/*private String houseNumber;
@@ -65,9 +59,9 @@ public class User {
 		
 	private String agentId;
 	
-	private boolean isDeleted;
+	private Boolean isDeleted;
 	
-	@ManyToMany(mappedBy = "users")
+	@ManyToMany(mappedBy = "users",fetch = FetchType.EAGER)
 	private List<Role> roles = new ArrayList<>();
 		
 }

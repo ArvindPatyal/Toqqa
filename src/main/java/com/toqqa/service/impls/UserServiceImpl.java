@@ -1,19 +1,36 @@
 package com.toqqa.service.impls;
 
 import com.toqqa.bo.UserBo;
+import com.toqqa.config.JWTConfig;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.UserAlreadyExists;
+import com.toqqa.payload.JwtAuthenticationResponse;
+import com.toqqa.payload.LoginRequest;
 import com.toqqa.payload.UserSignUp;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -25,38 +42,94 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private Helper helper;
+    @Autowired
+    private JWTConfig jwtConfig;
+
+    @Autowired
+    @Lazy
+    private AuthenticationManager manager;
 
     @Override
     public UserBo addUser(UserSignUp userSignUp) {
-        if(!isUserExists(userSignUp.getEmail(),userSignUp.getPhone())){
-            User user = new User();
-            user.setCity(userSignUp.getCity());
-            user.setCountry(userSignUp.getCountry());
-            user.setAgentId(userSignUp.getAgentId());
-            user.setDeleted(false);
-            user.setEmail(userSignUp.getEmail());
-            user.setFirstName(userSignUp.getFirstName());
-            user.setPhone(userSignUp.getPhone());
-            user.setLastName(userSignUp.getLastName());
-            user.setPostCode(userSignUp.getPostCode());
-            user.setState(userSignUp.getState());
-            user.setAddress(userSignUp.getAddress());
-            user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
-
-            user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
-
-            user=this.userRepository.saveAndFlush(user);
-            return new UserBo(user);
+        if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
+            throw new UserAlreadyExists("user already exists");
         }
-        throw new UserAlreadyExists("user already exists");
+        User user = new User();
+        user.setCity(userSignUp.getCity());
+        user.setCountry(userSignUp.getCountry());
+        user.setAgentId(userSignUp.getAgentId());
+        user.setIsDeleted(false);
+        user.setEmail(this.helper.notNullAndBlank(userSignUp.getEmail())?userSignUp.getEmail():null);
+        user.setFirstName(userSignUp.getFirstName());
+        user.setPhone(this.helper.notNullAndBlank(userSignUp.getPhone())?userSignUp.getPhone():null);
+        user.setLastName(userSignUp.getLastName());
+        user.setPostCode(userSignUp.getPostCode());
+        user.setState(userSignUp.getState());
+        user.setAddress(userSignUp.getAddress());
+        user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
+
+        user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
+
+        user = this.userRepository.saveAndFlush(user);
+        return new UserBo(user);
+
     }
 
     @Override
     public Boolean isUserExists(String email, String phone) {
-            User user =this.userRepository.findByEmailOrPhone(email,phone);
-            if(user!=null){
-                return true;
+        User user = null;
+        if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
+            if (this.helper.notNullAndBlank(email)) {
+                user = this.userRepository.findByEmail(email);
             }
-            return false;
+            if(this.helper.notNullAndBlank(phone)) {
+                user = this.userRepository.findByPhone(phone);
+            }
+            return user != null;
+        }
+        throw new BadRequestException("email or phone is required");
     }
+
+    @Override
+    public User findByEmailOrPhone(String username) {
+        return this.userRepository.findByEmailOrPhone(username, username);
+    }// find user by emailid or phone
+
+    @Override
+    public JwtAuthenticationResponse signIn(LoginRequest bo) {
+        try {
+            Authentication authentication = this.manager
+                    .authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return new JwtAuthenticationResponse(this.jwtConfig.generateToken(bo.getUsername()));
+        } catch (Exception e) {
+            throw new BadCredentialsException("bad Credentials");
+        }
+
+    }// send auth token
+
+    @Override
+    public UserBo fetchUser(String id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isPresent()) {
+            return new UserBo(user.get());
+        }
+        throw new BadRequestException("no user found with id= " + id);
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String userName) {
+        User user = userRepository.findByEmailOrPhone(userName, userName);
+        if (user != null && !user.getIsDeleted()) {
+            List<GrantedAuthority> authorities = user.getRoles().stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getRole())).collect(Collectors.toList());
+            return new org.springframework.security.core.userdetails.User(userName, user.getPassword(),
+                    authorities);
+
+        } else {
+            throw new UsernameNotFoundException("user not found");
+        }
+
+    }// verify user by email/username
 }

@@ -23,8 +23,6 @@ public class UserSignUp {
 //    @Email
     private String email;
 
-//    @NotNull
-//    @NotBlank
     private String phone;
 
     @NotNull

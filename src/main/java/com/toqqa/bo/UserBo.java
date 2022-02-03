@@ -29,7 +29,7 @@ public class UserBo {
 	
 	private String agentId;	
 	
-	private boolean isDeleted;
+	private Boolean isDeleted;
 	
 	public UserBo(User user)
 	{
@@ -43,7 +43,8 @@ public class UserBo {
 		this.postCode=user.getPostCode();
 		this.state=user.getState();
 		this.country=user.getCountry();
-		this.agentId=user.getAgentId();						
+		this.agentId=user.getAgentId();
+		this.isDeleted=user.getIsDeleted();
 	}
 	
 	
