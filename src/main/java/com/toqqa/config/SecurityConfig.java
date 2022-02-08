@@ -1,8 +1,5 @@
 package com.toqqa.config;
 
-import com.toqqa.filter.JWTEntryPoint;
-import com.toqqa.filter.JwtFilter;
-import com.toqqa.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +13,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.toqqa.filter.JWTEntryPoint;
+import com.toqqa.filter.JwtFilter;
+import com.toqqa.service.UserService;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -36,10 +37,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http.cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(entryPoint).and()
 				.authorizeRequests()
-				.antMatchers("/api/users/signUp").permitAll()
-				.antMatchers("/api/auth/**").permitAll().anyRequest()
-				.authenticated().and()
+				.antMatchers("/api/users/signUp", "/swagger-ui/**", "/configuration/**", "/swagger-resources/**",
+						"/v2/api-docs", "/webjars/**")
+				.permitAll().antMatchers("/api/auth/**").permitAll().anyRequest().authenticated().and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
 		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 	}

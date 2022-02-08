@@ -13,10 +13,10 @@ public class UserAlreadyExists extends RuntimeException {
 	/**
 	 * 
 	 */
-	
+
 	public UserAlreadyExists(String message, Throwable cause) {
-        super(message, cause);
-    }
+		super(message, cause);
+	}
 
 	public UserAlreadyExists(String msg) {
 		super(msg);
