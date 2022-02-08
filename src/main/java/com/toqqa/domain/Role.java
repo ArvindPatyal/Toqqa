@@ -11,11 +11,11 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
@@ -23,16 +23,15 @@ import lombok.Data;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
-	
-    @Id
+
+	@Id
 	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")	
+	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
-	
+
 	private String role;
-	
+
 	@ManyToMany
-	@JoinTable(name = "user_roles",joinColumns= @JoinColumn(name = "role_id"),
-	inverseJoinColumns = @JoinColumn(name = "user_id"))
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 	private final List<User> users = new ArrayList<>();
 }

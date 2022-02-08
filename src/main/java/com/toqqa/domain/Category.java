@@ -2,13 +2,19 @@ package com.toqqa.domain;
 
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
@@ -26,7 +32,6 @@ public class Category {
 	private List<SubCategory> subCategories;
 
 	@ManyToMany
-	@JoinTable(name = "category_sme",joinColumns = @JoinColumn(name = "cat_id"),
-			inverseJoinColumns = @JoinColumn(name = "sme_id"))
+	@JoinTable(name = "category_sme", joinColumns = @JoinColumn(name = "cat_id"), inverseJoinColumns = @JoinColumn(name = "sme_id"))
 	private List<Sme> smes;
 }

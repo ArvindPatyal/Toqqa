@@ -6,16 +6,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class InvalidTokenException extends RuntimeException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	public InvalidTokenException(String message) {
-        super(message);
-    }
+		super(message);
+	}
 
-    public InvalidTokenException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public InvalidTokenException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

@@ -1,7 +1,8 @@
 package com.toqqa.service;
 
-import com.toqqa.domain.User;
 import org.springframework.security.core.Authentication;
+
+import com.toqqa.domain.User;
 
 public interface AuthenticationService {
 	Authentication getAuthentication();
