@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
@@ -32,6 +33,13 @@ public class ErrorBo {
 		this.status = status;
 		this.message = message;
 		this.errors = Arrays.asList(error);
+
+	}
+	public ErrorBo(HttpStatus status, String message, List<String> error) {
+		super();
+		this.status = status;
+		this.message = message;
+		this.errors =error;
 
 	}
 }

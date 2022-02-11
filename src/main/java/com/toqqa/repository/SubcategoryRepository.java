@@ -5,10 +5,12 @@ import org.springframework.stereotype.Repository;
 
 import com.toqqa.domain.SubCategory;
 
+import java.util.List;
+
 @Repository
 public interface SubcategoryRepository extends JpaRepository<SubCategory, String> {
 
 	SubCategory findBySubcategory(String subcategory);
 
-	SubCategory findByCategory(String category);
+	List<SubCategory> findByCategory_id(String cat_id);
 }

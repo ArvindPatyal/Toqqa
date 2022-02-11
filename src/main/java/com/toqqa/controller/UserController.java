@@ -24,12 +24,12 @@ public class UserController {
 	private AuthenticationService authenticationService;
 
 	@GetMapping("/fetchUser/{id}")
-	public Response fetchUser(@PathVariable("id") @Valid String id) {
+	public Response<UserBo> fetchUser(@PathVariable("id") @Valid String id) {
 		return new Response(this.userService.fetchUser(id), "");
 	}
 
 	@GetMapping("/currentUser")
-	public Response currentUser() {
+	public Response<UserBo> currentUser() {
 		return new Response(new UserBo(this.authenticationService.currentUser()), "");
 	}
 }

@@ -2,6 +2,7 @@ package com.toqqa.controller;
 
 import javax.validation.Valid;
 
+import com.toqqa.payload.JwtAuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,12 +23,12 @@ public class AuthController {
 	private UserService userService;
 
 	@PostMapping("/signIn")
-	public Response signIn(@RequestBody @Valid LoginRequest request) {
-		return new Response(this.userService.signIn(request), "");
+	public Response<JwtAuthenticationResponse> signIn(@RequestBody @Valid LoginRequest request) {
+		return new Response(this.userService.signIn(request), "success");
 	}
 
 	@PostMapping("/signUp")
-	public UserBo addUser(@RequestBody @Valid UserSignUp userSignUp) {
-		return this.userService.addUser(userSignUp);
+	public Response<UserBo> addUser(@RequestBody @Valid UserSignUp userSignUp) {
+		return new Response<>(this.userService.addUser(userSignUp),"success");
 	}
 }
