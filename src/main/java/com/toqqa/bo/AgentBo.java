@@ -23,4 +23,5 @@ public class AgentBo {
 		this.idProof = agent.getIdProof();
 		this.userId = agent.getUserId();
 	}
+
 }

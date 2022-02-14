@@ -3,10 +3,10 @@ package com.toqqa.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.toqqa.domain.Category;
-
+import com.toqqa.domain.Sme;
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, String> {
+public interface SmeRepository extends JpaRepository<Sme, String> {
+	
 
-	Category findByCategory(String category);
+
 }

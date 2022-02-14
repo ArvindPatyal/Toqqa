@@ -1,10 +1,5 @@
 package com.toqqa.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -14,6 +9,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class Helper {
@@ -41,7 +41,7 @@ public class Helper {
 	public String generateFileName(MultipartFile multiPart) {
 		return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
 	}
-	
+
 	public Double roundOff(Double a) {
 		double roundOff = Math.round(a * 100.0) / 100.0;
 		return roundOff;
@@ -70,7 +70,7 @@ public class Helper {
 		calendar.add(Calendar.HOUR_OF_DAY, hours);
 		return calendar.getTime();
 	}
-	
+
 	public Date addMinsToJavaUtilDate(Date date, int mins) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
@@ -107,18 +107,16 @@ public class Helper {
 	public <T> boolean notNullAndHavingData(T[] input) {
 		return !(input == null || input.length == 0);
 	}
-	
-	public String dateToFormattedDate(Date d)
-	{
+
+	public String dateToFormattedDate(Date d) {
 //		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		String formatted= format.format(d);
+		String formatted = format.format(d);
 		return formatted;
-		
+
 	}
 
-	public String dateToEpoch(Date d)
-	{
+	public String dateToEpoch(Date d) {
 		SimpleDateFormat df = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy");
 //		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -126,7 +124,7 @@ public class Helper {
 		String date = null;
 		try {
 //			date = df.parse(d);
-			Date d1 = (Date)df.parse(d.toString());
+			Date d1 = (Date) df.parse(d.toString());
 			date = f.format(d1);
 		} catch (ParseException e) {
 			e.printStackTrace();
