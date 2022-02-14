@@ -24,8 +24,7 @@ public class Sme {
 	private String id;
 
 	private String nameOfBusiness;
-	private String shopNumber;
-	private String street;
+	private String businessAddress;
 	private String city;
 	private String state;
 	private String country;
@@ -37,10 +36,15 @@ public class Sme {
 	@ManyToMany(mappedBy = "smes")
 	private List<SubCategory> businessSubCatagory;
 	private String description;
-	private boolean isDeleted;
+	private Boolean isDeleted;
 	private String typeOfBusiness;
-	private boolean isDeliverToCustomer;
-	private double deliveryCharges;
-	private boolean isRegisterWithGovt;
+	private Boolean isDeliverToCustomer;
+	private Double deliveryRadius;
+	private Double deliveryCharges;
+	private Boolean isRegisterWithGovt;
+	private Double timeOfDelivery;
+	private String regDoc;
+	private String idProof;
+	private String userId;
 
 }

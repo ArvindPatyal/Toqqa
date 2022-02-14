@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.toqqa.bo.SmeBo;
-import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
@@ -32,7 +31,7 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	private UserRepository userRepo;
-	
+
 	@Autowired
 	private RoleRepository roleRepo;
 
@@ -41,7 +40,6 @@ public class SmeServiceImpl implements SmeService {
 		Sme sme = new Sme();
 		sme.setNameOfBusiness(smeSignUp.getNameOfBusiness());
 		sme.setBusinessAddress(smeSignUp.getBusinessAddress());
-		sme.setStreet(smeSignUp.getStreet());
 		sme.setState(smeSignUp.getState());
 		sme.setCountry(smeSignUp.getCountry());
 		sme.setTypeOfBusiness(smeSignUp.getTypeOfBusiness());
@@ -51,11 +49,10 @@ public class SmeServiceImpl implements SmeService {
 
 		sme.setBusinessCatagory(this.categoryRepository.findAllById(smeSignUp.getBusinessCategory()));
 		sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeSignUp.getBusinessSubCategory()));
-		
 		User user = this.userRepo.findById(smeSignUp.getUserId()).get();
 		List<Role> roles = new ArrayList<Role>();
 		roles = user.getRoles();
-		roles.add(this.roleRepo.findByRole(RoleConstants.SME.getValue()));
+		roles.add(this.roleRepo.findByRole(smeSignUp.getUserId()));
 		user.setRoles(roles);
 		user = this.userRepo.saveAndFlush(user);
 
