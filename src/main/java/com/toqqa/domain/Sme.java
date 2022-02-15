@@ -42,7 +42,7 @@ public class Sme {
 	private Double deliveryRadius;
 	private Double deliveryCharges;
 	private Boolean isRegisterWithGovt;
-	private Double timeOfDelivery;
+	private Long timeOfDelivery;
 	private String regDoc;
 	private String idProof;
 	private String userId;

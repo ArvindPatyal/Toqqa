@@ -1,10 +1,8 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.SubCategory;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.List;
+import lombok.Data;
 
 @Data
 public class SubCategoryBo {

@@ -45,6 +45,12 @@ public class SmeServiceImpl implements SmeService {
 		sme.setTypeOfBusiness(smeSignUp.getTypeOfBusiness());
 		sme.setDeliveryRadius(smeSignUp.getDeliveryRadius());
 		sme.setDeliveryCharges(smeSignUp.getDeliveryCharge());
+		sme.setIsDeleted(false);
+		sme.setDescription(smeSignUp.getDescription());
+		sme.setCity(smeSignUp.getCity());
+		sme.setIsDeliverToCustomer(smeSignUp.getDeliverToCustomer());
+		sme.setIsRegisterWithGovt(smeSignUp.getIsRegisteredWithGovt());
+		sme.setTimeOfDelivery(smeSignUp.getTimeOfDelivery());
 		sme.setUserId(smeSignUp.getUserId());
 
 		sme.setBusinessCatagory(this.categoryRepository.findAllById(smeSignUp.getBusinessCategory()));

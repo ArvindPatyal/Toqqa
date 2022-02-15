@@ -32,7 +32,7 @@ public class SmeBo {
 	private Double deliveryCharges;
 	private Boolean isRegisterWithGovt;
 	private Double deliveryRadius;
-	private Double timeOfDelivery;
+	private Long timeOfDelivery;
 	private String regDoc;
 	private String idProof;
 
@@ -55,6 +55,7 @@ public class SmeBo {
 		this.timeOfDelivery = sme.getTimeOfDelivery();
 		this.regDoc = sme.getRegDoc();
 		this.idProof = sme.getIdProof();
+		this.businessAddress = sme.getBusinessAddress();
 
 	}
 

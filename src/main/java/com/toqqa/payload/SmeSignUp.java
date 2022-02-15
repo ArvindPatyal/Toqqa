@@ -3,7 +3,6 @@ package com.toqqa.payload;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -34,7 +33,7 @@ public class SmeSignUp {
 	@NotNull
 	private String country;
 
-	@NotEmpty
+	@NotNull
 	private MultipartFile businessLogo;
 
 	@NotNull
@@ -42,6 +41,8 @@ public class SmeSignUp {
 
 	@NotNull
 	private List<String> businessSubCategory;
+	
+	private String description;
 
 	@NotNull
 	private String typeOfBusiness;
@@ -53,14 +54,16 @@ public class SmeSignUp {
 
 	@NotNull
 	private Double deliveryCharge;
+	
+	private Long timeOfDelivery;
 
 	@NotNull
 	private Boolean isRegisteredWithGovt;
 
-	@NotEmpty
+	@NotNull
 	private MultipartFile regDoc;
 
-	@NotEmpty
+	@NotNull
 	private MultipartFile idProof;
 
 	@NotNull
