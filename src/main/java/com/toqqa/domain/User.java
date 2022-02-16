@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -69,5 +70,8 @@ public class User {
 
 	@ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
 	private List<Role> roles = new ArrayList<>();
+
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	private List<Product> products = new ArrayList<>();
 
 }

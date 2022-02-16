@@ -1,0 +1,65 @@
+package com.toqqa.domain;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import lombok.Data;
+
+@Entity
+@Data
+@Table
+public class Product {
+
+	@Id
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+	private String id;
+
+	private String productName;
+
+	private String category;
+
+	private String subCategory;
+
+	// private List<SubCategory> subCategory;
+
+	private String image;
+
+	private String description;
+
+	private String details;
+
+	private Long unitsInStock;
+
+	private Double pricePerUnit;
+
+	private Double discount;
+
+	private Integer maximumUitsInOneOrder;
+
+	private Integer minimumUnitsInOneOrder;
+
+	private Date expiryDate;
+
+	private String countryOfOrigin;
+
+	private String manufacturerName;
+
+// To Do Awaiting Feedback Around These Two Fields..
+
+//	private Boolean doYouDelieverInSpecifiedRadius;
+
+//	private Boolean delieveredOutsideOfDelieveryRadius;
+
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
+}
