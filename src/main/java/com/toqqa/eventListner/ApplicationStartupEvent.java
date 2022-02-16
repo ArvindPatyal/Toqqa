@@ -71,7 +71,7 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 				RoleConstants.SME.getValue());
 		roles.forEach(role -> {
 			if (this.roleRepository.findByRole(role) == null) {
-				Role r = new Role(null, role);
+				Role r = new Role(null, role,null);
 				this.roleRepository.saveAndFlush(r);
 			}
 		});

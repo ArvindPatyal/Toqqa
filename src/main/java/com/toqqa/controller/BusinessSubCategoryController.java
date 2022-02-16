@@ -23,7 +23,7 @@ public class BusinessSubCategoryController {
 	private BusinessSubCategoryService businessSubCategoryService;
 
 	@ApiOperation(value = "Get SubCategory List")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "sucess"),
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/subcategories/{id}")
 	public ListResponse<SubCategoryBo> getCategoryList(@PathVariable("id") @Valid String id) {

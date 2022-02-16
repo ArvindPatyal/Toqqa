@@ -3,24 +3,20 @@ package com.toqqa.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-
-import lombok.Data;
 
 @Entity
 @Table(name = "user_info")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
 	@Id
@@ -67,7 +63,8 @@ public class User {
 
 	private Boolean isDeleted;
 
-	@ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
-	private List<Role> roles = new ArrayList<>();
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_roles",joinColumns= @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private List<Role> roles=new ArrayList<Role>();
 
 }

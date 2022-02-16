@@ -2,6 +2,7 @@ package com.toqqa.controller;
 
 import javax.validation.Valid;
 
+import com.toqqa.payload.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,10 +26,10 @@ public class AgentController {
 
 	// Map<String, String[]> parameterMap = request.getParameterMap();
 	@ApiOperation(value = "Add Agent")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/addAgent")
-	public AgentBo addAgent(@ModelAttribute @Valid AgentSignUp agentSignUp) {
-		return this.agentService.addAgent(agentSignUp);
+	public Response<AgentBo> addAgent(@ModelAttribute @Valid AgentSignUp agentSignUp) {
+		return new Response<AgentBo>(this.agentService.addAgent(agentSignUp),"success");
 	}
 }
