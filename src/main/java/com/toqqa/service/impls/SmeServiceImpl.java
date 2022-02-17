@@ -3,6 +3,8 @@ package com.toqqa.service.impls;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.toqqa.bo.SmeBo;
@@ -37,39 +39,47 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public SmeBo addSme(SmeSignUp smeSignUp) {
-		Sme sme = new Sme();
-		sme.setNameOfBusiness(smeSignUp.getNameOfBusiness());
-		sme.setBusinessAddress(smeSignUp.getBusinessAddress());
-		sme.setState(smeSignUp.getState());
-		sme.setCountry(smeSignUp.getCountry());
-		sme.setTypeOfBusiness(smeSignUp.getTypeOfBusiness());
-		sme.setDeliveryRadius(smeSignUp.getDeliveryRadius());
-		sme.setDeliveryCharges(smeSignUp.getDeliveryCharge());
-		sme.setIsDeleted(false);
-		sme.setDescription(smeSignUp.getDescription());
-		sme.setCity(smeSignUp.getCity());
-		sme.setIsDeliverToCustomer(smeSignUp.getDeliverToCustomer());
-		sme.setIsRegisterWithGovt(smeSignUp.getIsRegisteredWithGovt());
-		sme.setTimeOfDelivery(smeSignUp.getTimeOfDelivery());
-		sme.setUserId(smeSignUp.getUserId());
+		if(!alreadySme(smeSignUp.getUserId())) {
+			Sme sme = new Sme();
+			sme.setNameOfBusiness(smeSignUp.getNameOfBusiness());
+			sme.setBusinessAddress(smeSignUp.getBusinessAddress());
+			sme.setState(smeSignUp.getState());
+			sme.setCountry(smeSignUp.getCountry());
+			sme.setTypeOfBusiness(smeSignUp.getTypeOfBusiness());
+			sme.setDeliveryRadius(smeSignUp.getDeliveryRadius());
+			sme.setDeliveryCharges(smeSignUp.getDeliveryCharge());
+			sme.setIsDeleted(false);
+			sme.setDescription(smeSignUp.getDescription());
+			sme.setCity(smeSignUp.getCity());
+			sme.setIsDeliverToCustomer(smeSignUp.getDeliverToCustomer());
+			sme.setIsRegisterWithGovt(smeSignUp.getIsRegisteredWithGovt());
+			sme.setTimeOfDelivery(smeSignUp.getTimeOfDelivery());
+			sme.setUserId(smeSignUp.getUserId());
 
-		sme.setBusinessCatagory(this.categoryRepository.findAllById(smeSignUp.getBusinessCategory()));
-		sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeSignUp.getBusinessSubCategory()));
-		User user = this.userRepo.findById(smeSignUp.getUserId()).get();
-		List<Role> roles = new ArrayList<Role>();
-		roles = user.getRoles();
-		roles.add(this.roleRepo.findByRole(smeSignUp.getUserId()));
-		user.setRoles(roles);
-		user = this.userRepo.saveAndFlush(user);
+			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeSignUp.getBusinessCategory()));
+			sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeSignUp.getBusinessSubCategory()));
+			User user = this.userRepo.findById(smeSignUp.getUserId()).get();
+			List<Role> roles = new ArrayList<Role>();
+			roles = user.getRoles();
+			roles.add(this.roleRepo.findByRole(smeSignUp.getUserId()));
+			user.setRoles(roles);
+			user = this.userRepo.saveAndFlush(user);
 
-		// TODO upload functionality
-		sme.setRegDoc("smeSignUp.getRegDoc()");
-		sme.setIdProof("smeSignUp.getIdProof()");
-		sme.setBusinessLogo("smeSignUp.getBusinessLogo()");
+			// TODO upload functionality
+			sme.setRegDoc("smeSignUp.getRegDoc()");
+			sme.setIdProof("smeSignUp.getIdProof()");
+			sme.setBusinessLogo("smeSignUp.getBusinessLogo()");
 
-		sme = this.smeRepo.saveAndFlush(sme);
-		return new SmeBo(sme);
+			sme = this.smeRepo.saveAndFlush(sme);
+			return new SmeBo(sme);
+		}
+		throw new BadRequestException("user already sme");
+	}
 
+	private Boolean alreadySme(String id){
+		User user = this.userRepo.findById(id).get();
+
+		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}
 
 }

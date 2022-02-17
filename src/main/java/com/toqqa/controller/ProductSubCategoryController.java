@@ -8,25 +8,28 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.toqqa.bo.SubCategoryBo;
+import com.toqqa.bo.ProductSubCategoryBo;
 import com.toqqa.payload.ListResponse;
-import com.toqqa.service.BusinessSubCategoryService;
+import com.toqqa.service.ProductSubCategoryService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @RestController
-@RequestMapping("/api/business")
-public class BusinessSubCategoryController {
-	@Autowired
-	private BusinessSubCategoryService businessSubCategoryService;
+@RequestMapping("/api/product")
+public class ProductSubCategoryController {
 
-	@ApiOperation(value = "Get SubCategory List")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+	@Autowired
+	private ProductSubCategoryService productSubCategoryService;
+
+	@ApiOperation(value = "Get productSubCategory List")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "sucess"),
 			@ApiResponse(code = 400, message = "Bad Request") })
-	@GetMapping("/subcategories/{id}")
-	public ListResponse<SubCategoryBo> getCategoryList(@PathVariable("id") @Valid String id) {
-		return new ListResponse<SubCategoryBo>(this.businessSubCategoryService.getSubCategories(id), "success");
+	@GetMapping("/productsubcategories/{id}")
+	public ListResponse<ProductSubCategoryBo> getCategoryList(@PathVariable("id") @Valid String id) {
+		return new ListResponse<ProductSubCategoryBo>(this.productSubCategoryService.getProductSubCategories(id),
+				"success");
 	}
+
 }

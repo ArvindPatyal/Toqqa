@@ -4,6 +4,9 @@ import com.toqqa.domain.User;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class UserBo {
 
@@ -31,6 +34,8 @@ public class UserBo {
 
 	private Boolean isDeleted;
 
+	private List<String> roles=new ArrayList<>();
+
 	public UserBo(User user) {
 		this.id = user.getId();
 		this.firstName = user.getFirstName();
@@ -44,6 +49,8 @@ public class UserBo {
 		this.country = user.getCountry();
 		this.agentId = user.getAgentId();
 		this.isDeleted = user.getIsDeleted();
+		user.getRoles().forEach(role -> {
+			this.roles.add(role.getRole());
+		});
 	}
-
 }

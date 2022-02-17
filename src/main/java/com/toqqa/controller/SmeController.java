@@ -2,6 +2,7 @@ package com.toqqa.controller;
 
 import javax.validation.Valid;
 
+import com.toqqa.payload.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,11 +24,11 @@ public class SmeController {
 	private SmeService smeService;
 
 	@ApiOperation(value = "Sme registration")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/addSme")
-	public SmeBo addSme(@ModelAttribute @Valid SmeSignUp smeSignUp) {
-		return this.smeService.addSme(smeSignUp);
+	public Response<SmeBo> addSme(@ModelAttribute @Valid SmeSignUp smeSignUp) {
+		return new Response<SmeBo>(this.smeService.addSme(smeSignUp),"success");
 	}
 
 }
