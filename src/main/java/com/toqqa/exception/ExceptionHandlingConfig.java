@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,6 +29,23 @@ import java.util.List;
 
 @ControllerAdvice
 public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
+
+	@Override
+	protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+		List<String> errors = new ArrayList<>();
+
+		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+			errors.add(error.getField() + " -> " + error.getDefaultMessage());
+		}
+
+		for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
+			errors.add(error.getObjectName() + " -> " + error.getDefaultMessage());
+		}
+
+		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST,"",errors);
+
+		return this.handleExceptionInternal(ex, apiError, headers, apiError.getStatus(), request);
+	}
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(org.springframework.web.bind.MethodArgumentNotValidException ex,
@@ -53,7 +71,6 @@ public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
 		if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
 			request.setAttribute("javax.servlet.error.exception", ex, 0);
 		}
-
 		return new ResponseEntity<>(new Response<>(body,""), new HttpHeaders(),status.value());
 	}
 
