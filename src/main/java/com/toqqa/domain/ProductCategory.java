@@ -3,8 +3,10 @@ package com.toqqa.domain;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "productCategory")
+@Table(name = "product_category")
 @NoArgsConstructor
 public class ProductCategory {
 
@@ -29,6 +31,8 @@ public class ProductCategory {
 
 	@OneToMany(mappedBy = "productCategory")
 	private List<ProductSubCategory> productSubCategories;
-	
-	
+
+	@ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
+	private List<Product> products;
+
 }

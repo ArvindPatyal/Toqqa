@@ -1,6 +1,8 @@
 package com.toqqa.bo;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.toqqa.domain.Product;
 
@@ -13,15 +15,9 @@ public class ProductBo {
 
 	private String productName;
 
-	// to Change category and sub category with product category and product sub
-	// category
-//	private List<Category> category;
+	private Map<String, String> productCategories = new HashMap<>();
 
-//	private List<SubCategory> subCategory;
-
-	private String category;
-
-	private String subCategory;
+	private Map<String, String> productSubCategories = new HashMap<>();
 
 	private String image;
 
@@ -54,8 +50,6 @@ public class ProductBo {
 	public ProductBo(Product product) {
 		this.id = product.getId();
 		this.productName = product.getProductName();
-		this.category = product.getCategory();
-		this.subCategory = product.getSubCategory();
 		this.image = product.getImage();
 		this.description = product.getDescription();
 		this.details = product.getDetails();
@@ -67,7 +61,12 @@ public class ProductBo {
 		this.expiryDate = product.getExpiryDate();
 		this.countryOfOrigin = product.getCountryOfOrigin();
 		this.manufacturerName = product.getManufacturerName();
-
+		product.getProductCategories().forEach(pc -> {
+			this.productCategories.put(pc.getId(), pc.getProductCategory());
+		});
+		product.getProductSubCategories().forEach(pc -> {
+			this.productSubCategories.put(pc.getId(), pc.getProductSubCategory());
+		});
 	}
 
 }

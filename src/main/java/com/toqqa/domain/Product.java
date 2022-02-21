@@ -1,21 +1,26 @@
 package com.toqqa.domain;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Table
+@NoArgsConstructor
 public class Product {
 
 	@Id
@@ -24,12 +29,6 @@ public class Product {
 	private String id;
 
 	private String productName;
-
-	private String category;
-
-	private String subCategory;
-
-	// private List<SubCategory> subCategory;
 
 	private String image;
 
@@ -62,4 +61,13 @@ public class Product {
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
+
+	@ManyToMany
+	@JoinTable(name = "products_categories", inverseJoinColumns = @JoinColumn(name = "product_category_id"), joinColumns = @JoinColumn(name = "product_id"))
+	private List<ProductCategory> productCategories;
+
+	@ManyToMany
+	@JoinTable(name = "product_subcategories", inverseJoinColumns  = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
+	private List<ProductSubCategory> productSubCategories;
+
 }

@@ -1,6 +1,7 @@
 package com.toqqa.payload;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -14,17 +15,12 @@ public class AddProduct {
 	@NotNull
 	private String productName;
 
+	
 	@NotNull
-	private String category;
+	private List<String> productCategory;
 
 	@NotNull
-	private String subCategory;
-
-	@NotNull
-//	private List<Category> category;
-
-	@NotNull
-//	private List<SubCategory> subCategory;
+	private List<String> productSubCategory;
 
 	@NotNull
 	private MultipartFile image;
