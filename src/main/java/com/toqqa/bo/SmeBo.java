@@ -26,8 +26,8 @@ public class SmeBo {
 	private String country;
 	private String businessLogo;
 	private String description;
-	private List<CategoryBo> businessCatagories=new ArrayList<>();
-	private List<SubCategoryBo> businessSubCatagories=new ArrayList<>();
+	private List<CategoryBo> businessCatagories = new ArrayList<>();
+	private List<SubCategoryBo> businessSubCatagories = new ArrayList<>();
 	private Boolean isDeleted;
 	private String typeOfBusiness;
 	private Boolean isDeliverToCustomer;
@@ -57,7 +57,7 @@ public class SmeBo {
 		this.regDoc = sme.getRegDoc();
 		this.idProof = sme.getIdProof();
 		this.businessAddress = sme.getBusinessAddress();
-		this.userId=sme.getUserId();
+		this.userId = sme.getUserId();
 		sme.getBusinessCatagory().forEach(category -> businessCatagories.add(new CategoryBo(category)));
 		sme.getBusinessSubCatagory().forEach(subCategory -> businessSubCatagories.add(new SubCategoryBo(subCategory)));
 	}

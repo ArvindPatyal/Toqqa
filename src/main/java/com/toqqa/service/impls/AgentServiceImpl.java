@@ -22,39 +22,39 @@ import java.util.List;
 @Service
 public class AgentServiceImpl implements AgentService {
 
-    @Autowired
-    private AgentRepository agentRepo;
+	@Autowired
+	private AgentRepository agentRepo;
 
-    @Autowired
-    private UserRepository userRepo;
+	@Autowired
+	private UserRepository userRepo;
 
-    @Autowired
-    private RoleRepository roleRepo;
+	@Autowired
+	private RoleRepository roleRepo;
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public AgentBo agentRegistration(AgentRegistration agentRegistration,String userId) {
-        if (!this.alreadyAgent(userId)) {
-            Agent agent = new Agent();
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId) {
+		if (!this.alreadyAgent(userId)) {
+			Agent agent = new Agent();
 
-            agent.setAgentDocuments("agentSignUp.getAgentDocuments()");
-            agent.setIdProof("agentSignUp.getIdProof()");
-            agent.setUserId(userId);
-            User user = this.userRepo.findById(userId).get();
-            List<Role> roles =new ArrayList<>();
-            roles.addAll(user.getRoles());
-            roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
-            user.setRoles(roles);
-            this.userRepo.saveAndFlush(user);
-            agent = this.agentRepo.saveAndFlush(agent);
-            return new AgentBo(agent);
-        }
-        throw new BadRequestException("user already an agent");
-    }
+			agent.setAgentDocuments("agentSignUp.getAgentDocuments()");
+			agent.setIdProof("agentSignUp.getIdProof()");
+			agent.setUserId(userId);
+			User user = this.userRepo.findById(userId).get();
+			List<Role> roles = new ArrayList<>();
+			roles.addAll(user.getRoles());
+			roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
+			user.setRoles(roles);
+			this.userRepo.saveAndFlush(user);
+			agent = this.agentRepo.saveAndFlush(agent);
+			return new AgentBo(agent);
+		}
+		throw new BadRequestException("user already an agent");
+	}
 
-    private Boolean alreadyAgent(String id) {
-        User user = this.userRepo.findById(id).get();
-        List<Role> roles = user.getRoles();
-        return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.AGENT.getValue()));
-     }
+	private Boolean alreadyAgent(String id) {
+		User user = this.userRepo.findById(id).get();
+		List<Role> roles = user.getRoles();
+		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.AGENT.getValue()));
+	}
 }

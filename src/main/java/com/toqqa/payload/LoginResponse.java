@@ -11,6 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponse {
-    private JwtAuthenticationResponse header;
-    private UserBo userData;
+	private JwtAuthenticationResponse header;
+	private UserBo userData;
 }

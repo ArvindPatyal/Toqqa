@@ -41,8 +41,8 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public SmeBo smeRegistration(SmeRegistration smeRegistration,String userId) {
-		if(!alreadySme(userId)) {
+	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
+		if (!alreadySme(userId)) {
 			Sme sme = new Sme();
 			sme.setNameOfBusiness(smeRegistration.getNameOfBusiness());
 			sme.setBusinessAddress(smeRegistration.getBusinessAddress());
@@ -60,7 +60,8 @@ public class SmeServiceImpl implements SmeService {
 			sme.setUserId(userId);
 
 			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeRegistration.getBusinessCategory()));
-			sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeRegistration.getBusinessSubCategory()));
+			sme.setBusinessSubCatagory(
+					this.subcategoryRepository.findAllById(smeRegistration.getBusinessSubCategory()));
 			User user = this.userRepo.findById(userId).get();
 			List<Role> roles = new ArrayList<Role>();
 			roles.addAll(user.getRoles());
@@ -79,7 +80,7 @@ public class SmeServiceImpl implements SmeService {
 		throw new BadRequestException("user already sme");
 	}
 
-	private Boolean alreadySme(String id){
+	private Boolean alreadySme(String id) {
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}

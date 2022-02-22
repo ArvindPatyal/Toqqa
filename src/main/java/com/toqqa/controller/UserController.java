@@ -26,19 +26,18 @@ public class UserController {
 
 	@Autowired
 	private AuthenticationService authenticationService;
-	
+
 	@ApiOperation(value = "Returns User data by given id")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
-			@ApiResponse(code = 400, message = "Bad Request")})			
+			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchUser/{id}")
 	public Response<UserBo> fetchUser(@PathVariable("id") @Valid String id) {
 		return new Response<UserBo>(this.userService.fetchUser(id), "success");
 	}
 
-	
 	@ApiOperation(value = "Returns logged in uses data")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
-			@ApiResponse(code = 400, message = "Bad Request")})	
+			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/currentUser")
 	public Response<UserBo> currentUser() {
 		return new Response<UserBo>(new UserBo(this.authenticationService.currentUser()), "success");

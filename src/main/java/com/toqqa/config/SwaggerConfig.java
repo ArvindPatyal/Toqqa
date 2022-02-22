@@ -17,16 +17,14 @@ import springfox.documentation.spring.web.plugins.Docket;
 public class SwaggerConfig {
 	@Bean
 	public Docket api() {
-		return new Docket(DocumentationType.SWAGGER_2)
-				.apiInfo(metaData()).select()
+		return new Docket(DocumentationType.SWAGGER_2).apiInfo(metaData()).select()
 //				.apis(RequestHandlerSelectors.any())
 				.apis(RequestHandlerSelectors.basePackage("com.toqqa.controller")).paths(PathSelectors.any()).build();
 	}
 
 	private ApiInfo metaData() {
 
-		Contact contact = new Contact("Biz Tecno", "https://biztecno.net/",
-				"rajpal@biztecno.net");
+		Contact contact = new Contact("Biz Tecno", "https://biztecno.net/", "rajpal@biztecno.net");
 		return new ApiInfoBuilder().title("TOQQA REST API Document").description("TOQQA Digital Ecosystem")
 				.version("1.0.0").license("Apache 2.0").contact(contact)
 				.licenseUrl("http://www.apache.org/licenses/LICENSE-2.0").build();

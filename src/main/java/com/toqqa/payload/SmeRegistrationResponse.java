@@ -12,5 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SmeRegistrationResponse extends RegistrationResponse {
-    private SmeBo sme;
+	private SmeBo sme;
 }

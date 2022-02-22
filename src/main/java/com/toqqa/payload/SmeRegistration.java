@@ -41,7 +41,7 @@ public class SmeRegistration {
 
 	@NotNull
 	private List<String> businessSubCategory;
-	
+
 	private String description;
 
 	@NotNull
@@ -54,7 +54,7 @@ public class SmeRegistration {
 
 	@NotNull
 	private Double deliveryCharge;
-	
+
 	private Long timeOfDelivery;
 
 	@NotNull
@@ -65,6 +65,5 @@ public class SmeRegistration {
 
 	@NotNull
 	private MultipartFile idProof;
-
 
 }

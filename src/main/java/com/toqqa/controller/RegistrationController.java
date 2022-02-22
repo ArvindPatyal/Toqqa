@@ -26,7 +26,6 @@ public class RegistrationController {
 	@Autowired
 	private RegistrationService registrationService;
 
-
 	@ApiOperation(value = "User Registration")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request!") })

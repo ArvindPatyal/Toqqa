@@ -13,5 +13,5 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegistrationResponse {
-    private UserBo user;
+	private UserBo user;
 }

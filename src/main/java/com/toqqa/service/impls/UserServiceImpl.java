@@ -104,10 +104,12 @@ public class UserServiceImpl implements UserService {
 			Authentication authentication = this.manager
 					.authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
 			SecurityContextHolder.getContext().setAuthentication(authentication);
-			JwtAuthenticationResponse jwtAuthenticationResponse= new JwtAuthenticationResponse(this.jwtConfig.generateToken(bo.getUsername()));
-			authentication=SecurityContextHolder.getContext().getAuthentication();
-			UserBo user = new UserBo(this.userRepository.findByEmailOrPhone(authentication.getName(),authentication.getName()));
-			return new LoginResponse(jwtAuthenticationResponse,user);
+			JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse(
+					this.jwtConfig.generateToken(bo.getUsername()));
+			authentication = SecurityContextHolder.getContext().getAuthentication();
+			UserBo user = new UserBo(
+					this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
+			return new LoginResponse(jwtAuthenticationResponse, user);
 		} catch (Exception e) {
 			throw new BadCredentialsException("bad Credentials");
 		}

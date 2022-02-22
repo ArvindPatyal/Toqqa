@@ -12,5 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AgentRegistrationResponse extends RegistrationResponse {
-    private AgentBo agent;
+	private AgentBo agent;
 }

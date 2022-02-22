@@ -31,7 +31,8 @@ import java.util.List;
 public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
 
 	@Override
-	protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+	protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status,
+			WebRequest request) {
 		List<String> errors = new ArrayList<>();
 
 		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
@@ -42,14 +43,15 @@ public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
 			errors.add(error.getObjectName() + " -> " + error.getDefaultMessage());
 		}
 
-		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST,"",errors);
+		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, "", errors);
 
 		return this.handleExceptionInternal(ex, apiError, headers, apiError.getStatus(), request);
 	}
 
 	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(org.springframework.web.bind.MethodArgumentNotValidException ex,
-																  HttpHeaders headers, HttpStatus status, WebRequest request) {
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(
+			org.springframework.web.bind.MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status,
+			WebRequest request) {
 
 		List<String> errors = new ArrayList<>();
 
@@ -61,95 +63,108 @@ public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
 			errors.add(error.getObjectName() + " -> " + error.getDefaultMessage());
 		}
 
-		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST,"",errors);
+		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, "", errors);
 
 		return this.handleExceptionInternal(ex, apiError, headers, apiError.getStatus(), request);
 
 	}
+
 	@Override
-	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
+	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body, HttpHeaders headers,
+			HttpStatus status, WebRequest request) {
 		if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
 			request.setAttribute("javax.servlet.error.exception", ex, 0);
 		}
-		return new ResponseEntity<>(new Response<>(body,""), new HttpHeaders(),status.value());
+		return new ResponseEntity<>(new Response<>(body, ""), new HttpHeaders(), status.value());
 	}
 
 	@ExceptionHandler(ResourceCreateUpdateException.class)
 	public ResponseEntity<Response<ErrorBo>> handleResourceCreateUpdateException(ResourceCreateUpdateException ex,
 			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(InternalServerException.class)
-	public ResponseEntity<Response<ErrorBo>> handleInternalServerException(InternalServerException ex, HttpServletRequest request,
-			HttpServletResponse response) {
+	public ResponseEntity<Response<ErrorBo>> handleInternalServerException(InternalServerException ex,
+			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<Response<ErrorBo>> handleResourceNotFoundException(ResourceNotFoundException ex,
 			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<Response<ErrorBo>> authenticationException(AuthenticationException ex, HttpServletRequest request,
-			HttpServletResponse response) {
+	public ResponseEntity<Response<ErrorBo>> authenticationException(AuthenticationException ex,
+			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.UNAUTHORIZED, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(BadCredentialsException.class)
 	public ResponseEntity<Response<ErrorBo>> badCredException(BadCredentialsException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.UNAUTHORIZED, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(ResourceAccessException.class)
 	public ResponseEntity<Response<ErrorBo>> resourceAccessExceptionException(ResourceAccessException ex,
 			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<Response<ErrorBo>> accessDeniedException(AccessDeniedException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.FORBIDDEN, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<Response<ErrorBo>> badReqException(BadRequestException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(UserAlreadyExists.class)
-	public ResponseEntity<Response<ErrorBo>> userAlreadyExistsException(UserAlreadyExists ex, HttpServletRequest request,
-			HttpServletResponse response) {
+	public ResponseEntity<Response<ErrorBo>> userAlreadyExistsException(UserAlreadyExists ex,
+			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ExceptionHandler(InvalidTokenException.class)
 	public ResponseEntity<Response<ErrorBo>> invalidTokenException(InvalidTokenException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.UNAUTHORIZED, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 	@ResponseBody
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<Response<ErrorBo>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request,
-															 HttpServletResponse response) {
+	public ResponseEntity<Response<ErrorBo>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+			HttpServletRequest request, HttpServletResponse response) {
 		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), ex.getMessage());
-		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError,""), new HttpHeaders(), apiError.getStatus());
+		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
+				apiError.getStatus());
 	}
 
 }

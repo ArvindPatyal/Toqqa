@@ -6,7 +6,7 @@ import com.toqqa.payload.SmeRegistrationPayload;
 
 public interface RegistrationService {
 
-    Response registerAgent(AgentRegistrationPayload payload);
+	Response registerAgent(AgentRegistrationPayload payload);
 
-    Response registerSme(SmeRegistrationPayload payload);
+	Response registerSme(SmeRegistrationPayload payload);
 }

@@ -21,18 +21,18 @@ import javax.validation.Valid;
 @RequestMapping("api/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    @Autowired
-    private SmeService smeService;
+	@Autowired
+	private SmeService smeService;
 
-    @ApiOperation(value = "Authenticate user and signin")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
-            @ApiResponse(code = 400, message = "Bad Request!")})
-    @PostMapping("/signIn")
-    public Response<?> signIn(@RequestBody @Valid LoginRequest request) {
-        return new Response<LoginResponse>(this.userService.signIn(request), "success");
-    }
+	@ApiOperation(value = "Authenticate user and signin")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PostMapping("/signIn")
+	public Response<?> signIn(@RequestBody @Valid LoginRequest request) {
+		return new Response<LoginResponse>(this.userService.signIn(request), "success");
+	}
 
 }

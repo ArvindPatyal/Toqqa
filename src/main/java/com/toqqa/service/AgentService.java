@@ -5,5 +5,5 @@ import com.toqqa.payload.AgentRegistration;
 
 public interface AgentService {
 
-	AgentBo agentRegistration(AgentRegistration agentRegistration,String userId);
+	AgentBo agentRegistration(AgentRegistration agentRegistration, String userId);
 }
