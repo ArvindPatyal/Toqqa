@@ -2,11 +2,8 @@ package com.toqqa.bo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.toqqa.domain.Category;
 import com.toqqa.domain.Sme;
-import com.toqqa.domain.SubCategory;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

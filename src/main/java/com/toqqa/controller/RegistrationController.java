@@ -1,20 +1,24 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.AgentBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.bo.UserBo;
-import com.toqqa.payload.*;
-import com.toqqa.service.AgentService;
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.toqqa.payload.AgentRegistrationPayload;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.SmeRegistrationPayload;
+import com.toqqa.payload.UserSignUp;
 import com.toqqa.service.RegistrationService;
-import com.toqqa.service.SmeService;
 import com.toqqa.service.UserService;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("api/registration")

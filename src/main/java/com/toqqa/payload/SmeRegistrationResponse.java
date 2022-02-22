@@ -1,7 +1,7 @@
 package com.toqqa.payload;
 
 import com.toqqa.bo.SmeBo;
-import com.toqqa.bo.UserBo;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

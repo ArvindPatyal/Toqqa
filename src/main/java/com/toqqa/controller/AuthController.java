@@ -1,21 +1,22 @@
 package com.toqqa.controller;
 
-import com.toqqa.payload.JwtAuthenticationResponse;
-import com.toqqa.payload.LoginRequest;
-import com.toqqa.payload.LoginResponse;
-import com.toqqa.payload.Response;
-import com.toqqa.service.SmeService;
-import com.toqqa.service.UserService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import com.toqqa.payload.LoginRequest;
+import com.toqqa.payload.LoginResponse;
+import com.toqqa.payload.Response;
+import com.toqqa.service.SmeService;
+import com.toqqa.service.UserService;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("api/auth")
