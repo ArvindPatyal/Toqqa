@@ -34,7 +34,7 @@ public class UserBo {
 
 	private Boolean isDeleted;
 
-	private List<String> roles=new ArrayList<>();
+	private List<String> roles = new ArrayList<>();
 
 	public UserBo(User user) {
 		this.id = user.getId();

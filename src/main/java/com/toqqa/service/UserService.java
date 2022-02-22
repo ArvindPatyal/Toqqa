@@ -1,5 +1,6 @@
 package com.toqqa.service;
 
+import com.toqqa.payload.LoginResponse;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.toqqa.bo.UserBo;
@@ -15,7 +16,7 @@ public interface UserService extends UserDetailsService {
 
 	User findByEmailOrPhone(String userName);
 
-	JwtAuthenticationResponse signIn(LoginRequest bo);
+	LoginResponse signIn(LoginRequest bo);
 
 	UserBo fetchUser(String id);
 }

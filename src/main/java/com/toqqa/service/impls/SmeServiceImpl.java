@@ -11,13 +11,15 @@ import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
-import com.toqqa.payload.SmeSignUp;
+import com.toqqa.payload.SmeRegistration;
 import com.toqqa.repository.CategoryRepository;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.SmeRepository;
 import com.toqqa.repository.SubcategoryRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.SmeService;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SmeServiceImpl implements SmeService {
@@ -38,30 +40,32 @@ public class SmeServiceImpl implements SmeService {
 	private RoleRepository roleRepo;
 
 	@Override
-	public SmeBo addSme(SmeSignUp smeSignUp) {
-		if(!alreadySme(smeSignUp.getUserId())) {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
+		if (!alreadySme(userId)) {
 			Sme sme = new Sme();
-			sme.setNameOfBusiness(smeSignUp.getNameOfBusiness());
-			sme.setBusinessAddress(smeSignUp.getBusinessAddress());
-			sme.setState(smeSignUp.getState());
-			sme.setCountry(smeSignUp.getCountry());
-			sme.setTypeOfBusiness(smeSignUp.getTypeOfBusiness());
-			sme.setDeliveryRadius(smeSignUp.getDeliveryRadius());
-			sme.setDeliveryCharges(smeSignUp.getDeliveryCharge());
+			sme.setNameOfBusiness(smeRegistration.getNameOfBusiness());
+			sme.setBusinessAddress(smeRegistration.getBusinessAddress());
+			sme.setState(smeRegistration.getState());
+			sme.setCountry(smeRegistration.getCountry());
+			sme.setTypeOfBusiness(smeRegistration.getTypeOfBusiness());
+			sme.setDeliveryRadius(smeRegistration.getDeliveryRadius());
+			sme.setDeliveryCharges(smeRegistration.getDeliveryCharge());
 			sme.setIsDeleted(false);
-			sme.setDescription(smeSignUp.getDescription());
-			sme.setCity(smeSignUp.getCity());
-			sme.setIsDeliverToCustomer(smeSignUp.getDeliverToCustomer());
-			sme.setIsRegisterWithGovt(smeSignUp.getIsRegisteredWithGovt());
-			sme.setTimeOfDelivery(smeSignUp.getTimeOfDelivery());
-			sme.setUserId(smeSignUp.getUserId());
+			sme.setDescription(smeRegistration.getDescription());
+			sme.setCity(smeRegistration.getCity());
+			sme.setIsDeliverToCustomer(smeRegistration.getDeliverToCustomer());
+			sme.setIsRegisterWithGovt(smeRegistration.getIsRegisteredWithGovt());
+			sme.setTimeOfDelivery(smeRegistration.getTimeOfDelivery());
+			sme.setUserId(userId);
 
-			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeSignUp.getBusinessCategory()));
-			sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeSignUp.getBusinessSubCategory()));
-			User user = this.userRepo.findById(smeSignUp.getUserId()).get();
+			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeRegistration.getBusinessCategory()));
+			sme.setBusinessSubCatagory(
+					this.subcategoryRepository.findAllById(smeRegistration.getBusinessSubCategory()));
+			User user = this.userRepo.findById(userId).get();
 			List<Role> roles = new ArrayList<Role>();
-			roles = user.getRoles();
-			roles.add(this.roleRepo.findByRole(smeSignUp.getUserId()));
+			roles.addAll(user.getRoles());
+			roles.add(this.roleRepo.findByRole(RoleConstants.SME.getValue()));
 			user.setRoles(roles);
 			user = this.userRepo.saveAndFlush(user);
 
@@ -76,9 +80,8 @@ public class SmeServiceImpl implements SmeService {
 		throw new BadRequestException("user already sme");
 	}
 
-	private Boolean alreadySme(String id){
+	private Boolean alreadySme(String id) {
 		User user = this.userRepo.findById(id).get();
-
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}
 

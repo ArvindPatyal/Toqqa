@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BusinessCategoryController {
 	@Autowired
 	private BusinessCategoryService businessCategoryService;
-	
+
 	@ApiOperation(value = "Returns Category List")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request!") })

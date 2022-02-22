@@ -5,5 +5,5 @@ import com.toqqa.bo.CategoryBo;
 import java.util.List;
 
 public interface BusinessCategoryService {
-    List<CategoryBo> getCategories();
+	List<CategoryBo> getCategories();
 }

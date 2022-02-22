@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.toqqa.payload.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +33,8 @@ import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -51,6 +54,7 @@ public class UserServiceImpl implements UserService {
 	private AuthenticationManager manager;
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public UserBo addUser(UserSignUp userSignUp) {
 		if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
 			throw new UserAlreadyExists("user already exists");
@@ -68,9 +72,7 @@ public class UserServiceImpl implements UserService {
 		user.setState(userSignUp.getState());
 		user.setAddress(userSignUp.getAddress());
 		user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
-
 		user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
-
 		user = this.userRepository.saveAndFlush(user);
 		return new UserBo(user);
 
@@ -97,12 +99,17 @@ public class UserServiceImpl implements UserService {
 	}// find user by emailid or phone
 
 	@Override
-	public JwtAuthenticationResponse signIn(LoginRequest bo) {
+	public LoginResponse signIn(LoginRequest bo) {
 		try {
 			Authentication authentication = this.manager
 					.authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
 			SecurityContextHolder.getContext().setAuthentication(authentication);
-			return new JwtAuthenticationResponse(this.jwtConfig.generateToken(bo.getUsername()));
+			JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse(
+					this.jwtConfig.generateToken(bo.getUsername()));
+			authentication = SecurityContextHolder.getContext().getAuthentication();
+			UserBo user = new UserBo(
+					this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
+			return new LoginResponse(jwtAuthenticationResponse, user);
 		} catch (Exception e) {
 			throw new BadCredentialsException("bad Credentials");
 		}

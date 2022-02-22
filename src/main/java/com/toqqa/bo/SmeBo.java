@@ -1,10 +1,9 @@
 package com.toqqa.bo;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.toqqa.domain.Category;
 import com.toqqa.domain.Sme;
-import com.toqqa.domain.SubCategory;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,8 +23,8 @@ public class SmeBo {
 	private String country;
 	private String businessLogo;
 	private String description;
-	private List<Category> businessCatagory;
-	private List<SubCategory> businessSubCatagory;
+	private List<CategoryBo> businessCatagories = new ArrayList<>();
+	private List<SubCategoryBo> businessSubCatagories = new ArrayList<>();
 	private Boolean isDeleted;
 	private String typeOfBusiness;
 	private Boolean isDeliverToCustomer;
@@ -35,6 +34,7 @@ public class SmeBo {
 	private Long timeOfDelivery;
 	private String regDoc;
 	private String idProof;
+	private String userId;
 
 	public SmeBo(Sme sme) {
 		this.id = sme.getId();
@@ -44,8 +44,6 @@ public class SmeBo {
 		this.country = sme.getCountry();
 		this.businessLogo = sme.getBusinessLogo();
 		this.description = sme.getDescription();
-		this.businessCatagory = sme.getBusinessCatagory();
-		this.businessSubCatagory = sme.getBusinessSubCatagory();
 		this.isDeleted = sme.getIsDeleted();
 		this.typeOfBusiness = sme.getTypeOfBusiness();
 		this.isDeliverToCustomer = sme.getIsDeliverToCustomer();
@@ -56,7 +54,9 @@ public class SmeBo {
 		this.regDoc = sme.getRegDoc();
 		this.idProof = sme.getIdProof();
 		this.businessAddress = sme.getBusinessAddress();
-
+		this.userId = sme.getUserId();
+		sme.getBusinessCatagory().forEach(category -> businessCatagories.add(new CategoryBo(category)));
+		sme.getBusinessSubCatagory().forEach(subCategory -> businessSubCatagories.add(new SubCategoryBo(subCategory)));
 	}
 
 }

@@ -77,8 +77,8 @@ public class User {
 	private Boolean isDeleted;
 
 	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_roles",joinColumns= @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private List<Role> roles=new ArrayList<Role>();
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private List<Role> roles = new ArrayList<Role>();
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<Product> products = new ArrayList<>();

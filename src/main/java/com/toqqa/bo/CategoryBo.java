@@ -5,11 +5,11 @@ import lombok.Data;
 
 @Data
 public class CategoryBo {
-    private String id;
-    private String category;
+	private String id;
+	private String category;
 
-    public CategoryBo(Category category){
-        this.id=category.getId();
-        this.category=category.getCategory();
-    }
+	public CategoryBo(Category category) {
+		this.id = category.getId();
+		this.category = category.getCategory();
+	}
 }

@@ -2,7 +2,6 @@ package com.toqqa.payload;
 
 import java.util.List;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SmeSignUp {
+public class SmeRegistration {
 	@NotNull
 	private String nameOfBusiness;
 
@@ -41,7 +40,7 @@ public class SmeSignUp {
 
 	@NotNull
 	private List<String> businessSubCategory;
-	
+
 	private String description;
 
 	@NotNull
@@ -54,7 +53,7 @@ public class SmeSignUp {
 
 	@NotNull
 	private Double deliveryCharge;
-	
+
 	private Long timeOfDelivery;
 
 	@NotNull
@@ -65,9 +64,5 @@ public class SmeSignUp {
 
 	@NotNull
 	private MultipartFile idProof;
-
-	@NotNull
-	@NotBlank
-	private String userId;
 
 }
