@@ -1,9 +1,9 @@
 package com.toqqa.service;
 
 import com.toqqa.bo.AgentBo;
-import com.toqqa.payload.AgentSignUp;
+import com.toqqa.payload.AgentRegistration;
 
 public interface AgentService {
 
-	AgentBo addAgent(AgentSignUp agentSignUp);
+	AgentBo agentRegistration(AgentRegistration agentRegistration,String userId);
 }

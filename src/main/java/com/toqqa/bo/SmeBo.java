@@ -37,6 +37,7 @@ public class SmeBo {
 	private Long timeOfDelivery;
 	private String regDoc;
 	private String idProof;
+	private String userId;
 
 	public SmeBo(Sme sme) {
 		this.id = sme.getId();
@@ -56,6 +57,7 @@ public class SmeBo {
 		this.regDoc = sme.getRegDoc();
 		this.idProof = sme.getIdProof();
 		this.businessAddress = sme.getBusinessAddress();
+		this.userId=sme.getUserId();
 		sme.getBusinessCatagory().forEach(category -> businessCatagories.add(new CategoryBo(category)));
 		sme.getBusinessSubCatagory().forEach(subCategory -> businessSubCatagories.add(new SubCategoryBo(subCategory)));
 	}

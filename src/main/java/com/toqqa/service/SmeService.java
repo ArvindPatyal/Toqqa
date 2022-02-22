@@ -1,9 +1,9 @@
 package com.toqqa.service;
 
 import com.toqqa.bo.SmeBo;
-import com.toqqa.payload.SmeSignUp;
+import com.toqqa.payload.SmeRegistration;
 
 public interface SmeService {
-	SmeBo addSme(SmeSignUp smeSignUp);
+	SmeBo smeRegistration(SmeRegistration smeRegistration,String userId);
 
 }

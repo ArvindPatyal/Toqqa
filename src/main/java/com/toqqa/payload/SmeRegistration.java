@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SmeSignUp {
+public class SmeRegistration {
 	@NotNull
 	private String nameOfBusiness;
 
@@ -66,8 +66,5 @@ public class SmeSignUp {
 	@NotNull
 	private MultipartFile idProof;
 
-	@NotNull
-	@NotBlank
-	private String userId;
 
 }

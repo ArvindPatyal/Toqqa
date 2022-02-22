@@ -19,7 +19,6 @@ public class UserSignUp {
 	@NotBlank
 	private String lastName;
 
-//    @Email
 	private String email;
 
 	private String phone;

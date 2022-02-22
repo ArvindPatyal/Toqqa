@@ -8,12 +8,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.Data;
-
 @Getter
 @Setter
 @NoArgsConstructor
-public class AgentSignUp {
+public class AgentRegistration {
 
 	@NotNull
 	private MultipartFile agentDocuments;
@@ -21,7 +19,4 @@ public class AgentSignUp {
 	@NotNull
 	private MultipartFile idProof;
 
-	@NotNull
-	@NotBlank
-	private String userId;
 }
