@@ -14,4 +14,6 @@ public interface StorageService {
 
 	File convertMultiPartFileToFile(MultipartFile file);
 
+	String createFolder(String folder);
+
 }

@@ -13,16 +13,18 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.waiters.AmazonS3Waiters;
 import com.amazonaws.util.IOUtils;
 import com.toqqa.service.StorageService;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 public class StorageServiceImpl implements StorageService {
 
-	@Value("${application.bucket.name}")
+	@Value("${bucketName}")
 	private String bucketName;
 
 	@Autowired
@@ -31,7 +33,7 @@ public class StorageServiceImpl implements StorageService {
 	public String uploadFile(MultipartFile file) {
 		File fileObj = convertMultiPartFileToFile(file);
 		String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
-		s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+		s3Client.putObject(new PutObjectRequest(bucketName+"/test/", fileName, fileObj));
 		fileObj.delete();
 		return "File Uploaded :" + fileName;
 	}
@@ -67,5 +69,63 @@ public class StorageServiceImpl implements StorageService {
 		}
 
 		return convertedFile;
+	}
+
+	@Override
+	public String createFolder(String folder) {
+
+		/*
+		 * TransferManager xfer_mgr = new TransferManager();
+		 * 
+		 * String dir_path = "D: /workspace/test";
+		 * 
+		 * String key_prefix = "";
+		 * 
+		 * String bucket_name = "toqqa_dev";
+		 * 
+		 * boolean recursive = false;
+		 * 
+		 * MultipleFileUpload xfer = xfer_mgr.uploadDirectory(bucket_name, key_prefix,
+		 * new File(dir_path), recursive);
+		 * 
+		 * try {
+		 * 
+		 * xfer.waitForCompletion(); } catch (AmazonServiceException e) {
+		 * 
+		 * System.err.println("Amazon service error:" + e.getMessage()); System.exit(1);
+		 * }
+		 * 
+		 * catch (AmazonClientException e) { System.err.println("Amazon client error:" +
+		 * e.getMessage()); System.exit(1);
+		 * 
+		 * } catch (InterruptedException e) {
+		 * 
+		 * System.err.println("Transfer interrupted:" + e.getMessage()); System.exit(1);
+		 * 
+		 * }
+		 * 
+		 * xfer_mgr.shutdownNow();
+		 * 
+		 * return null;
+		 */
+
+		String bucketName = "nam-public-images";
+		String folderName = "asia/vietnam/";
+
+		//PutObjectRequest request =new PutObjectRequest(bucketName, folderName);
+		/*
+		 * s3Client.putObject(new PutObjectRequest(bucketName, folderName,));
+		 * 
+		 * AmazonS3Waiters waiter = s3Client.waiters(); HeadObjectRequest requestWait =
+		 * HeadObjectRequest.builder().bucket(bucketName).key(folderName).build();
+		 * 
+		 * WaiterResponse<HeadObjectResponse> waiterResponse =
+		 * waiter.waitUntilObjectExists(requestWait);
+		 * 
+		 * waiterResponse.matched().response().ifPresent(System.out::println);
+		 * 
+		 * System.out.println("Folder " + folderName + " is ready.");
+		 */
+		return "";
 	}
 }
