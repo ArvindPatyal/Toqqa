@@ -2,15 +2,20 @@ package com.toqqa.service.impls;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import com.toqqa.constants.RoleConstants;
-import com.toqqa.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.toqqa.bo.SmeBo;
+import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.SmeRegistration;
 import com.toqqa.repository.CategoryRepository;
 import com.toqqa.repository.RoleRepository;
@@ -18,8 +23,7 @@ import com.toqqa.repository.SmeRepository;
 import com.toqqa.repository.SubcategoryRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.SmeService;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import com.toqqa.service.StorageService;
 
 @Service
 public class SmeServiceImpl implements SmeService {
@@ -38,7 +42,10 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	private RoleRepository roleRepo;
-
+	
+	@Autowired
+	private StorageService storageService;
+	
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
@@ -70,9 +77,13 @@ public class SmeServiceImpl implements SmeService {
 			user = this.userRepo.saveAndFlush(user);
 
 			// TODO upload functionality
-			sme.setRegDoc("smeSignUp.getRegDoc()");
-			sme.setIdProof("smeSignUp.getIdProof()");
-			sme.setBusinessLogo("smeSignUp.getBusinessLogo()");
+			try {
+				sme.setIdProof(this.storageService.uploadFileAsync(smeRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				sme.setBusinessLogo(this.storageService.uploadFileAsync(smeRegistration.getBusinessLogo(), userId, FolderConstants.LOGO.getValue()).get());
+				sme.setRegDoc(this.storageService.uploadFileAsync(smeRegistration.getRegDoc(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+			} catch (InterruptedException | ExecutionException  e) {
+				e.printStackTrace();
+			} 					
 
 			sme = this.smeRepo.saveAndFlush(sme);
 			return new SmeBo(sme);

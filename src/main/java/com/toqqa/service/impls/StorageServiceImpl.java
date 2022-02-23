@@ -3,9 +3,12 @@ package com.toqqa.service.impls;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,11 +16,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.waiters.AmazonS3Waiters;
 import com.amazonaws.util.IOUtils;
 import com.toqqa.service.StorageService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -29,13 +30,25 @@ public class StorageServiceImpl implements StorageService {
 
 	@Autowired
 	private AmazonS3 s3Client;
-
-	public String uploadFile(MultipartFile file) {
+	
+	@Override
+	@Async
+	public Future<String> uploadFileAsync(MultipartFile file, String userId, String dir) {
+		log.info("Inside file upload async");
 		File fileObj = convertMultiPartFileToFile(file);
 		String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
-		s3Client.putObject(new PutObjectRequest(bucketName+"/test/", fileName, fileObj));
+		s3Client.putObject(new PutObjectRequest(bucketName+"/"+userId+"/"+dir, fileName, fileObj));
 		fileObj.delete();
-		return "File Uploaded :" + fileName;
+		return new AsyncResult<String>(fileName);
+	}
+	
+	@Async
+	public String uploadFile(MultipartFile file,String userId,String dir) {
+		File fileObj = convertMultiPartFileToFile(file);
+		String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
+		s3Client.putObject(new PutObjectRequest(bucketName+"/"+userId+"/"+dir, fileName, fileObj));
+		fileObj.delete();
+		return fileName;
 	}
 
 	public byte[] downloadFile(String fileName) {
@@ -109,10 +122,10 @@ public class StorageServiceImpl implements StorageService {
 		 * return null;
 		 */
 
-		String bucketName = "nam-public-images";
-		String folderName = "asia/vietnam/";
-
-		//PutObjectRequest request =new PutObjectRequest(bucketName, folderName);
+		/*
+		 * String bucketName = "nam-public-images"; String folderName = "asia/vietnam/";
+		 */
+		// PutObjectRequest request =new PutObjectRequest(bucketName, folderName);
 		/*
 		 * s3Client.putObject(new PutObjectRequest(bucketName, folderName,));
 		 * 
@@ -128,4 +141,6 @@ public class StorageServiceImpl implements StorageService {
 		 */
 		return "";
 	}
+
+	
 }
