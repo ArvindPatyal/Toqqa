@@ -1,6 +1,16 @@
 package com.toqqa.service.impls;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.toqqa.bo.AgentBo;
+import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.Agent;
 import com.toqqa.domain.Role;
@@ -11,13 +21,7 @@ import com.toqqa.repository.AgentRepository;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AgentService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.toqqa.service.StorageService;
 
 @Service
 public class AgentServiceImpl implements AgentService {
@@ -30,6 +34,9 @@ public class AgentServiceImpl implements AgentService {
 
 	@Autowired
 	private RoleRepository roleRepo;
+	
+	@Autowired
+	private StorageService storageService;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -37,14 +44,21 @@ public class AgentServiceImpl implements AgentService {
 		if (!this.alreadyAgent(userId)) {
 			Agent agent = new Agent();
 
-			agent.setAgentDocuments("agentSignUp.getAgentDocuments()");
-			agent.setIdProof("agentSignUp.getIdProof()");
+			
 			agent.setUserId(userId);
 			User user = this.userRepo.findById(userId).get();
 			List<Role> roles = new ArrayList<>();
 			roles.addAll(user.getRoles());
 			roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
 			user.setRoles(roles);
+			try {
+				agent.setIdProof(this.storageService.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+			} catch (InterruptedException | ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			
 			this.userRepo.saveAndFlush(user);
 			agent = this.agentRepo.saveAndFlush(agent);
 			return new AgentBo(agent);

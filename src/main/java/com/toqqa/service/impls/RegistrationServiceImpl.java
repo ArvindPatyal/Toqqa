@@ -1,18 +1,23 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.AgentBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.bo.UserBo;
-import com.toqqa.exception.UserAlreadyExists;
-import com.toqqa.payload.*;
-import com.toqqa.service.AgentService;
-import com.toqqa.service.RegistrationService;
-import com.toqqa.service.SmeService;
-import com.toqqa.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.toqqa.bo.AgentBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.bo.UserBo;
+import com.toqqa.exception.UserAlreadyExists;
+import com.toqqa.payload.AgentRegistrationPayload;
+import com.toqqa.payload.AgentRegistrationResponse;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.SmeRegistrationPayload;
+import com.toqqa.payload.SmeRegistrationResponse;
+import com.toqqa.service.AgentService;
+import com.toqqa.service.RegistrationService;
+import com.toqqa.service.SmeService;
+import com.toqqa.service.UserService;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
