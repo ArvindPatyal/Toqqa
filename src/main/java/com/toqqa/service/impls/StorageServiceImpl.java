@@ -36,7 +36,7 @@ public class StorageServiceImpl implements StorageService {
 	public Future<String> uploadFileAsync(MultipartFile file, String userId, String dir) {
 		log.info("Inside file upload async");
 		File fileObj = convertMultiPartFileToFile(file);
-		String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
+		String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
 		s3Client.putObject(new PutObjectRequest(bucketName+"/"+userId+"/"+dir, fileName, fileObj));
 		fileObj.delete();
 		return new AsyncResult<String>(fileName);

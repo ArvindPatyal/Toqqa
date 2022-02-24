@@ -1,6 +1,7 @@
 package com.toqqa.bo;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.toqqa.domain.Sme;
@@ -31,7 +32,8 @@ public class SmeBo {
 	private Double deliveryCharges;
 	private Boolean isRegisterWithGovt;
 	private Double deliveryRadius;
-	private Long timeOfDelivery;
+	private Date startTimeOfDelivery;
+	private Date endTimeOfDelivery;
 	private String regDoc;
 	private String idProof;
 	private String userId;
@@ -50,7 +52,7 @@ public class SmeBo {
 		this.deliveryCharges = sme.getDeliveryCharges();
 		this.isRegisterWithGovt = sme.getIsRegisterWithGovt();
 		this.deliveryRadius = sme.getDeliveryRadius();
-		this.timeOfDelivery = sme.getTimeOfDelivery();
+		this.startTimeOfDelivery = sme.getStartTimeOfDelivery();
 		this.regDoc = sme.getRegDoc();
 		this.idProof = sme.getIdProof();
 		this.businessAddress = sme.getBusinessAddress();

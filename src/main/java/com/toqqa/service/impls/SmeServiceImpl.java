@@ -1,6 +1,7 @@
 package com.toqqa.service.impls;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -63,7 +64,10 @@ public class SmeServiceImpl implements SmeService {
 			sme.setCity(smeRegistration.getCity());
 			sme.setIsDeliverToCustomer(smeRegistration.getDeliverToCustomer());
 			sme.setIsRegisterWithGovt(smeRegistration.getIsRegisteredWithGovt());
-			sme.setTimeOfDelivery(smeRegistration.getTimeOfDelivery());
+			if(smeRegistration.getStartTimeOfDelivery()!=null&&smeRegistration.getEndTimeOfDelivery()!=null) {
+				sme.setStartTimeOfDelivery(new Date(smeRegistration.getStartTimeOfDelivery()));
+				sme.setEndTimeOfDelivery(new Date(smeRegistration.getEndTimeOfDelivery()));
+			}
 			sme.setUserId(userId);
 
 			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeRegistration.getBusinessCategory()));
@@ -78,9 +82,15 @@ public class SmeServiceImpl implements SmeService {
 
 			// TODO upload functionality
 			try {
-				sme.setIdProof(this.storageService.uploadFileAsync(smeRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
-				sme.setBusinessLogo(this.storageService.uploadFileAsync(smeRegistration.getBusinessLogo(), userId, FolderConstants.LOGO.getValue()).get());
-				sme.setRegDoc(this.storageService.uploadFileAsync(smeRegistration.getRegDoc(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				if(smeRegistration.getIdProof()!=null&&!smeRegistration.getIdProof().isEmpty()) {
+					sme.setIdProof(this.storageService.uploadFileAsync(smeRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				}
+				if(smeRegistration.getBusinessLogo()!=null&&!smeRegistration.getBusinessLogo().isEmpty()) {
+					sme.setBusinessLogo(this.storageService.uploadFileAsync(smeRegistration.getBusinessLogo(), userId, FolderConstants.LOGO.getValue()).get());
+				}
+				if(smeRegistration.getRegDoc()!=null&&!smeRegistration.getRegDoc().isEmpty()) {
+					sme.setRegDoc(this.storageService.uploadFileAsync(smeRegistration.getRegDoc(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				}
 			} catch (InterruptedException | ExecutionException  e) {
 				e.printStackTrace();
 			} 					

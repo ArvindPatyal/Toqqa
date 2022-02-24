@@ -1,5 +1,6 @@
 package com.toqqa.domain;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -42,7 +43,8 @@ public class Sme {
 	private Double deliveryRadius;
 	private Double deliveryCharges;
 	private Boolean isRegisterWithGovt;
-	private Long timeOfDelivery;
+	private Date startTimeOfDelivery;
+	private Date endTimeOfDelivery;
 	private String regDoc;
 	private String idProof;
 	private String userId;

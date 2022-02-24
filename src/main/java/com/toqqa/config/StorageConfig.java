@@ -13,10 +13,10 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 @Configuration
 public class StorageConfig {
 
-	@Value("${access-key}")
+	@Value("${accessKey}")
 	private String accessKey;
 
-	@Value("${secret-key}")
+	@Value("${secretKey}")
 	private String secretKey;
 
 	@Value("${region}")

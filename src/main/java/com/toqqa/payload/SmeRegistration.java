@@ -54,12 +54,14 @@ public class SmeRegistration {
 	@NotNull
 	private Double deliveryCharge;
 
-	private Long timeOfDelivery;
+	private Long startTimeOfDelivery;
+
+	private Long endTimeOfDelivery;
 
 	@NotNull
 	private Boolean isRegisteredWithGovt;
 
-	@NotNull
+//	@NotNull
 	private MultipartFile regDoc;
 
 	@NotNull
