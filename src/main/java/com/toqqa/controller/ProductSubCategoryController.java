@@ -15,7 +15,9 @@ import com.toqqa.service.ProductSubCategoryService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/product")
 public class ProductSubCategoryController {
@@ -28,6 +30,7 @@ public class ProductSubCategoryController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/productsubcategories/{id}")
 	public ListResponse<ProductSubCategoryBo> getCategoryList(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller get category list");
 		return new ListResponse<ProductSubCategoryBo>(this.productSubCategoryService.getProductSubCategories(id),
 				"success");
 	}

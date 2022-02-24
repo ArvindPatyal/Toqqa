@@ -19,7 +19,9 @@ import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("api/registration")
 public class RegistrationController {
@@ -35,6 +37,7 @@ public class RegistrationController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/customer")
 	public Response<?> addUser(@RequestBody @Valid UserSignUp userSignUp) {
+		log.info("Inside controller add user");
 		return new Response<>(this.userService.addUser(userSignUp), "success");
 	}
 
@@ -43,6 +46,7 @@ public class RegistrationController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/sme")
 	public Response<?> smeRegistration(@ModelAttribute @Valid SmeRegistrationPayload smeRegistration) {
+		log.info("Inside controller sme registration");
 		return this.registrationService.registerSme(smeRegistration);
 	}
 
@@ -51,6 +55,7 @@ public class RegistrationController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/agent")
 	public Response<?> agentRegistration(@ModelAttribute @Valid AgentRegistrationPayload agentRegistration) {
+		log.info("Inside controller agent registration");
 		return this.registrationService.registerAgent(agentRegistration);
 	}
 }

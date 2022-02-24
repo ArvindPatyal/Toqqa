@@ -30,28 +30,30 @@ public class StorageServiceImpl implements StorageService {
 
 	@Autowired
 	private AmazonS3 s3Client;
-	
+
 	@Override
 	@Async
 	public Future<String> uploadFileAsync(MultipartFile file, String userId, String dir) {
 		log.info("Inside file upload async");
 		File fileObj = convertMultiPartFileToFile(file);
 		String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
-		s3Client.putObject(new PutObjectRequest(bucketName+"/"+userId+"/"+dir, fileName, fileObj));
+		s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, fileObj));
 		fileObj.delete();
 		return new AsyncResult<String>(fileName);
 	}
-	
+
 	@Async
-	public String uploadFile(MultipartFile file,String userId,String dir) {
+	public String uploadFile(MultipartFile file, String userId, String dir) {
+		log.info("Inside file upload");
 		File fileObj = convertMultiPartFileToFile(file);
 		String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
-		s3Client.putObject(new PutObjectRequest(bucketName+"/"+userId+"/"+dir, fileName, fileObj));
+		s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, fileObj));
 		fileObj.delete();
 		return fileName;
 	}
 
 	public byte[] downloadFile(String fileName) {
+		log.info("Inside file download");
 		S3Object s3Object = s3Client.getObject(bucketName, fileName);
 		S3ObjectInputStream inputStream = s3Object.getObjectContent();
 		try {
@@ -65,11 +67,14 @@ public class StorageServiceImpl implements StorageService {
 	}
 
 	public String deleteFile(String fileName) {
+		log.info("Inside delete file");
 		s3Client.deleteObject(bucketName, fileName);
 		return fileName + "removed...";
 	}
 
 	public File convertMultiPartFileToFile(MultipartFile file) {
+
+		log.info("Inside Convert multipart to file");
 		File convertedFile = new File(file.getOriginalFilename());
 
 		try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
@@ -142,5 +147,4 @@ public class StorageServiceImpl implements StorageService {
 		return "";
 	}
 
-	
 }

@@ -26,7 +26,10 @@ import com.toqqa.repository.UserRepository;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class SmeServiceImpl implements SmeService {
 
 	@Autowired
@@ -43,13 +46,14 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	private RoleRepository roleRepo;
-	
+
 	@Autowired
 	private StorageService storageService;
-	
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
+		log.info("Inside sme registration");
 		if (!alreadySme(userId)) {
 			Sme sme = new Sme();
 			sme.setNameOfBusiness(smeRegistration.getNameOfBusiness());
@@ -64,7 +68,7 @@ public class SmeServiceImpl implements SmeService {
 			sme.setCity(smeRegistration.getCity());
 			sme.setIsDeliverToCustomer(smeRegistration.getDeliverToCustomer());
 			sme.setIsRegisterWithGovt(smeRegistration.getIsRegisteredWithGovt());
-			if(smeRegistration.getStartTimeOfDelivery()!=null&&smeRegistration.getEndTimeOfDelivery()!=null) {
+			if (smeRegistration.getStartTimeOfDelivery() != null && smeRegistration.getEndTimeOfDelivery() != null) {
 				sme.setStartTimeOfDelivery(new Date(smeRegistration.getStartTimeOfDelivery()));
 				sme.setEndTimeOfDelivery(new Date(smeRegistration.getEndTimeOfDelivery()));
 			}
@@ -82,18 +86,24 @@ public class SmeServiceImpl implements SmeService {
 
 			// TODO upload functionality
 			try {
-				if(smeRegistration.getIdProof()!=null&&!smeRegistration.getIdProof().isEmpty()) {
-					sme.setIdProof(this.storageService.uploadFileAsync(smeRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				if (smeRegistration.getIdProof() != null && !smeRegistration.getIdProof().isEmpty()) {
+					sme.setIdProof(this.storageService
+							.uploadFileAsync(smeRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue())
+							.get());
 				}
-				if(smeRegistration.getBusinessLogo()!=null&&!smeRegistration.getBusinessLogo().isEmpty()) {
-					sme.setBusinessLogo(this.storageService.uploadFileAsync(smeRegistration.getBusinessLogo(), userId, FolderConstants.LOGO.getValue()).get());
+				if (smeRegistration.getBusinessLogo() != null && !smeRegistration.getBusinessLogo().isEmpty()) {
+					sme.setBusinessLogo(this.storageService
+							.uploadFileAsync(smeRegistration.getBusinessLogo(), userId, FolderConstants.LOGO.getValue())
+							.get());
 				}
-				if(smeRegistration.getRegDoc()!=null&&!smeRegistration.getRegDoc().isEmpty()) {
-					sme.setRegDoc(this.storageService.uploadFileAsync(smeRegistration.getRegDoc(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				if (smeRegistration.getRegDoc() != null && !smeRegistration.getRegDoc().isEmpty()) {
+					sme.setRegDoc(this.storageService
+							.uploadFileAsync(smeRegistration.getRegDoc(), userId, FolderConstants.DOCUMENTS.getValue())
+							.get());
 				}
-			} catch (InterruptedException | ExecutionException  e) {
+			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
-			} 					
+			}
 
 			sme = this.smeRepo.saveAndFlush(sme);
 			return new SmeBo(sme);
@@ -102,6 +112,7 @@ public class SmeServiceImpl implements SmeService {
 	}
 
 	private Boolean alreadySme(String id) {
+		log.info("Inside already sme");
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}

@@ -19,7 +19,9 @@ import com.toqqa.service.ProductService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/product")
 public class ProductController {
@@ -32,7 +34,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/addProduct")
 	public Response<ProductBo> addProduct(@ModelAttribute @Valid AddProduct addProduct) {
-
+		log.info("Inside controller add product");
 		return new Response<ProductBo>(this.productService.addProduct(addProduct), "success");
 	}
 
@@ -41,6 +43,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/updateProduct")
 	public Response<ProductBo> updateProduct(@ModelAttribute @Valid UpdateProduct updateProduct) {
+		log.info("Inside controller update product");
 		return new Response<ProductBo>(this.productService.updateProduct(updateProduct), "success");
 	}
 
@@ -49,6 +52,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchProduct/{id}")
 	public Response<ProductBo> fetchProduct(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller fetch product");
 		return new Response<ProductBo>(this.productService.fetchProduct(id), "success");
 	}
 

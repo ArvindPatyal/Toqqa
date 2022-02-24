@@ -12,19 +12,22 @@ import com.toqqa.service.ProductCategoryService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/product")
 public class ProductCategoryController {
-	
+
 	@Autowired
 	private ProductCategoryService productCategoryService;
-	
+
 	@ApiOperation(value = "Returns Category List")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@GetMapping("/categories")
 	public ListResponse<ProductCategoryBo> getProductCategoryList() {
+		log.info("Inside controller get product category list");
 		return new ListResponse<ProductCategoryBo>(this.productCategoryService.getProductCategories(), "success");
 	}
 
