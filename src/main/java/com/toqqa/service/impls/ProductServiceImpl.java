@@ -58,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		try {
+			if(product.getImage()!=null&&!product.getImage().isEmpty())
 			product.setImage(this.storageService.uploadFileAsync(addProduct.getImage(), product.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get());
 		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
@@ -77,7 +78,13 @@ public class ProductServiceImpl implements ProductService {
 		product.setProductName(updateProduct.getProductName());
 		product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
 		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
-		product.setImage("updateProduct.getImage()");
+		product.setUser(authenticationService.currentUser());
+		try {
+			product.setImage(this.storageService.uploadFileAsync(updateProduct.getImage(), product.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get());
+		} catch (InterruptedException | ExecutionException e) {
+			
+			e.printStackTrace();
+		} 
 		product.setDescription(updateProduct.getDescription());
 		product.setDetails(updateProduct.getDetails());
 		product.setUnitsInStock(updateProduct.getUnitsInStock());
