@@ -33,10 +33,14 @@ import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
 	@Autowired
@@ -56,6 +60,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public UserBo addUser(UserSignUp userSignUp) {
+		log.info("Inside add user");
 		if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
 			throw new UserAlreadyExists("user already exists");
 		}
@@ -80,6 +85,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Boolean isUserExists(String email, String phone) {
+		log.info("Inside is user exists");
 		User user = null;
 		if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
 			if (this.helper.notNullAndBlank(email)) {
@@ -95,11 +101,13 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User findByEmailOrPhone(String username) {
+		log.info("Inside find by email or phone");
 		return this.userRepository.findByEmailOrPhone(username, username);
 	}// find user by emailid or phone
 
 	@Override
 	public LoginResponse signIn(LoginRequest bo) {
+		log.info("Inside SignIn");
 		try {
 			Authentication authentication = this.manager
 					.authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
@@ -118,6 +126,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserBo fetchUser(String id) {
+		log.info("Inside fetch User");
 		Optional<User> user = this.userRepository.findById(id);
 		if (user.isPresent()) {
 			return new UserBo(user.get());
@@ -127,6 +136,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDetails loadUserByUsername(String userName) {
+		log.info("Inside load user by username");
 		User user = userRepository.findByEmailOrPhone(userName, userName);
 		if (user != null && !user.getIsDeleted()) {
 			List<GrantedAuthority> authorities = user.getRoles().stream()

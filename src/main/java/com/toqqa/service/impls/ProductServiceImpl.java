@@ -19,7 +19,10 @@ import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService {
 
 	@Autowired
@@ -33,19 +36,18 @@ public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	private AuthenticationService authenticationService;
-	
+
 	@Autowired
 	private StorageService storageService;
 
-
 	@Override
 	public ProductBo addProduct(AddProduct addProduct) {
-
+		log.info("Inside Add Product");
 		Product product = new Product();
 
 		product.setProductName(addProduct.getProductName());
 		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
-		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));		
+		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
 		product.setDescription(addProduct.getDescription());
 		product.setDetails(addProduct.getDetails());
 		product.setUnitsInStock(addProduct.getUnitsInStock());
@@ -58,12 +60,13 @@ public class ProductServiceImpl implements ProductService {
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		try {
-			if(product.getImage()!=null&&!product.getImage().isEmpty())
-			product.setImage(this.storageService.uploadFileAsync(addProduct.getImage(), product.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get());
+			if (product.getImage() != null && !product.getImage().isEmpty())
+				product.setImage(this.storageService.uploadFileAsync(addProduct.getImage(), product.getUser().getId(),
+						FolderConstants.PRODUCTS.getValue()).get());
 		} catch (InterruptedException | ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
 
 		product = this.productRepo.saveAndFlush(product);
 
@@ -72,40 +75,42 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ProductBo updateProduct(UpdateProduct updateProduct) {
-
+		log.info("Inside update Product");
 		Product product = this.productRepo.findById(updateProduct.getProductId()).get();
-		if(product!=null) {
-		product.setProductName(updateProduct.getProductName());
-		product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
-		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
-		product.setUser(authenticationService.currentUser());
-		try {
-			product.setImage(this.storageService.uploadFileAsync(updateProduct.getImage(), product.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get());
-		} catch (InterruptedException | ExecutionException e) {
-			
-			e.printStackTrace();
-		} 
-		product.setDescription(updateProduct.getDescription());
-		product.setDetails(updateProduct.getDetails());
-		product.setUnitsInStock(updateProduct.getUnitsInStock());
-		product.setPricePerUnit(updateProduct.getPricePerUnit());
-		product.setDiscount(updateProduct.getDiscount());
-		product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
-		product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
-		product.setExpiryDate(updateProduct.getExpiryDate());
-		product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
-		product.setManufacturerName(updateProduct.getManufacturerName());
+		if (product != null) {
+			product.setProductName(updateProduct.getProductName());
+			product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
+			product.setProductSubCategories(
+					this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
+			product.setUser(authenticationService.currentUser());
+			try {
+				product.setImage(this.storageService.uploadFileAsync(updateProduct.getImage(),
+						product.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get());
+			} catch (InterruptedException | ExecutionException e) {
 
-		product = this.productRepo.saveAndFlush(product);
+				e.printStackTrace();
+			}
+			product.setDescription(updateProduct.getDescription());
+			product.setDetails(updateProduct.getDetails());
+			product.setUnitsInStock(updateProduct.getUnitsInStock());
+			product.setPricePerUnit(updateProduct.getPricePerUnit());
+			product.setDiscount(updateProduct.getDiscount());
+			product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
+			product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
+			product.setExpiryDate(updateProduct.getExpiryDate());
+			product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
+			product.setManufacturerName(updateProduct.getManufacturerName());
 
-		return new ProductBo(product);
+			product = this.productRepo.saveAndFlush(product);
+
+			return new ProductBo(product);
 		}
 		throw new BadRequestException("Invalid Product Id");
 	}
 
 	@Override
 	public ProductBo fetchProduct(String id) {
-
+		log.info("Inside fetch product");
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
 			return new ProductBo(product.get());

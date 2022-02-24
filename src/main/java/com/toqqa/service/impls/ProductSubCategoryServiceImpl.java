@@ -11,7 +11,10 @@ import com.toqqa.domain.ProductSubCategory;
 import com.toqqa.repository.ProductSubCategoryRepository;
 import com.toqqa.service.ProductSubCategoryService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ProductSubCategoryServiceImpl implements ProductSubCategoryService {
 
 	@Autowired
@@ -19,6 +22,7 @@ public class ProductSubCategoryServiceImpl implements ProductSubCategoryService 
 
 	@Override
 	public List<ProductSubCategoryBo> getProductSubCategories(String productcategoryId) {
+		log.info("Inside get product sub categories");
 		List<ProductSubCategory> productSubCategories = this.productSubCategoryRepository
 				.findByProductCategory_id(productcategoryId);
 		List<ProductSubCategoryBo> productSubCategoryBos = new ArrayList<>();

@@ -19,7 +19,10 @@ import com.toqqa.service.RegistrationService;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.UserService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class RegistrationServiceImpl implements RegistrationService {
 	@Autowired
 	private UserService userService;
@@ -31,6 +34,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Response<?> registerAgent(AgentRegistrationPayload payload) {
+		log.info("Inside register agent");
 		if (userService.isUserExists(payload.getUserSignUp().getEmail(), payload.getUserSignUp().getPhone())) {
 			throw new UserAlreadyExists("user already exists");
 		}
@@ -44,6 +48,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 	@Override
 	public Response<?> registerSme(SmeRegistrationPayload payload) {
+		log.info("Inside register sme");
 		if (userService.isUserExists(payload.getUserSignUp().getEmail(), payload.getUserSignUp().getPhone())) {
 			throw new UserAlreadyExists("user already exists");
 		}

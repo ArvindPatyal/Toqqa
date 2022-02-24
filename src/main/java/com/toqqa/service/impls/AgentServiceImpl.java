@@ -23,7 +23,10 @@ import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AgentService;
 import com.toqqa.service.StorageService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class AgentServiceImpl implements AgentService {
 
 	@Autowired
@@ -41,6 +44,7 @@ public class AgentServiceImpl implements AgentService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId) {
+		log.info("Inside agent registration");
 		if (!this.alreadyAgent(userId)) {
 			Agent agent = new Agent();
 
@@ -67,8 +71,8 @@ public class AgentServiceImpl implements AgentService {
 	}
 
 	private Boolean alreadyAgent(String id) {
+		log.info("Inside  already agent");
 		User user = this.userRepo.findById(id).get();
-		List<Role> roles = user.getRoles();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.AGENT.getValue()));
 	}
 }

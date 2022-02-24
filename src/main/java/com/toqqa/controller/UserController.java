@@ -16,7 +16,9 @@ import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("api/user")
 public class UserController {
@@ -32,6 +34,7 @@ public class UserController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchUser/{id}")
 	public Response<UserBo> fetchUser(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller fetch user");
 		return new Response<UserBo>(this.userService.fetchUser(id), "success");
 	}
 
@@ -40,6 +43,7 @@ public class UserController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/currentUser")
 	public Response<UserBo> currentUser() {
+		log.info("Inside controller current user");
 		return new Response<UserBo>(new UserBo(this.authenticationService.currentUser()), "success");
 	}
 }
