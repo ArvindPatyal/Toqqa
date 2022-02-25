@@ -53,6 +53,7 @@ public class SmeBo {
 		this.isRegisterWithGovt = sme.getIsRegisterWithGovt();
 		this.deliveryRadius = sme.getDeliveryRadius();
 		this.startTimeOfDelivery = sme.getStartTimeOfDelivery();
+		this.endTimeOfDelivery=sme.getEndTimeOfDelivery();
 		this.regDoc = sme.getRegDoc();
 		this.idProof = sme.getIdProof();
 		this.businessAddress = sme.getBusinessAddress();

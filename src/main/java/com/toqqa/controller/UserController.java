@@ -5,11 +5,13 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.UserBo;
 import com.toqqa.payload.Response;
+import com.toqqa.payload.UpdateUser;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.UserService;
 
@@ -45,5 +47,14 @@ public class UserController {
 	public Response<UserBo> currentUser() {
 		log.info("Inside controller current user");
 		return new Response<UserBo>(new UserBo(this.authenticationService.currentUser()), "success");
+	}
+
+	@ApiOperation(value = "Update User")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@PutMapping("/updateuser")
+	public Response<UserBo> updateUser(UpdateUser updateUser) {
+		log.info("Inside controller update user");
+		return new Response<UserBo>(this.userService.updateUser(updateUser), "success");
 	}
 }

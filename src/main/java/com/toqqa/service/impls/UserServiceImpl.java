@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.toqqa.payload.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.toqqa.bo.UserBo;
 import com.toqqa.config.JWTConfig;
@@ -28,6 +29,8 @@ import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.JwtAuthenticationResponse;
 import com.toqqa.payload.LoginRequest;
+import com.toqqa.payload.LoginResponse;
+import com.toqqa.payload.UpdateUser;
 import com.toqqa.payload.UserSignUp;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
@@ -35,9 +38,6 @@ import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -89,12 +89,12 @@ public class UserServiceImpl implements UserService {
 		User user = null;
 		if (this.helper.notNullAndBlank(email) && this.helper.notNullAndBlank(phone)) {
 			user = this.userRepository.findByEmail(email);
-			if(user==null) {
+			if (user == null) {
 				user = this.userRepository.findByPhone(phone);
 			}
 			return user != null;
 
-		}else {
+		} else {
 			user = this.userRepository.findByPhone(phone);
 			return user != null;
 		}
@@ -150,4 +150,25 @@ public class UserServiceImpl implements UserService {
 		}
 
 	}// verify user by email/username
+
+	@Override
+	public UserBo updateUser(UpdateUser updateUser) {
+
+		User user = this.userRepository.findById(updateUser.getUserId()).get();
+		user.setCity(updateUser.getCity());
+		user.setCountry(updateUser.getCountry());
+		user.setAgentId(updateUser.getAgentId());
+		user.setIsDeleted(false);
+		user.setEmail(this.helper.notNullAndBlank(updateUser.getEmail()) ? updateUser.getEmail() : null);
+		user.setFirstName(updateUser.getFirstName());
+		user.setPhone(this.helper.notNullAndBlank(updateUser.getPhone()) ? updateUser.getPhone() : null);
+		user.setLastName(updateUser.getLastName());
+		user.setPostCode(updateUser.getPostCode());
+		user.setState(updateUser.getState());
+		user.setAddress(updateUser.getAddress());
+		user.setPassword(new BCryptPasswordEncoder().encode(updateUser.getPassword()));
+		user = this.userRepository.saveAndFlush(user);
+		return new UserBo(user);
+
+	}
 }
