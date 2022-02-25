@@ -6,6 +6,8 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
@@ -31,10 +33,12 @@ public class Sme {
 	private String country;
 	private String businessLogo;
 
-	@ManyToMany(mappedBy = "smes")
+	@ManyToMany
+	@JoinTable(name = "category_sme", joinColumns = @JoinColumn(name = "sme_id"), inverseJoinColumns = @JoinColumn(name = "cat_id"))
 	private List<Category> businessCatagory;
 
-	@ManyToMany(mappedBy = "smes")
+	@ManyToMany
+	@JoinTable(name = "sub_category_sme", joinColumns = @JoinColumn(name = "sme_id"), inverseJoinColumns = @JoinColumn(name = "subCat_id"))
 	private List<SubCategory> businessSubCatagory;
 	private String description;
 	private Boolean isDeleted;

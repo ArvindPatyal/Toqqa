@@ -5,8 +5,6 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -31,7 +29,6 @@ public class Category {
 	@OneToMany(mappedBy = "category")
 	private List<SubCategory> subCategories;
 
-	@ManyToMany
-	@JoinTable(name = "category_sme", joinColumns = @JoinColumn(name = "cat_id"), inverseJoinColumns = @JoinColumn(name = "sme_id"))
+	@ManyToMany(mappedBy = "businessCatagory")
 	private List<Sme> smes;
 }

@@ -3,6 +3,7 @@ package com.toqqa.service.impls;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.SmeRegistration;
+import com.toqqa.payload.SmeUpdate;
 import com.toqqa.repository.CategoryRepository;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.SmeRepository;
@@ -115,6 +117,66 @@ public class SmeServiceImpl implements SmeService {
 		log.info("Inside already sme");
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
+	}
+
+	@Override
+	public SmeBo smeUpdate(SmeUpdate smeUpdate) {
+		log.info("Inside sme update");
+
+		Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
+
+		sme.setNameOfBusiness(smeUpdate.getNameOfBusiness());
+		sme.setBusinessAddress(smeUpdate.getBusinessAddress());
+		sme.setState(smeUpdate.getState());
+		sme.setCountry(smeUpdate.getCountry());
+		sme.setTypeOfBusiness(smeUpdate.getTypeOfBusiness());
+		sme.setDeliveryRadius(smeUpdate.getDeliveryRadius());
+		sme.setDeliveryCharges(smeUpdate.getDeliveryCharge());
+		sme.setIsDeleted(false);
+		sme.setDescription(smeUpdate.getDescription());
+		sme.setCity(smeUpdate.getCity());
+		sme.setIsDeliverToCustomer(smeUpdate.getDeliverToCustomer());
+		sme.setIsRegisterWithGovt(smeUpdate.getIsRegisteredWithGovt());
+		if (smeUpdate.getStartTimeOfDelivery() != null && smeUpdate.getEndTimeOfDelivery() != null) {
+			sme.setStartTimeOfDelivery(new Date(smeUpdate.getStartTimeOfDelivery()));
+			sme.setEndTimeOfDelivery(new Date(smeUpdate.getEndTimeOfDelivery()));
+		}
+		sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
+		sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
+
+		try {
+			if (smeUpdate.getIdProof() != null && !smeUpdate.getIdProof().isEmpty()) {
+				sme.setIdProof(this.storageService
+						.uploadFileAsync(smeUpdate.getIdProof(), sme.getUserId(), FolderConstants.DOCUMENTS.getValue())
+						.get());
+			}
+			if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
+				sme.setBusinessLogo(this.storageService
+						.uploadFileAsync(smeUpdate.getBusinessLogo(), sme.getUserId(), FolderConstants.LOGO.getValue())
+						.get());
+			}
+			if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
+				sme.setRegDoc(this.storageService
+						.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(), FolderConstants.DOCUMENTS.getValue())
+						.get());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+
+		sme = this.smeRepo.saveAndFlush(sme);
+		return new SmeBo(sme);
+
+	}
+
+	@Override
+	public SmeBo fetchSme(String id) {
+		log.info("Inside fetch Agent");
+		Optional<Sme> sme = this.smeRepo.findById(id);
+		if (sme.isPresent()) {
+			return new SmeBo(sme.get());
+		}
+		throw new BadRequestException("no user found with id= " + id);
 	}
 
 }

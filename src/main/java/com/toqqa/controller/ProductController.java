@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +42,7 @@ public class ProductController {
 	@ApiOperation(value = "Update Product")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
-	@PostMapping("/updateProduct")
+	@PutMapping("/updateProduct")
 	public Response<ProductBo> updateProduct(@ModelAttribute @Valid UpdateProduct updateProduct) {
 		log.info("Inside controller update product");
 		return new Response<ProductBo>(this.productService.updateProduct(updateProduct), "success");

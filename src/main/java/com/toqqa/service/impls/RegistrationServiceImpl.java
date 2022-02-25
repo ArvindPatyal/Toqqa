@@ -30,6 +30,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 	private AgentService agentService;
 	@Autowired
 	private SmeService smeService;
+	
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)

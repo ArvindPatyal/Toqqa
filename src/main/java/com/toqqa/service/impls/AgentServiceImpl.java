@@ -2,6 +2,7 @@ package com.toqqa.service.impls;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.toqqa.domain.Role;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.AgentRegistration;
+import com.toqqa.payload.AgentUpdate;
 import com.toqqa.repository.AgentRepository;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
@@ -37,7 +39,7 @@ public class AgentServiceImpl implements AgentService {
 
 	@Autowired
 	private RoleRepository roleRepo;
-	
+
 	@Autowired
 	private StorageService storageService;
 
@@ -48,7 +50,6 @@ public class AgentServiceImpl implements AgentService {
 		if (!this.alreadyAgent(userId)) {
 			Agent agent = new Agent();
 
-			
 			agent.setUserId(userId);
 			User user = this.userRepo.findById(userId).get();
 			List<Role> roles = new ArrayList<>();
@@ -56,13 +57,16 @@ public class AgentServiceImpl implements AgentService {
 			roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
 			user.setRoles(roles);
 			try {
-				agent.setIdProof(this.storageService.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
-				agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(), userId, FolderConstants.DOCUMENTS.getValue()).get());
+				agent.setIdProof(this.storageService
+						.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue())
+						.get());
+				agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(),
+						userId, FolderConstants.DOCUMENTS.getValue()).get());
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} 
-			
+			}
+
 			this.userRepo.saveAndFlush(user);
 			agent = this.agentRepo.saveAndFlush(agent);
 			return new AgentBo(agent);
@@ -74,5 +78,36 @@ public class AgentServiceImpl implements AgentService {
 		log.info("Inside  already agent");
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.AGENT.getValue()));
+	}
+
+	@Override
+	public AgentBo agentUpdate(AgentUpdate payload) {
+		log.info("Inside  agent Update");
+		Agent agent = this.agentRepo.findById(payload.getAgentId()).get();
+
+		try {
+			agent.setAgentDocuments(this.storageService.uploadFileAsync(payload.getAgentDocuments(), agent.getUserId(),
+					FolderConstants.DOCUMENTS.getValue()).get());
+			agent.setIdProof(this.storageService
+					.uploadFileAsync(payload.getIdProof(), agent.getUserId(), FolderConstants.DOCUMENTS.getValue())
+					.get());
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		agent = this.agentRepo.saveAndFlush(agent);
+		return new AgentBo(agent);
+
+	}
+
+	@Override
+	public AgentBo fetchAgent(String id) {
+		log.info("Inside fetch Agent");
+		Optional<Agent> agent = this.agentRepo.findById(id);
+		if (agent.isPresent()) {
+			return new AgentBo(agent.get());
+		}
+		throw new BadRequestException("no user found with id= " + id);
 	}
 }
