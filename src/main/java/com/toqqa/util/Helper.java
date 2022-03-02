@@ -9,6 +9,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,5 +133,11 @@ public class Helper {
 		}
 
 		return date;
+	}
+
+	public boolean isValidNumber(String number){
+		Pattern pattern = Pattern.compile("^\\d{10}$");
+		Matcher matcher = pattern.matcher(number);
+		return matcher.matches();
 	}
 }

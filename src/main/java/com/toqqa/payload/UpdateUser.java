@@ -1,5 +1,6 @@
 package com.toqqa.payload;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -16,6 +17,7 @@ public class UpdateUser {
 	@NotBlank
 	private String lastName;
 
+	@Email
 	private String email;
 
 	private String phone;

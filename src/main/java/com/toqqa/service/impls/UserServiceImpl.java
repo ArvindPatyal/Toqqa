@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -69,9 +70,19 @@ public class UserServiceImpl implements UserService {
 		user.setCountry(userSignUp.getCountry());
 		user.setAgentId(userSignUp.getAgentId());
 		user.setIsDeleted(false);
-		user.setEmail(this.helper.notNullAndBlank(userSignUp.getEmail()) ? userSignUp.getEmail() : null);
+		if(this.helper.notNullAndBlank(userSignUp.getEmail())){
+			if(!EmailValidator.getInstance().isValid(userSignUp.getEmail())){
+				throw new BadRequestException("invalid email value : "+userSignUp.getEmail());
+			}
+			user.setEmail(userSignUp.getEmail());
+		}
 		user.setFirstName(userSignUp.getFirstName());
-		user.setPhone(this.helper.notNullAndBlank(userSignUp.getPhone()) ? userSignUp.getPhone() : null);
+		if(this.helper.notNullAndBlank(userSignUp.getPhone())) {
+			if(!this.helper.isValidNumber(userSignUp.getPhone())){
+				throw new BadRequestException("invalid phone number :"+userSignUp.getPhone());
+			}
+			user.setPhone(userSignUp.getPhone());
+		}
 		user.setLastName(userSignUp.getLastName());
 		user.setPostCode(userSignUp.getPostCode());
 		user.setState(userSignUp.getState());
@@ -87,7 +98,7 @@ public class UserServiceImpl implements UserService {
 	public Boolean isUserExists(String email, String phone) {
 		log.info("Inside is user exists");
 		User user = null;
-		if (this.helper.notNullAndBlank(email) && this.helper.notNullAndBlank(phone)) {
+		if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
 			user = this.userRepository.findByEmail(email);
 			if (user == null) {
 				user = this.userRepository.findByPhone(phone);
