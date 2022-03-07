@@ -8,11 +8,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.payload.AddProduct;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.UpdateProduct;
 import com.toqqa.service.ProductService;
@@ -55,6 +58,17 @@ public class ProductController {
 	public Response<ProductBo> fetchProduct(@PathVariable("id") @Valid String id) {
 		log.info("Inside controller fetch product");
 		return new Response<ProductBo>(this.productService.fetchProduct(id), "success");
+	}
+
+	@ApiOperation(value = "fetch Product List")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PostMapping("/fetchProductList")
+	public Response<ListResponseWithCount<ProductBo>> fetchProductList(@RequestBody @Valid PaginationBo paginationbo) {
+		log.info("Inside controller fetch Product List");
+		return new Response<ListResponseWithCount<ProductBo>>(this.productService.fetchProductList(paginationbo),
+				"success");
+
 	}
 
 }
