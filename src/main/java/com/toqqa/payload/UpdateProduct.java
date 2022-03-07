@@ -25,7 +25,7 @@ public class UpdateProduct {
 	private List<String> productSubCategory;
 
 	@NotNull
-	private MultipartFile image;
+	private List<MultipartFile> images;
 
 	@NotNull
 	private String description;

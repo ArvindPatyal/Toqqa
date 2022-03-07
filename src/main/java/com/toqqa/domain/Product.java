@@ -30,8 +30,6 @@ public class Product {
 
 	private String productName;
 
-	private String image;
-
 	private String description;
 
 	private String details;
@@ -67,7 +65,11 @@ public class Product {
 	private List<ProductCategory> productCategories;
 
 	@ManyToMany
-	@JoinTable(name = "product_subcategories", inverseJoinColumns  = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
+	@JoinTable(name = "product_subcategories", inverseJoinColumns = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
 	private List<ProductSubCategory> productSubCategories;
+
+	@ManyToMany
+	@JoinTable(name = "product_attachments", inverseJoinColumns = @JoinColumn(name = "attachment_id"), joinColumns = @JoinColumn(name = "product_id"))
+	private List<Attachment> attachments;
 
 }

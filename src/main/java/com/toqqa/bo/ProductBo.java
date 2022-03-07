@@ -19,7 +19,7 @@ public class ProductBo {
 
 	private Map<String, String> productSubCategories = new HashMap<>();
 
-	private String image;
+	private Map<String, String> images=new HashMap<String, String>();
 
 	private String description;
 
@@ -50,7 +50,6 @@ public class ProductBo {
 	public ProductBo(Product product) {
 		this.id = product.getId();
 		this.productName = product.getProductName();
-		this.image = product.getImage();
 		this.description = product.getDescription();
 		this.details = product.getDetails();
 		this.unitsInStock = product.getUnitsInStock();
@@ -66,6 +65,9 @@ public class ProductBo {
 		});
 		product.getProductSubCategories().forEach(pc -> {
 			this.productSubCategories.put(pc.getId(), pc.getProductSubCategory());
+		});
+		product.getAttachments().forEach(att->{
+			this.images.put(att.getId(), att.getLocation());
 		});
 	}
 

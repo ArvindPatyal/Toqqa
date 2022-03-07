@@ -20,7 +20,8 @@ public class UpdateUser {
 	@Email
 	private String email;
 
-	private String phone;
+//	
+//	private String phone;
 
 	@NotNull
 	private String address;
@@ -48,5 +49,6 @@ public class UpdateUser {
 	private String password;
 
 	@NotNull
+	@NotBlank
 	private String userId;
 }

@@ -11,4 +11,6 @@ public interface ProductService {
 	ProductBo updateProduct(UpdateProduct updateProduct);
 
 	ProductBo fetchProduct(String id);
+	
+	void deleteProduct(String id);
 }
