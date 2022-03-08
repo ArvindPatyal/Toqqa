@@ -3,18 +3,25 @@ package com.toqqa.service.impls;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.OrderItemBo;
+import com.toqqa.bo.PaginationBo;
 import com.toqqa.constants.OrderConstants;
 import com.toqqa.domain.OrderInfo;
 import com.toqqa.domain.OrderItem;
+import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderItemPayload;
 import com.toqqa.payload.OrderPayload;
 import com.toqqa.repository.OrderInfoRepository;
@@ -42,7 +49,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	private AuthenticationService authenticationService;
 	@Autowired
 	private Helper helper;
-	
+
+	@Value("${pageSize}")
+	private Integer pageSize;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -67,8 +76,8 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			OrderItem parent = new OrderItem();
 
 			parent.setPrice(item.getPrice());
-			if(!this.helper.notNullAndBlank(item.getProductId())){
-				throw new BadRequestException("invalid product id "+item.getProductId());
+			if (!this.helper.notNullAndBlank(item.getProductId())) {
+				throw new BadRequestException("invalid product id " + item.getProductId());
 			}
 			parent.setProduct(this.productRepo.findById(item.getProductId()).get());
 			parent.setQuantity(item.getQuantity());
@@ -88,4 +97,31 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		});
 		return itemBos;
 	}
+
+	@Override
+	public OrderInfoBo fetchOrderInfo(String id) {
+		log.info("Inside fetch order");
+		Optional<OrderInfo> orderInfo = this.orderInfoRepo.findById(id);
+		if (orderInfo.isPresent()) {
+			return new OrderInfoBo(orderInfo.get(), this.fetchOrderItems(orderInfo.get()));
+		}
+		throw new BadRequestException("no order found with id= " + id);
+
+	}
+
+	@Override
+	public ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationBo) {
+		User user = this.authenticationService.currentUser();
+		Page<OrderInfo> allOrders = null;
+		if (paginationBo.getByUserflag()) {
+			allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
+		} else {
+			allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+		}
+		List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
+		allOrders.forEach(orderInfo -> bos.add(new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo))));
+		return new ListResponseWithCount<OrderInfoBo>(bos, "", allOrders.getTotalElements(),
+				paginationBo.getPageNumber(), allOrders.getTotalPages());
+	}
+
 }
