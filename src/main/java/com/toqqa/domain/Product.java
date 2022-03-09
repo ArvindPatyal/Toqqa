@@ -3,6 +3,7 @@ package com.toqqa.domain;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -68,7 +69,7 @@ public class Product {
 	@JoinTable(name = "product_subcategories", inverseJoinColumns = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
 	private List<ProductSubCategory> productSubCategories;
 
-	@ManyToMany
+	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "product_attachments", inverseJoinColumns = @JoinColumn(name = "attachment_id"), joinColumns = @JoinColumn(name = "product_id"))
 	private List<Attachment> attachments;
 
