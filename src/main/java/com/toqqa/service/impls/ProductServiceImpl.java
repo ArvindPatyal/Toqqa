@@ -6,16 +6,22 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.constants.FileType;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.domain.Attachment;
 import com.toqqa.domain.Product;
+import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.AddProduct;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.UpdateProduct;
 import com.toqqa.repository.AttachmentRepository;
 import com.toqqa.repository.ProductCategoryRepository;
@@ -47,6 +53,9 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	private StorageService storageService;
 
+	@Value("${pageSize}")
+	private Integer pageSize;
+	
 	@Autowired
 	private AttachmentService attachmentService;
 
@@ -149,10 +158,23 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
+		User user = this.authenticationService.currentUser();
+		Page<Product> allProducts =null;
+		/*if(user.getRoles().size()==1&&user.getRoles().get(0).getRole().equals(RoleConstants.CUSTOMER.getValue())) {
+			 allProducts=this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+		}*/
+		if(paginationBo.getByUserflag()) {
+			allProducts=this.productRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize),user);
+		}else {
+			allProducts=this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+		}
+		List<ProductBo>bos = new ArrayList<ProductBo>();
+		allProducts.forEach(product->bos.add(new ProductBo(product)));
+		return new ListResponseWithCount<ProductBo>(bos,"",allProducts.getTotalElements(),paginationBo.getPageNumber(),allProducts.getTotalPages());
+
 	public void deleteProduct(String id) {
-
 		this.productRepo.deleteById(id);
-
 	}
 
 }
