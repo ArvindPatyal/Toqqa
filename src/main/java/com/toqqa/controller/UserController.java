@@ -18,6 +18,7 @@ import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +54,7 @@ public class UserController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PutMapping("/updateuser")
-	public Response<UserBo> updateUser(UpdateUser updateUser) {
+	public Response<UserBo> updateUser(@RequestBody @Valid UpdateUser updateUser) {
 		log.info("Inside controller update user");
 		return new Response<UserBo>(this.userService.updateUser(updateUser), "success");
 	}
