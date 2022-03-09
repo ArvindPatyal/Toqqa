@@ -7,13 +7,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.toqqa.domain.Product;
+import com.toqqa.domain.OrderInfo;
 import com.toqqa.domain.User;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, String> {
+public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
+
+	List<OrderInfo> findByUser(User user);
+
+	Page<OrderInfo> findByUser(Pageable pageRequest,User user);
 	
-		List<Product> findByUser(User user);
-		
-		Page<Product> findByUser(Pageable pageRequest,User user);
+	
+
 }

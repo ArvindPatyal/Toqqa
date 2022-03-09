@@ -169,9 +169,14 @@ public class UserServiceImpl implements UserService {
 		user.setCountry(updateUser.getCountry());
 		user.setAgentId(updateUser.getAgentId());
 		user.setIsDeleted(false);
-		user.setEmail(this.helper.notNullAndBlank(updateUser.getEmail()) ? updateUser.getEmail() : null);
+		if(this.helper.notNullAndBlank(updateUser.getEmail())){
+			if(!EmailValidator.getInstance().isValid(updateUser.getEmail())){
+				throw new BadRequestException("invalid email value : "+updateUser.getEmail());
+			}
+			user.setEmail(updateUser.getEmail());
+		}
 		user.setFirstName(updateUser.getFirstName());
-		user.setPhone(this.helper.notNullAndBlank(updateUser.getPhone()) ? updateUser.getPhone() : null);
+//		user.setPhone(this.helper.notNullAndBlank(updateUser.getPhone()) ? updateUser.getPhone() : null);
 		user.setLastName(updateUser.getLastName());
 		user.setPostCode(updateUser.getPostCode());
 		user.setState(updateUser.getState());
