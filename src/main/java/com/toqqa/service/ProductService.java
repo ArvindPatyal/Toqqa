@@ -13,6 +13,9 @@ public interface ProductService {
 	ProductBo updateProduct(UpdateProduct updateProduct);
 
 	ProductBo fetchProduct(String id);
-
+  
 	ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationbo);
+	
+	void deleteProduct(String id);
+
 }

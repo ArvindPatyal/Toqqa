@@ -3,6 +3,7 @@ package com.toqqa.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,6 +69,13 @@ public class ProductController {
 		log.info("Inside controller fetch Product List");
 		return new Response<ListResponseWithCount<ProductBo>>(this.productService.fetchProductList(paginationbo),
 				"success");
+
+
+	@DeleteMapping("/delete/{id}")
+	public Response<?> deleteProduct(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller fetch product");
+		this.productService.deleteProduct(id);
+		return new Response<Boolean>(true, "deleted successfully");
 
 	}
 
