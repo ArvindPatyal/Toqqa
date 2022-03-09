@@ -3,13 +3,7 @@ package com.toqqa.domain;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -40,7 +34,10 @@ public class Sme {
 	@ManyToMany
 	@JoinTable(name = "sub_category_sme", joinColumns = @JoinColumn(name = "sme_id"), inverseJoinColumns = @JoinColumn(name = "subCat_id"))
 	private List<SubCategory> businessSubCatagory;
+
+	@Column(length = 500)
 	private String description;
+
 	private Boolean isDeleted;
 	private String typeOfBusiness;
 	private Boolean isDeliverToCustomer;

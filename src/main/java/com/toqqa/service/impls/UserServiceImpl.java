@@ -99,17 +99,16 @@ public class UserServiceImpl implements UserService {
 		log.info("Inside is user exists");
 		User user = null;
 		if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
-			user = this.userRepository.findByEmail(email);
+			if(this.helper.notNullAndBlank(email)) {
+				user = this.userRepository.findByEmail(email);
+			}
 			if (user == null) {
 				user = this.userRepository.findByPhone(phone);
 			}
 			return user != null;
 
-		} else {
-			user = this.userRepository.findByPhone(phone);
-			return user != null;
 		}
-
+		throw new BadRequestException("No email and phone found");
 	}
 
 	@Override
