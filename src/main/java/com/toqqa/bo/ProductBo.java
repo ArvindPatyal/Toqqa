@@ -1,8 +1,8 @@
 package com.toqqa.bo;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import com.toqqa.domain.Product;
 
@@ -15,11 +15,11 @@ public class ProductBo {
 
 	private String productName;
 
-	private Map<String, String> productCategories = new HashMap<>();
+	private List<ProductCategoryBo> productCategories = new ArrayList<ProductCategoryBo>();
 
-	private Map<String, String> productSubCategories = new HashMap<>();
+	private List<ProductSubCategoryBo> productSubCategories =new ArrayList<ProductSubCategoryBo>();
 
-	private String image;
+	private Map<String, String> images=new HashMap<String, String>();
 
 	private String description;
 
@@ -50,7 +50,6 @@ public class ProductBo {
 	public ProductBo(Product product) {
 		this.id = product.getId();
 		this.productName = product.getProductName();
-		this.image = product.getImage();
 		this.description = product.getDescription();
 		this.details = product.getDetails();
 		this.unitsInStock = product.getUnitsInStock();
@@ -62,10 +61,13 @@ public class ProductBo {
 		this.countryOfOrigin = product.getCountryOfOrigin();
 		this.manufacturerName = product.getManufacturerName();
 		product.getProductCategories().forEach(pc -> {
-			this.productCategories.put(pc.getId(), pc.getProductCategory());
+			this.productCategories.add(new ProductCategoryBo(pc));
 		});
 		product.getProductSubCategories().forEach(pc -> {
-			this.productSubCategories.put(pc.getId(), pc.getProductSubCategory());
+			this.productSubCategories.add(new ProductSubCategoryBo(pc));
+		});
+		product.getAttachments().forEach(att->{
+			this.images.put(att.getId(), att.getLocation());
 		});
 	}
 
