@@ -160,19 +160,20 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
 		User user = this.authenticationService.currentUser();
-		Page<Product> allProducts =null;
+
+		Page<Product> allProducts = null;
 		/*if(user.getRoles().size()==1&&user.getRoles().get(0).getRole().equals(RoleConstants.CUSTOMER.getValue())) {
 			 allProducts=this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
 		}*/
-		if(paginationBo.getByUserflag()) {
-			allProducts=this.productRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize),user);
-		}else {
-			allProducts=this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+		if (paginationBo.getByUserflag()) {
+			allProducts = this.productRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
+		} else {
+			allProducts = this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
 		}
-		List<ProductBo>bos = new ArrayList<ProductBo>();
-		allProducts.forEach(product->bos.add(new ProductBo(product)));
-		return new ListResponseWithCount<ProductBo>(bos,"",allProducts.getTotalElements(),paginationBo.getPageNumber(),allProducts.getTotalPages());
-
+		List<ProductBo> bos = new ArrayList<ProductBo>();
+		allProducts.forEach(product -> bos.add(new ProductBo(product)));
+		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
+	}
 	public void deleteProduct(String id) {
 		this.productRepo.deleteById(id);
 	}

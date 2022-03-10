@@ -1,8 +1,6 @@
 package com.toqqa.bo;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import com.toqqa.domain.Product;
 
@@ -19,7 +17,7 @@ public class ProductBo {
 
 	private List<ProductSubCategoryBo> productSubCategories =new ArrayList<ProductSubCategoryBo>();
 
-	private Map<String, String> images=new HashMap<String, String>();
+	private List<FileBo> images=new ArrayList<>();
 
 	private String description;
 
@@ -67,7 +65,7 @@ public class ProductBo {
 			this.productSubCategories.add(new ProductSubCategoryBo(pc));
 		});
 		product.getAttachments().forEach(att->{
-			this.images.put(att.getId(), att.getLocation());
+			this.images.add(new FileBo(att.getId(), att.getLocation()));
 		});
 	}
 
