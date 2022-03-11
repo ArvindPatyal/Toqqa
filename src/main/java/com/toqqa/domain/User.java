@@ -1,6 +1,7 @@
 package com.toqqa.domain;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -75,6 +76,8 @@ public class User {
 	private String agentId;
 
 	private Boolean isDeleted;
+	
+	private Date createdAt;
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

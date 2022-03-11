@@ -38,6 +38,8 @@ public class ProductBo {
 	private String countryOfOrigin;
 
 	private String manufacturerName;
+	
+	private Boolean isDeleted;
 
 // To Do Awaiting Feedback Around These Two Fields..
 
@@ -58,6 +60,7 @@ public class ProductBo {
 		this.expiryDate = product.getExpiryDate();
 		this.countryOfOrigin = product.getCountryOfOrigin();
 		this.manufacturerName = product.getManufacturerName();
+		this.isDeleted = product.getIsDeleted();
 		product.getProductCategories().forEach(pc -> {
 			this.productCategories.add(new ProductCategoryBo(pc));
 		});

@@ -1,5 +1,6 @@
 package com.toqqa.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.concurrent.Future;
 
@@ -11,7 +12,9 @@ public interface StorageService {
 	
 	Future <String> uploadFileAsync(MultipartFile file,String userId,String dir);
 
-	byte[] downloadFile(String fileName);
+	//byte[] downloadFile(String fileName);
+	
+	ByteArrayOutputStream downloadFile(String fileName, String folderName);
 
 	String deleteFile(String fileName);
 
