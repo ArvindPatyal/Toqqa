@@ -1,6 +1,7 @@
 package com.toqqa.service.impls;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,6 +71,7 @@ public class UserServiceImpl implements UserService {
 		user.setCountry(userSignUp.getCountry());
 		user.setAgentId(userSignUp.getAgentId());
 		user.setIsDeleted(false);
+		user.setCreatedAt(new Date());
 		if(this.helper.notNullAndBlank(userSignUp.getEmail())){
 			if(!EmailValidator.getInstance().isValid(userSignUp.getEmail())){
 				throw new BadRequestException("invalid email value : "+userSignUp.getEmail());

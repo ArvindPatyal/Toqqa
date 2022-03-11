@@ -12,8 +12,11 @@ import com.toqqa.domain.User;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String> {
-	
-		List<Product> findByUser(User user);
-		
-		Page<Product> findByUser(Pageable pageRequest,User user);
+
+	List<Product> findByUserAndIsDeleted(User user, Boolean isDeleted);
+
+	Page<Product> findByUserAndIsDeleted(Pageable pageRequest, User user, Boolean isDeleted);
+
+	Page<Product> findByIsDeleted(Pageable pageRequest, Boolean isDeleted);
+
 }

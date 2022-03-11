@@ -50,6 +50,8 @@ public class Product {
 	private String countryOfOrigin;
 
 	private String manufacturerName;
+	
+	private Boolean isDeleted;
 
 // To Do Awaiting Feedback Around These Two Fields..
 

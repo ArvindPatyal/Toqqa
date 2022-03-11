@@ -81,6 +81,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
+		product.setIsDeleted(false);
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		for (MultipartFile imageFile : addProduct.getImages()) {
 			if (imageFile != null && !imageFile.isEmpty())
@@ -162,20 +163,23 @@ public class ProductServiceImpl implements ProductService {
 		User user = this.authenticationService.currentUser();
 
 		Page<Product> allProducts = null;
-		/*if(user.getRoles().size()==1&&user.getRoles().get(0).getRole().equals(RoleConstants.CUSTOMER.getValue())) {
-			 allProducts=this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
-		}*/
+		
 		if (paginationBo.getByUserflag()) {
-			allProducts = this.productRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
+			allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
 		} else {
-			allProducts = this.productRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),false);
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> bos.add(new ProductBo(product)));
 		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
 	}
 	public void deleteProduct(String id) {
-		this.productRepo.deleteById(id);
+		
+		Product prod = this.productRepo.findById(id).get();
+		prod.setIsDeleted(true);
+		this.productRepo.saveAndFlush(prod);
+		
+		//this.productRepo.deleteById(id);
 	}
 
 }
