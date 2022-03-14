@@ -3,6 +3,7 @@ package com.toqqa.payload;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,6 @@ public class AddProduct {
 	@NotNull
 	private String productName;
 
-	
 	@NotNull
 	private List<String> productCategory;
 
@@ -28,8 +28,9 @@ public class AddProduct {
 	@NotNull
 	private String description;
 
-	@NotNull
-	private String details;
+	/*
+	 * @NotNull private String details;
+	 */
 
 	@NotNull
 	private Long unitsInStock;
@@ -52,6 +53,11 @@ public class AddProduct {
 
 	@NotNull
 	private String manufacturerName;
+
+	@NotNull
+	private Date manufacturingDate;
+		
+	private MultipartFile banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
 

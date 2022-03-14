@@ -55,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Value("${pageSize}")
 	private Integer pageSize;
-	
+
 	@Autowired
 	private AttachmentService attachmentService;
 
@@ -71,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
 		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
 		product.setDescription(addProduct.getDescription());
-		product.setDetails(addProduct.getDetails());
+		// product.setDetails(addProduct.getDetails());
 		product.setUnitsInStock(addProduct.getUnitsInStock());
 		product.setPricePerUnit(addProduct.getPricePerUnit());
 		product.setDiscount(addProduct.getDiscount());
@@ -82,6 +82,8 @@ public class ProductServiceImpl implements ProductService {
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		product.setIsDeleted(false);
+		product.setManufacturingDate(addProduct.getManufacturingDate());
+
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		for (MultipartFile imageFile : addProduct.getImages()) {
 			if (imageFile != null && !imageFile.isEmpty())
@@ -96,6 +98,16 @@ public class ProductServiceImpl implements ProductService {
 				}
 
 		}
+
+		try {
+			if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
+				product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
+						FolderConstants.LOGO.getValue()).get());
+			}			
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+
 		product.setAttachments(attachments);
 		product = this.productRepo.saveAndFlush(product);
 
@@ -114,7 +126,7 @@ public class ProductServiceImpl implements ProductService {
 			product.setUser(authenticationService.currentUser());
 
 			product.setDescription(updateProduct.getDescription());
-			product.setDetails(updateProduct.getDetails());
+			// product.setDetails(updateProduct.getDetails());
 			product.setUnitsInStock(updateProduct.getUnitsInStock());
 			product.setPricePerUnit(updateProduct.getPricePerUnit());
 			product.setDiscount(updateProduct.getDiscount());
@@ -123,7 +135,7 @@ public class ProductServiceImpl implements ProductService {
 			product.setExpiryDate(updateProduct.getExpiryDate());
 			product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
 			product.setManufacturerName(updateProduct.getManufacturerName());
-
+			product.setManufacturingDate(updateProduct.getManufacturingDate());
 			List<Attachment> attachments = new ArrayList<Attachment>();
 			this.attachmentRepository.deleteAll(product.getAttachments());
 
@@ -140,6 +152,16 @@ public class ProductServiceImpl implements ProductService {
 					}
 
 			}
+						
+			try {
+				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
+					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
+							product.getUser().getId(), FolderConstants.LOGO.getValue()).get());
+				}				
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+
 			product.setAttachments(attachments);
 			product = this.productRepo.saveAndFlush(product);
 
@@ -163,23 +185,27 @@ public class ProductServiceImpl implements ProductService {
 		User user = this.authenticationService.currentUser();
 
 		Page<Product> allProducts = null;
-		
+
 		if (paginationBo.getByUserflag()) {
-			allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
+			allProducts = this.productRepo
+					.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, false);
 		} else {
-			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),false);
+			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),
+					false);
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> bos.add(new ProductBo(product)));
-		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
+		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(),
+				paginationBo.getPageNumber(), allProducts.getTotalPages());
 	}
+
 	public void deleteProduct(String id) {
-		
+
 		Product prod = this.productRepo.findById(id).get();
 		prod.setIsDeleted(true);
 		this.productRepo.saveAndFlush(prod);
-		
-		//this.productRepo.deleteById(id);
+
+		// this.productRepo.deleteById(id);
 	}
 
 }

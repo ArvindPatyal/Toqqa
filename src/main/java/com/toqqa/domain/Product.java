@@ -33,7 +33,7 @@ public class Product {
 
 	private String description;
 
-	private String details;
+//	private String details;
 
 	private Long unitsInStock;
 
@@ -52,6 +52,10 @@ public class Product {
 	private String manufacturerName;
 	
 	private Boolean isDeleted;
+	
+	private Date manufacturingDate;
+	
+	private String banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
 

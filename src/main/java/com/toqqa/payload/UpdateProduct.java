@@ -3,6 +3,7 @@ package com.toqqa.payload;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +55,11 @@ public class UpdateProduct {
 
 	@NotNull
 	private String manufacturerName;
+	
+	private Date manufacturingDate;
+	
+	@NotEmpty
+	private MultipartFile banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
 
