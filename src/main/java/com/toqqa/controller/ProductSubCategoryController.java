@@ -3,12 +3,13 @@ package com.toqqa.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.ProductSubCategoryBo;
+import com.toqqa.payload.FetchSubCategoriesPayload;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.service.ProductSubCategoryService;
 
@@ -28,11 +29,10 @@ public class ProductSubCategoryController {
 	@ApiOperation(value = "Get productSubCategory List")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "sucess"),
 			@ApiResponse(code = 400, message = "Bad Request") })
-	@GetMapping("/productsubcategories/{id}")
-	public ListResponse<ProductSubCategoryBo> getCategoryList(@PathVariable("id") @Valid String id) {
+	@PostMapping("/productsubcategories")
+	public ListResponse<ProductSubCategoryBo> getCategoryList(@RequestBody @Valid FetchSubCategoriesPayload getSub) {			
 		log.info("Inside controller get category list");
-		return new ListResponse<ProductSubCategoryBo>(this.productSubCategoryService.getProductSubCategories(id),
-				"success");
+		return new ListResponse<ProductSubCategoryBo>(this.productSubCategoryService.getProductSubCategories(getSub),"success");				
 	}
 
 }

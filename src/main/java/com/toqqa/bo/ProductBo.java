@@ -21,7 +21,7 @@ public class ProductBo {
 
 	private String description;
 
-	private String details;
+//	private String details;
 
 	private Long unitsInStock;
 
@@ -40,6 +40,10 @@ public class ProductBo {
 	private String manufacturerName;
 	
 	private Boolean isDeleted;
+	
+	private Date ManufacturingDate;
+	
+	private String banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
 
@@ -51,7 +55,7 @@ public class ProductBo {
 		this.id = product.getId();
 		this.productName = product.getProductName();
 		this.description = product.getDescription();
-		this.details = product.getDetails();
+//		this.details = product.getDetails();
 		this.unitsInStock = product.getUnitsInStock();
 		this.pricePerUnit = product.getPricePerUnit();
 		this.discount = product.getDiscount();
@@ -61,6 +65,8 @@ public class ProductBo {
 		this.countryOfOrigin = product.getCountryOfOrigin();
 		this.manufacturerName = product.getManufacturerName();
 		this.isDeleted = product.getIsDeleted();
+		this.ManufacturingDate = product.getManufacturingDate();	
+		this.banner = product.getBanner();
 		product.getProductCategories().forEach(pc -> {
 			this.productCategories.add(new ProductCategoryBo(pc));
 		});

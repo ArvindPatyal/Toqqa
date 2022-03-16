@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.toqqa.bo.ProductSubCategoryBo;
 import com.toqqa.domain.ProductSubCategory;
+import com.toqqa.payload.FetchSubCategoriesPayload;
 import com.toqqa.repository.ProductSubCategoryRepository;
 import com.toqqa.service.ProductSubCategoryService;
 
@@ -21,10 +22,10 @@ public class ProductSubCategoryServiceImpl implements ProductSubCategoryService 
 	private ProductSubCategoryRepository productSubCategoryRepository;
 
 	@Override
-	public List<ProductSubCategoryBo> getProductSubCategories(String productcategoryId) {
+	public List<ProductSubCategoryBo> getProductSubCategories(FetchSubCategoriesPayload getSub) {
 		log.info("Inside get product sub categories");
 		List<ProductSubCategory> productSubCategories = this.productSubCategoryRepository
-				.findByProductCategory_id(productcategoryId);
+				.findByProductCategory_IdIn(getSub.getCategoryIds());
 		List<ProductSubCategoryBo> productSubCategoryBos = new ArrayList<>();
 		productSubCategories
 				.forEach(productSubCategory -> productSubCategoryBos.add(new ProductSubCategoryBo(productSubCategory)));

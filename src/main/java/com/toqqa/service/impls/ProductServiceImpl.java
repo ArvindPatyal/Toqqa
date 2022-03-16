@@ -1,6 +1,7 @@
 package com.toqqa.service.impls;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -56,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Value("${pageSize}")
 	private Integer pageSize;
-	
+
 	@Autowired
 	private AttachmentService attachmentService;
 
@@ -72,17 +73,24 @@ public class ProductServiceImpl implements ProductService {
 		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
 		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
 		product.setDescription(addProduct.getDescription());
-		product.setDetails(addProduct.getDetails());
+		// product.setDetails(addProduct.getDetails());
 		product.setUnitsInStock(addProduct.getUnitsInStock());
 		product.setPricePerUnit(addProduct.getPricePerUnit());
 		product.setDiscount(addProduct.getDiscount());
 		product.setMaximumUitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
 		product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
-		product.setExpiryDate(addProduct.getExpiryDate());
+
+		if(addProduct.getExpiryDate()!=null)
+		product.setExpiryDate(new Date(addProduct.getExpiryDate()));
+
 		product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		product.setIsDeleted(false);
+
+		if(addProduct.getManufacturingDate()!=null)
+		product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
+
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		for (MultipartFile imageFile : addProduct.getImages()) {
 			if (imageFile != null && !imageFile.isEmpty())
@@ -97,6 +105,16 @@ public class ProductServiceImpl implements ProductService {
 				}
 
 		}
+
+		try {
+			if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
+				product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
+						FolderConstants.LOGO.getValue()).get());
+			}			
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+
 		product.setAttachments(attachments);
 		product = this.productRepo.saveAndFlush(product);
 
@@ -115,15 +133,21 @@ public class ProductServiceImpl implements ProductService {
 			product.setUser(authenticationService.currentUser());
 
 			product.setDescription(updateProduct.getDescription());
-			product.setDetails(updateProduct.getDetails());
+			// product.setDetails(updateProduct.getDetails());
 			product.setUnitsInStock(updateProduct.getUnitsInStock());
 			product.setPricePerUnit(updateProduct.getPricePerUnit());
 			product.setDiscount(updateProduct.getDiscount());
 			product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
 			product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
-			product.setExpiryDate(updateProduct.getExpiryDate());
+
+			if(updateProduct.getExpiryDate()!=null)
+				product.setExpiryDate(new Date(updateProduct.getExpiryDate()));
+
 			product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
 			product.setManufacturerName(updateProduct.getManufacturerName());
+
+			if(updateProduct.getManufacturingDate()!=null)
+			product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
 
 			List<Attachment> attachments = new ArrayList<Attachment>();
 			this.attachmentRepository.deleteAll(product.getAttachments());
@@ -141,6 +165,16 @@ public class ProductServiceImpl implements ProductService {
 					}
 
 			}
+						
+			try {
+				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
+					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
+							product.getUser().getId(), FolderConstants.LOGO.getValue()).get());
+				}				
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+
 			product.setAttachments(attachments);
 			product = this.productRepo.saveAndFlush(product);
 			return new ProductBo(product,this.prepareAttachments(product.getAttachments()));
@@ -171,6 +205,7 @@ public class ProductServiceImpl implements ProductService {
 	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
 		User user = this.authenticationService.currentUser();
 		Page<Product> allProducts = null;
+
 		if (this.authenticationService.isAdmin()) {
 			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),false);
 		} else {
@@ -179,11 +214,15 @@ public class ProductServiceImpl implements ProductService {
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> bos.add(new ProductBo(product,this.prepareAttachments(product.getAttachments()))));
 		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
+
 	}
+
 	public void deleteProduct(String id) {
+
 		Product prod = this.productRepo.findById(id).get();
 		prod.setIsDeleted(true);
 		this.productRepo.saveAndFlush(prod);
+
 	}
 
 }
