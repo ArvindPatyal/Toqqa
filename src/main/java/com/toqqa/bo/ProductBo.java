@@ -17,7 +17,7 @@ public class ProductBo {
 
 	private List<ProductSubCategoryBo> productSubCategories =new ArrayList<ProductSubCategoryBo>();
 
-	private List<FileBo> images=new ArrayList<>();
+	private List<String> images=new ArrayList<>();
 
 	private String description;
 
@@ -73,9 +73,29 @@ public class ProductBo {
 		product.getProductSubCategories().forEach(pc -> {
 			this.productSubCategories.add(new ProductSubCategoryBo(pc));
 		});
-		product.getAttachments().forEach(att->{
-			this.images.add(new FileBo(att.getId(), att.getLocation()));
+
+	}
+	public ProductBo(Product product,List<String> images) {
+		this.id = product.getId();
+		this.productName = product.getProductName();
+		this.description = product.getDescription();
+		this.details = product.getDetails();
+		this.unitsInStock = product.getUnitsInStock();
+		this.pricePerUnit = product.getPricePerUnit();
+		this.discount = product.getDiscount();
+		this.maximumUitsInOneOrder = product.getMaximumUitsInOneOrder();
+		this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
+		this.expiryDate = product.getExpiryDate();
+		this.countryOfOrigin = product.getCountryOfOrigin();
+		this.manufacturerName = product.getManufacturerName();
+		this.isDeleted = product.getIsDeleted();
+		product.getProductCategories().forEach(pc -> {
+			this.productCategories.add(new ProductCategoryBo(pc));
 		});
+		product.getProductSubCategories().forEach(pc -> {
+			this.productSubCategories.add(new ProductSubCategoryBo(pc));
+		});
+		this.images.addAll(images);
 	}
 
 }

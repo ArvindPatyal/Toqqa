@@ -1,166 +1,131 @@
 package com.toqqa.service.impls;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.Future;
-
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.service.StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.toqqa.service.StorageService;
-
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.Future;
 
 @Service
 @Slf4j
 public class StorageServiceImpl implements StorageService {
 
-	@Value("${bucketName}")
-	private String bucketName;
+    @Value("${bucketName}")
+    private String bucketName;
 
-	@Autowired
-	private AmazonS3 s3Client;
+    @Autowired
+    private AmazonS3 s3Client;
 
-	@Override
-	@Async
-	public Future<String> uploadFileAsync(MultipartFile file, String userId, String dir) {
-		log.info("Inside file upload async");
-		String folderName = bucketName + "/" + userId + "/" + dir;
-		File fileObj = convertMultiPartFileToFile(file);
-		String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
-		s3Client.putObject(new PutObjectRequest(folderName, fileName, fileObj));
-		fileObj.delete();
-		return new AsyncResult<String>(folderName + "/" + fileName);
-	}
+    @Override
+    @Async
+    public Future<String> uploadFileAsync(MultipartFile file, String userId, String dir) {
+        log.info("Inside file upload async");
+        String folderName = bucketName + "/" + userId + "/" + dir;
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
+        s3Client.putObject(new PutObjectRequest(folderName, fileName, fileObj));
+        fileObj.delete();
+        return new AsyncResult<String>(folderName + "/" + fileName);
+    }
 
-	@Async
-	public String uploadFile(MultipartFile file, String userId, String dir) {
-		log.info("Inside file upload");
-		File fileObj = convertMultiPartFileToFile(file);
-		String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
-		s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, fileObj));
-		fileObj.delete();
-		return fileName;
-	}
+    @Async
+    public String uploadFile(MultipartFile file, String userId, String dir) {
+        log.info("Inside file upload");
+        File fileObj = convertMultiPartFileToFile(file);
+        String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
+        s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, fileObj));
+        fileObj.delete();
+        return fileName;
+    }
 
-	public ByteArrayOutputStream downloadFile(String fileName, String bucketDir) {
-		try {
-			S3Object s3object = s3Client.getObject(bucketName + "/" + bucketDir, fileName);
 
-			InputStream is = s3object.getObjectContent();
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			int len;
-			byte[] buffer = new byte[4096];
-			while ((len = is.read(buffer, 0, buffer.length)) != -1) {
-				outputStream.write(buffer, 0, len);
-			}
+    public String deleteFile(String fileName) {
+        log.info("Inside delete file");
+        s3Client.deleteObject(bucketName, fileName);
+        return fileName + "removed...";
+    }
 
-			return outputStream;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+    public File convertMultiPartFileToFile(MultipartFile file) {
 
-	/*
-	 * public byte[] downloadFile(String fileName) {
-	 * log.info("Inside file download"); S3Object s3Object =
-	 * s3Client.getObject(bucketName, fileName); S3ObjectInputStream inputStream =
-	 * s3Object.getObjectContent(); try { byte[] content =
-	 * IOUtils.toByteArray(inputStream); return content; } catch (IOException e) {
-	 * 
-	 * e.printStackTrace(); } return null; }
-	 */
+        log.info("Inside Convert multipart to file");
+        File convertedFile = new File(file.getOriginalFilename());
 
-	public String deleteFile(String fileName) {
-		log.info("Inside delete file");
-		s3Client.deleteObject(bucketName, fileName);
-		return fileName + "removed...";
-	}
+        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
 
-	public File convertMultiPartFileToFile(MultipartFile file) {
+            fos.write(file.getBytes());
 
-		log.info("Inside Convert multipart to file");
-		File convertedFile = new File(file.getOriginalFilename());
+        } catch (IOException e) {
 
-		try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
+            log.error("Error converting multipartFile to file", e);
+        }
 
-			fos.write(file.getBytes());
+        return convertedFile;
+    }
 
-		} catch (IOException e) {
+    @Override
+    public Resource downloadFile(String fileName) throws IOException {
+        String[] name = fileName.split("&");
+        byte[] stream = this.fetchFileFromAWS(name[0], name[1], name[2]);
+        if (stream != null) {
+            ByteArrayResource rsc = new ByteArrayResource(stream);
+            return rsc;
+        }
+        throw new ResourceNotFoundException("no image or file found with name " + fileName);
+    }
 
-			log.error("Error converting multipartFile to file", e);
-		}
+    private byte[] fetchFileFromAWS(String userId, String dir, String fileName) {
+        log.info("Inside fetchFileFromAWS");
+        S3Object s3Object = s3Client.getObject(bucketName + "/" + userId + "/" + dir, fileName);
+        S3ObjectInputStream inputStream = s3Object.getObjectContent();
+        try {
+            byte[] content =
+                    IOUtils.toByteArray(s3Object.getObjectContent());
+            return content;
+        } catch (IOException e) {
 
-		return convertedFile;
-	}
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-	@Override
-	public String createFolder(String folder) {
+    @Override
+    public String buildResourceString(String userId, String folder, String file) {
+        return userId + "&" + folder + "&" + file;
+    }
 
-		/*
-		 * TransferManager xfer_mgr = new TransferManager();
-		 * 
-		 * String dir_path = "D: /workspace/test";
-		 * 
-		 * String key_prefix = "";
-		 * 
-		 * String bucket_name = "toqqa_dev";
-		 * 
-		 * boolean recursive = false;
-		 * 
-		 * MultipleFileUpload xfer = xfer_mgr.uploadDirectory(bucket_name, key_prefix,
-		 * new File(dir_path), recursive);
-		 * 
-		 * try {
-		 * 
-		 * xfer.waitForCompletion(); } catch (AmazonServiceException e) {
-		 * 
-		 * System.err.println("Amazon service error:" + e.getMessage()); System.exit(1);
-		 * }
-		 * 
-		 * catch (AmazonClientException e) { System.err.println("Amazon client error:" +
-		 * e.getMessage()); System.exit(1);
-		 * 
-		 * } catch (InterruptedException e) {
-		 * 
-		 * System.err.println("Transfer interrupted:" + e.getMessage()); System.exit(1);
-		 * 
-		 * }
-		 * 
-		 * xfer_mgr.shutdownNow();
-		 * 
-		 * return null;
-		 */
-
-		/*
-		 * String bucketName = "nam-public-images"; String folderName = "asia/vietnam/";
-		 */
-		// PutObjectRequest request =new PutObjectRequest(bucketName, folderName);
-		/*
-		 * s3Client.putObject(new PutObjectRequest(bucketName, folderName,));
-		 * 
-		 * AmazonS3Waiters waiter = s3Client.waiters(); HeadObjectRequest requestWait =
-		 * HeadObjectRequest.builder().bucket(bucketName).key(folderName).build();
-		 * 
-		 * WaiterResponse<HeadObjectResponse> waiterResponse =
-		 * waiter.waitUntilObjectExists(requestWait);
-		 * 
-		 * waiterResponse.matched().response().ifPresent(System.out::println);
-		 * 
-		 * System.out.println("Folder " + folderName + " is ready.");
-		 */
-		return "";
-	}
-
+    @Override
+    public String buildResourceString(String filePath) {
+        if (filePath != null && !filePath.isEmpty()) {
+            String[] path = filePath.split("/");
+            return path[1] + "/" + path[2] + "/" + path[3];
+        }
+        return "";
+    }
+    @Override
+    public String generatePresignedUrl(String location) {
+        if (location != null && !location.isEmpty()) {
+            String pathArr[] = location.split("/");
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.add(Calendar.MINUTE, 1);
+            return s3Client.generatePresignedUrl(bucketName+"/"+pathArr[1]+"/"+pathArr[2],pathArr[3],calendar.getTime()).toString();
+        }
+        return "";
+    }
 }

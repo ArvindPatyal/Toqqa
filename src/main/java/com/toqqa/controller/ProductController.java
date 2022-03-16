@@ -55,10 +55,9 @@ public class ProductController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = ""),
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/fetchProductList")
-    public Response<ListResponseWithCount<ProductBo>> fetchProductList(@RequestBody @Valid PaginationBo paginationbo) {
+    public ListResponseWithCount<ProductBo> fetchProductList(@RequestBody @Valid PaginationBo paginationbo) {
 		log.info("Inside controller fetch Product List");
-		return new Response<ListResponseWithCount<ProductBo>>(this.productService.fetchProductList(paginationbo),
-				"success");
+		return this.productService.fetchProductList(paginationbo);
 
 	}
         @DeleteMapping("/delete/{id}")

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import com.toqqa.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,6 +27,7 @@ import com.toqqa.service.AgentService;
 import com.toqqa.service.StorageService;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Service
 @Slf4j
@@ -42,6 +44,8 @@ public class AgentServiceImpl implements AgentService {
 
 	@Autowired
 	private StorageService storageService;
+	@Autowired
+	private Helper helper;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -68,10 +72,20 @@ public class AgentServiceImpl implements AgentService {
 			}
 
 			this.userRepo.saveAndFlush(user);
+
 			agent = this.agentRepo.saveAndFlush(agent);
+			agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+			agent.setIdProof(this.prepareResource(agent.getIdProof()));
 			return new AgentBo(agent);
 		}
 		throw new BadRequestException("user already an agent");
+	}
+
+	private String prepareResource(String location){
+		if(this.helper.notNullAndBlank(location)){
+			return this.storageService.buildResourceString(location);
+		}
+		return "";
 	}
 
 	private Boolean alreadyAgent(String id) {
@@ -97,6 +111,8 @@ public class AgentServiceImpl implements AgentService {
 		}
 
 		agent = this.agentRepo.saveAndFlush(agent);
+		agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+		agent.setIdProof(this.prepareResource(agent.getIdProof()));
 		return new AgentBo(agent);
 
 	}
@@ -104,9 +120,11 @@ public class AgentServiceImpl implements AgentService {
 	@Override
 	public AgentBo fetchAgent(String id) {
 		log.info("Inside fetch Agent");
-		Optional<Agent> agent = this.agentRepo.findById(id);
-		if (agent.isPresent()) {
-			return new AgentBo(agent.get());
+		Agent agent = this.agentRepo.findById(id).get();
+		if (agent!=null) {
+			agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+			agent.setIdProof(this.prepareResource(agent.getIdProof()));
+			return new AgentBo(agent);
 		}
 		throw new BadRequestException("no user found with id= " + id);
 	}
