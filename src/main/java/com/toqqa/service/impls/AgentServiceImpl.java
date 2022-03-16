@@ -52,31 +52,36 @@ public class AgentServiceImpl implements AgentService {
 	public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId) {
 		log.info("Inside agent registration");
 		if (!this.alreadyAgent(userId)) {
-			Agent agent = new Agent();
-
-			agent.setUserId(userId);
-			User user = this.userRepo.findById(userId).get();
-			List<Role> roles = new ArrayList<>();
-			roles.addAll(user.getRoles());
-			roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
-			user.setRoles(roles);
 			try {
-				agent.setIdProof(this.storageService
-						.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue())
-						.get());
-				agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(),
-						userId, FolderConstants.DOCUMENTS.getValue()).get());
-			} catch (InterruptedException | ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Agent agent = new Agent();
+				agent.setUserId(userId);
+				User user = this.userRepo.findById(userId).get();
+				List<Role> roles = new ArrayList<>();
+				roles.addAll(user.getRoles());
+				roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
+				user.setRoles(roles);
+				try {
+					agent.setIdProof(this.storageService
+							.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue())
+							.get());
+					agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(),
+							userId, FolderConstants.DOCUMENTS.getValue()).get());
+				} catch (InterruptedException | ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				this.userRepo.saveAndFlush(user);
+
+				agent = this.agentRepo.saveAndFlush(agent);
+				agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+				agent.setIdProof(this.prepareResource(agent.getIdProof()));
+				return new AgentBo(agent);
 			}
-
-			this.userRepo.saveAndFlush(user);
-
-			agent = this.agentRepo.saveAndFlush(agent);
-			agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-			agent.setIdProof(this.prepareResource(agent.getIdProof()));
-			return new AgentBo(agent);
+			catch (Exception e){
+				log.error("unable to create agent",e);
+				this.userRepo.deleteById(userId);
+			}
 		}
 		throw new BadRequestException("user already an agent");
 	}
