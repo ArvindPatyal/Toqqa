@@ -113,10 +113,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	public ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationBo) {
 		User user = this.authenticationService.currentUser();
 		Page<OrderInfo> allOrders = null;
-		if (paginationBo.getByUserflag()) {
-			allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
-		} else {
+		if (authenticationService.isAdmin()) {
 			allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+		} else {
+			allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
 		}
 		List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
 		allOrders.forEach(orderInfo -> bos.add(new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo))));

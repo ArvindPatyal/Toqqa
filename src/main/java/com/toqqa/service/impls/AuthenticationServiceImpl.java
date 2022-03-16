@@ -44,6 +44,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 	@Override
+	public Boolean isAdmin() {
+		log.info("Inside is customer");
+		User user = this.currentUser();
+		if (user.getRoles().get(0).getRole().equalsIgnoreCase(RoleConstants.ADMIN.getValue())) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public Boolean isSME() {
 		log.info("Inside is sme");
 		User user = this.currentUser();

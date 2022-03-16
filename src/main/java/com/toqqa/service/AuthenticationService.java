@@ -11,6 +11,8 @@ public interface AuthenticationService {
 
 	Boolean isCustomer();
 
+	Boolean isAdmin();
+
 	Boolean isSME();
 
 	Boolean isAgent();

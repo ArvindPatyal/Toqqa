@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import com.toqqa.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,6 +30,7 @@ import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Service
 @Slf4j
@@ -51,6 +53,9 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	private StorageService storageService;
+
+	@Autowired
+	private Helper helper;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -108,6 +113,9 @@ public class SmeServiceImpl implements SmeService {
 			}
 
 			sme = this.smeRepo.saveAndFlush(sme);
+			sme.setRegDoc(this.prepareResource(sme.getRegDoc()));
+			sme.setIdProof(this.prepareResource(sme.getIdProof()));
+			sme.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
 			return new SmeBo(sme);
 		}
 		throw new BadRequestException("user already sme");
@@ -119,62 +127,78 @@ public class SmeServiceImpl implements SmeService {
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}
 
+	private String prepareResource(String location){
+		if(this.helper.notNullAndBlank(location)){
+			return this.storageService.generatePresignedUrl(location);
+		}
+		return "";
+	}
+
 	@Override
 	public SmeBo smeUpdate(SmeUpdate smeUpdate) {
 		log.info("Inside sme update");
 
 		Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
+		if(sme!=null) {
+			sme.setNameOfBusiness(smeUpdate.getNameOfBusiness());
+			sme.setBusinessAddress(smeUpdate.getBusinessAddress());
+			sme.setState(smeUpdate.getState());
+			sme.setCountry(smeUpdate.getCountry());
+			sme.setTypeOfBusiness(smeUpdate.getTypeOfBusiness());
+			sme.setDeliveryRadius(smeUpdate.getDeliveryRadius());
+			sme.setDeliveryCharges(smeUpdate.getDeliveryCharge());
+			sme.setIsDeleted(false);
+			sme.setDescription(smeUpdate.getDescription());
+			sme.setCity(smeUpdate.getCity());
+			sme.setIsDeliverToCustomer(smeUpdate.getDeliverToCustomer());
+			sme.setIsRegisterWithGovt(smeUpdate.getIsRegisteredWithGovt());
+			if (smeUpdate.getStartTimeOfDelivery() != null && smeUpdate.getEndTimeOfDelivery() != null) {
+				sme.setStartTimeOfDelivery(new Date(smeUpdate.getStartTimeOfDelivery()));
+				sme.setEndTimeOfDelivery(new Date(smeUpdate.getEndTimeOfDelivery()));
+			}
+			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
+			sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
 
-		sme.setNameOfBusiness(smeUpdate.getNameOfBusiness());
-		sme.setBusinessAddress(smeUpdate.getBusinessAddress());
-		sme.setState(smeUpdate.getState());
-		sme.setCountry(smeUpdate.getCountry());
-		sme.setTypeOfBusiness(smeUpdate.getTypeOfBusiness());
-		sme.setDeliveryRadius(smeUpdate.getDeliveryRadius());
-		sme.setDeliveryCharges(smeUpdate.getDeliveryCharge());
-		sme.setIsDeleted(false);
-		sme.setDescription(smeUpdate.getDescription());
-		sme.setCity(smeUpdate.getCity());
-		sme.setIsDeliverToCustomer(smeUpdate.getDeliverToCustomer());
-		sme.setIsRegisterWithGovt(smeUpdate.getIsRegisteredWithGovt());
-		if (smeUpdate.getStartTimeOfDelivery() != null && smeUpdate.getEndTimeOfDelivery() != null) {
-			sme.setStartTimeOfDelivery(new Date(smeUpdate.getStartTimeOfDelivery()));
-			sme.setEndTimeOfDelivery(new Date(smeUpdate.getEndTimeOfDelivery()));
+			try {
+				if (smeUpdate.getIdProof() != null && !smeUpdate.getIdProof().isEmpty()) {
+					sme.setIdProof(this.storageService
+							.uploadFileAsync(smeUpdate.getIdProof(), sme.getUserId(), FolderConstants.DOCUMENTS.getValue())
+							.get());
+				}
+				if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
+					sme.setBusinessLogo(this.storageService
+							.uploadFileAsync(smeUpdate.getBusinessLogo(), sme.getUserId(), FolderConstants.LOGO.getValue())
+							.get());
+				}
+				if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
+					sme.setRegDoc(this.storageService
+							.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(), FolderConstants.DOCUMENTS.getValue())
+							.get());
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+
+			sme = this.smeRepo.saveAndFlush(sme);
+
+			sme.setRegDoc(this.prepareResource(sme.getRegDoc()));
+			sme.setIdProof(this.prepareResource(sme.getIdProof()));
+			sme.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+			return new SmeBo(sme);
 		}
-		sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
-		sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
-
-		try {
-			if (smeUpdate.getIdProof() != null && !smeUpdate.getIdProof().isEmpty()) {
-				sme.setIdProof(this.storageService
-						.uploadFileAsync(smeUpdate.getIdProof(), sme.getUserId(), FolderConstants.DOCUMENTS.getValue())
-						.get());
-			}
-			if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
-				sme.setBusinessLogo(this.storageService
-						.uploadFileAsync(smeUpdate.getBusinessLogo(), sme.getUserId(), FolderConstants.LOGO.getValue())
-						.get());
-			}
-			if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
-				sme.setRegDoc(this.storageService
-						.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(), FolderConstants.DOCUMENTS.getValue())
-						.get());
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
-
-		sme = this.smeRepo.saveAndFlush(sme);
-		return new SmeBo(sme);
+		throw new BadRequestException("invalid sme id");
 
 	}
 
 	@Override
 	public SmeBo fetchSme(String id) {
 		log.info("Inside fetch Agent");
-		Optional<Sme> sme = this.smeRepo.findById(id);
-		if (sme.isPresent()) {
-			return new SmeBo(sme.get());
+		Sme sme = this.smeRepo.findById(id).get();
+		if (sme!=null) {
+			sme.setRegDoc(this.prepareResource(sme.getRegDoc()));
+			sme.setIdProof(this.prepareResource(sme.getIdProof()));
+			sme.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+			return new SmeBo(sme);
 		}
 		throw new BadRequestException("no user found with id= " + id);
 	}

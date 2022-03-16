@@ -49,9 +49,8 @@ public class OrderInfoController {
 	}
 
 	@PostMapping("/fetchOrderList")
-	public Response<ListResponseWithCount<OrderInfoBo>> fetchOrderList(@RequestBody @Valid PaginationBo paginationbo) {
+	public ListResponseWithCount<OrderInfoBo> fetchOrderList(@RequestBody @Valid PaginationBo paginationbo) {
 		log.info("Inside controller fetch Order List");
-		return new Response<ListResponseWithCount<OrderInfoBo>>(this.orderInfoService.fetchOrderList(paginationbo),
-				"success");
+		return this.orderInfoService.fetchOrderList(paginationbo);
 	}
 }

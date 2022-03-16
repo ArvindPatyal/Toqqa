@@ -2,8 +2,10 @@ package com.toqqa.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.Future;
 
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageService {
@@ -12,14 +14,17 @@ public interface StorageService {
 	
 	Future <String> uploadFileAsync(MultipartFile file,String userId,String dir);
 
-	//byte[] downloadFile(String fileName);
+	Resource downloadFile(String fileName)throws IOException;
 	
-	ByteArrayOutputStream downloadFile(String fileName, String folderName);
+//	ByteArrayOutputStream downloadFile(String fileName, String folderName);
 
 	String deleteFile(String fileName);
 
 	File convertMultiPartFileToFile(MultipartFile file);
 
-	String createFolder(String folder);
+	String buildResourceString(String userId, String folder, String file);
 
+	String buildResourceString(String filePath);
+
+	String generatePresignedUrl(String location);
 }

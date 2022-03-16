@@ -33,6 +33,7 @@ import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Service
 @Slf4j
@@ -99,7 +100,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setAttachments(attachments);
 		product = this.productRepo.saveAndFlush(product);
 
-		return new ProductBo(product);
+		return new ProductBo(product,this.prepareAttachments(product.getAttachments()));
 	}
 
 	@Override
@@ -142,10 +143,18 @@ public class ProductServiceImpl implements ProductService {
 			}
 			product.setAttachments(attachments);
 			product = this.productRepo.saveAndFlush(product);
-
-			return new ProductBo(product);
+			return new ProductBo(product,this.prepareAttachments(product.getAttachments()));
 		}
 		throw new BadRequestException("Invalid Product Id");
+	}
+
+	private List<String> prepareAttachments(List<Attachment> attachments){
+		List<String> atts = new ArrayList<>();
+		final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+		attachments.forEach(att->{
+			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
+		});
+		return atts;
 	}
 
 	@Override
@@ -153,7 +162,7 @@ public class ProductServiceImpl implements ProductService {
 		log.info("Inside fetch product");
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
-			return new ProductBo(product.get());
+			return new ProductBo(product.get(),this.prepareAttachments(product.get().getAttachments()));
 		}
 		throw new BadRequestException("no product found with id= " + id);
 	}
@@ -161,25 +170,20 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
 		User user = this.authenticationService.currentUser();
-
 		Page<Product> allProducts = null;
-		
-		if (paginationBo.getByUserflag()) {
-			allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
-		} else {
+		if (this.authenticationService.isAdmin()) {
 			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),false);
+		} else {
+			allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
-		allProducts.forEach(product -> bos.add(new ProductBo(product)));
+		allProducts.forEach(product -> bos.add(new ProductBo(product,this.prepareAttachments(product.getAttachments()))));
 		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
 	}
 	public void deleteProduct(String id) {
-		
 		Product prod = this.productRepo.findById(id).get();
 		prod.setIsDeleted(true);
 		this.productRepo.saveAndFlush(prod);
-		
-		//this.productRepo.deleteById(id);
 	}
 
 }

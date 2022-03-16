@@ -11,9 +11,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PaginationBo {
-
 	@NotNull
 	private Integer pageNumber = 0;
-	@NotNull
-	private Boolean byUserflag=false;
 }
