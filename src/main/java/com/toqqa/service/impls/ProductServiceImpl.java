@@ -1,6 +1,7 @@
 package com.toqqa.service.impls;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -77,12 +78,17 @@ public class ProductServiceImpl implements ProductService {
 		product.setDiscount(addProduct.getDiscount());
 		product.setMaximumUitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
 		product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
-		product.setExpiryDate(addProduct.getExpiryDate());
+
+		if(addProduct.getExpiryDate()!=null)
+		product.setExpiryDate(new Date(addProduct.getExpiryDate()));
+
 		product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		product.setIsDeleted(false);
-		product.setManufacturingDate(addProduct.getManufacturingDate());
+
+		if(addProduct.getManufacturingDate()!=null)
+		product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
 		List<Attachment> attachments = new ArrayList<Attachment>();
 		for (MultipartFile imageFile : addProduct.getImages()) {
@@ -132,10 +138,16 @@ public class ProductServiceImpl implements ProductService {
 			product.setDiscount(updateProduct.getDiscount());
 			product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
 			product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
-			product.setExpiryDate(updateProduct.getExpiryDate());
+
+			if(updateProduct.getExpiryDate()!=null)
+				product.setExpiryDate(new Date(updateProduct.getExpiryDate()));
+
 			product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
 			product.setManufacturerName(updateProduct.getManufacturerName());
-			product.setManufacturingDate(updateProduct.getManufacturingDate());
+
+			if(updateProduct.getManufacturingDate()!=null)
+			product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
+
 			List<Attachment> attachments = new ArrayList<Attachment>();
 			this.attachmentRepository.deleteAll(product.getAttachments());
 

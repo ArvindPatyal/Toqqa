@@ -46,7 +46,7 @@ public class AddProduct {
 	private Integer minimumUnitsInOneOrder;
 
 	@NotNull
-	private Date expiryDate;
+	private Long expiryDate;
 
 	@NotNull
 	private String countryOfOrigin;
@@ -55,8 +55,9 @@ public class AddProduct {
 	private String manufacturerName;
 
 	@NotNull
-	private Date manufacturingDate;
-		
+	private Long manufacturingDate;
+
+	@NotNull
 	private MultipartFile banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
