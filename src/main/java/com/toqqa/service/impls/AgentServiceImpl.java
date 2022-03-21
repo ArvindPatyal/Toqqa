@@ -67,16 +67,17 @@ public class AgentServiceImpl implements AgentService {
 					agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(),
 							userId, FolderConstants.DOCUMENTS.getValue()).get());
 				} catch (InterruptedException | ExecutionException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
 				this.userRepo.saveAndFlush(user);
 
 				agent = this.agentRepo.saveAndFlush(agent);
-				agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-				agent.setIdProof(this.prepareResource(agent.getIdProof()));
-				return new AgentBo(agent);
+
+				AgentBo bo = new AgentBo(agent);
+				bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+				bo.setIdProof(this.prepareResource(agent.getIdProof()));
+				return bo;
 			}
 			catch (Exception e){
 				log.error("unable to create agent",e);
@@ -88,7 +89,7 @@ public class AgentServiceImpl implements AgentService {
 
 	private String prepareResource(String location){
 		if(this.helper.notNullAndBlank(location)){
-			return this.storageService.buildResourceString(location);
+			return this.storageService.generatePresignedUrl(location);
 		}
 		return "";
 	}
@@ -116,10 +117,10 @@ public class AgentServiceImpl implements AgentService {
 		}
 
 		agent = this.agentRepo.saveAndFlush(agent);
-		agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-		agent.setIdProof(this.prepareResource(agent.getIdProof()));
-		return new AgentBo(agent);
-
+		AgentBo bo = new AgentBo(agent);
+		bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+		bo.setIdProof(this.prepareResource(agent.getIdProof()));
+		return bo;
 	}
 
 	@Override
@@ -127,9 +128,10 @@ public class AgentServiceImpl implements AgentService {
 		log.info("Inside fetch Agent");
 		Agent agent = this.agentRepo.findById(id).get();
 		if (agent!=null) {
-			agent.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-			agent.setIdProof(this.prepareResource(agent.getIdProof()));
-			return new AgentBo(agent);
+			AgentBo bo = new AgentBo(agent);
+			bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
+			bo.setIdProof(this.prepareResource(agent.getIdProof()));
+			return bo;
 		}
 		throw new BadRequestException("no user found with id= " + id);
 	}

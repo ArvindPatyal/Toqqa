@@ -35,42 +35,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public Boolean isCustomer() {
-		log.info("Inside is customer");
+		log.info("Inside isCustomer");
 		User user = this.currentUser();
-		if (user.getRoles().get(0).getRole().equalsIgnoreCase(RoleConstants.CUSTOMER.getValue())) {
-			return true;
-		}
-		return false;
+		return user.getRoles().stream().anyMatch(role -> role.getRole().equalsIgnoreCase(RoleConstants.CUSTOMER.getValue()));
 	}
 
 	@Override
 	public Boolean isAdmin() {
-		log.info("Inside is customer");
+		log.info("Inside isAdmin");
 		User user = this.currentUser();
-		if (user.getRoles().get(0).getRole().equalsIgnoreCase(RoleConstants.ADMIN.getValue())) {
-			return true;
-		}
-		return false;
+		return user.getRoles().stream().anyMatch(role -> role.getRole().equalsIgnoreCase(RoleConstants.ADMIN.getValue()));
 	}
 
 	@Override
 	public Boolean isSME() {
-		log.info("Inside is sme");
+		log.info("Inside isSme");
 		User user = this.currentUser();
-		if (user.getRoles().get(0).getRole().equalsIgnoreCase(RoleConstants.SME.getValue())) {
-			return true;
-		}
-		return false;
+		return user.getRoles().stream().anyMatch(role -> role.getRole().equalsIgnoreCase(RoleConstants.SME.getValue()));
 	}
 
 	@Override
 	public Boolean isAgent() {
-		log.info("Inside is agent");
+		log.info("Inside isAgent");
 		User user = this.currentUser();
-		if (user.getRoles().get(0).getRole().equalsIgnoreCase(RoleConstants.AGENT.getValue())) {
-			return true;
-		}
-		return false;
+		return user.getRoles().stream().anyMatch(role -> role.getRole().equalsIgnoreCase(RoleConstants.AGENT.getValue()));
 	}
 
 }

@@ -84,7 +84,6 @@ public class SmeServiceImpl implements SmeService {
                 user.setRoles(roles);
                 user = this.userRepo.saveAndFlush(user);
 
-                // TODO upload functionality
                 try {
                     if (smeRegistration.getIdProof() != null && !smeRegistration.getIdProof().isEmpty()) {
                         sme.setIdProof(this.storageService
@@ -106,10 +105,11 @@ public class SmeServiceImpl implements SmeService {
                 }
 
                 sme = this.smeRepo.saveAndFlush(sme);
-                sme.setRegDoc(this.prepareResource(sme.getRegDoc()));
-                sme.setIdProof(this.prepareResource(sme.getIdProof()));
-                sme.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-                return new SmeBo(sme);
+                SmeBo bo =new SmeBo(sme);
+                bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
+                bo.setIdProof(this.prepareResource(sme.getIdProof()));
+                bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+                return bo;
             } catch (Exception e) {
                 log.error("unable to create sme", e);
                 this.userRepo.deleteById(userId);
@@ -178,10 +178,11 @@ public class SmeServiceImpl implements SmeService {
 
             sme = this.smeRepo.saveAndFlush(sme);
 
-            sme.setRegDoc(this.prepareResource(sme.getRegDoc()));
-            sme.setIdProof(this.prepareResource(sme.getIdProof()));
-            sme.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-            return new SmeBo(sme);
+            SmeBo bo =new SmeBo(sme);
+            bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
+            bo.setIdProof(this.prepareResource(sme.getIdProof()));
+            bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+            return bo;
         }
         throw new BadRequestException("invalid sme id");
 
@@ -192,10 +193,11 @@ public class SmeServiceImpl implements SmeService {
         log.info("Inside fetch Agent");
         Sme sme = this.smeRepo.findById(id).get();
         if (sme != null) {
-            sme.setRegDoc(this.prepareResource(sme.getRegDoc()));
-            sme.setIdProof(this.prepareResource(sme.getIdProof()));
-            sme.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-            return new SmeBo(sme);
+            SmeBo bo =new SmeBo(sme);
+            bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
+            bo.setIdProof(this.prepareResource(sme.getIdProof()));
+            bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+            return bo;
         }
         throw new BadRequestException("no user found with id= " + id);
     }

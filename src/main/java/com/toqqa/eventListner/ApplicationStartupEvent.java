@@ -42,7 +42,6 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 		this.initSubcategories();
 		this.initProductcategories();
 		this.initProductSubCategories();
-		;
 	}
 
 	private void initCategories() {
@@ -79,7 +78,7 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 
 	private void initRoles() {
 		List<String> roles = Arrays.asList(RoleConstants.AGENT.getValue(), RoleConstants.CUSTOMER.getValue(),
-				RoleConstants.SME.getValue());
+				RoleConstants.SME.getValue(),RoleConstants.ADMIN.getValue());
 		roles.forEach(role -> {
 			if (this.roleRepository.findByRole(role) == null) {
 				Role r = new Role(null, role, null);

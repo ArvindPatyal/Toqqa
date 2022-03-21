@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import com.toqqa.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -64,6 +65,9 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	private AttachmentRepository attachmentRepository;
 
+	@Autowired
+	private Helper helper;
+
 	@Override
 	public ProductBo addProduct(AddProduct addProduct) {
 		log.info("Inside Add Product");
@@ -109,7 +113,7 @@ public class ProductServiceImpl implements ProductService {
 		try {
 			if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
 				product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
-						FolderConstants.LOGO.getValue()).get());
+						FolderConstants.BANNER.getValue()).get());
 			}			
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
@@ -119,6 +123,13 @@ public class ProductServiceImpl implements ProductService {
 		product = this.productRepo.saveAndFlush(product);
 
 		return new ProductBo(product,this.prepareAttachments(product.getAttachments()));
+	}
+
+	private String prepareResource(String location) {
+		if (this.helper.notNullAndBlank(location)) {
+			return this.storageService.generatePresignedUrl(location);
+		}
+		return "";
 	}
 
 	@Override
@@ -169,7 +180,7 @@ public class ProductServiceImpl implements ProductService {
 			try {
 				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
 					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
-							product.getUser().getId(), FolderConstants.LOGO.getValue()).get());
+							product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
 				}				
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
@@ -196,7 +207,9 @@ public class ProductServiceImpl implements ProductService {
 		log.info("Inside fetch product");
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
-			return new ProductBo(product.get(),this.prepareAttachments(product.get().getAttachments()));
+			ProductBo bo = new ProductBo(product.get(),this.prepareAttachments(product.get().getAttachments()));
+			bo.setBanner(this.prepareResource(bo.getBanner()));
+			return bo;
 		}
 		throw new BadRequestException("no product found with id= " + id);
 	}
@@ -212,7 +225,11 @@ public class ProductServiceImpl implements ProductService {
 			allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
-		allProducts.forEach(product -> bos.add(new ProductBo(product,this.prepareAttachments(product.getAttachments()))));
+		allProducts.forEach(product -> {
+			ProductBo bo = new ProductBo(product,this.prepareAttachments(product.getAttachments()));
+			bo.setBanner(this.prepareResource(bo.getBanner()));
+			bos.add(bo);
+		});
 		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
 
 	}

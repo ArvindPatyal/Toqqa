@@ -33,8 +33,6 @@ public class Product {
 
 	private String description;
 
-//	private String details;
-
 	private Long unitsInStock;
 
 	private Double pricePerUnit;
