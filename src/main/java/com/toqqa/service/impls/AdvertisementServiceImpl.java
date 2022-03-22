@@ -26,6 +26,7 @@ import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.AdvertisementService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.StorageService;
+import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +48,9 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Autowired
 	private AuthenticationService authenticationService;
+
+	@Autowired
+	private Helper helper;
 
 	@Override
 	public AdvertisementBo createAds(AdvertisementPayload advertisementPayload) {
@@ -74,7 +78,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}
 		this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		return new AdvertisementBo(ads);
+		ads = this.advertisementRepo.saveAndFlush(ads);
+		AdvertisementBo bo = new AdvertisementBo(ads);
+		bo.setBanner(this.prepareResource(ads.getBanner()));
+		return bo;
+
 	}
 
 	private void updateOldAdsStatus(User user) {
@@ -107,8 +115,16 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}
 
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		return new AdvertisementBo(ads);
+		AdvertisementBo bo = new AdvertisementBo(ads);
+		bo.setBanner(this.prepareResource(ads.getBanner()));
+		return bo;
+	}
 
+	private String prepareResource(String location) {
+		if (this.helper.notNullAndBlank(location)) {
+			return this.storageService.generatePresignedUrl(location);
+		}
+		return "";
 	}
 
 	public void deleteAd(String id) {
