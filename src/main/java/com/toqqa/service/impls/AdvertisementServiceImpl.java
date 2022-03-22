@@ -78,7 +78,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}
 		this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		ads = this.advertisementRepo.saveAndFlush(ads);
 		AdvertisementBo bo = new AdvertisementBo(ads);
 		bo.setBanner(this.prepareResource(ads.getBanner()));
 		return bo;

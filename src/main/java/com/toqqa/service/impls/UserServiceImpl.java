@@ -133,7 +133,7 @@ public class UserServiceImpl implements UserService {
 					this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
 			return new LoginResponse(jwtAuthenticationResponse, user);
 		} catch (Exception e) {
-			throw new BadCredentialsException("bad Credentials");
+			throw new BadCredentialsException("invalid login credentials");
 		}
 
 	}// send auth token
