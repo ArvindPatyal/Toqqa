@@ -1,0 +1,98 @@
+package com.toqqa.controller;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.toqqa.bo.AdvertisementBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.payload.AdvertisementPayload;
+import com.toqqa.payload.AdvertisementUpdate;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.Response;
+import com.toqqa.service.AdvertisementService;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/advertisement")
+public class AdvertisementController {
+
+	@Autowired
+	AdvertisementService advertisementService;
+
+	@ApiOperation(value = "Create Advertisement")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PostMapping("/createAds")
+	public Response<AdvertisementBo> createAd(@ModelAttribute @Valid AdvertisementPayload advertisementPayload) {
+		log.info("Inside controller add order");
+		return new Response<AdvertisementBo>(this.advertisementService.createAds(advertisementPayload), "success");
+	}
+
+	@ApiOperation(value = "Update Advertisement")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PutMapping("/updateAds")
+	public Response<AdvertisementBo> createAd(@ModelAttribute @Valid AdvertisementUpdate advertisementUpdate) {
+		log.info("Inside controller update Advertisement");
+		return new Response<AdvertisementBo>(this.advertisementService.updateAd(advertisementUpdate), "success");
+	}
+
+	@DeleteMapping("/delete/{id}")
+	public Response<?> deleteAdvertisement(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller delete product");
+		this.advertisementService.deleteAd(id);
+		return new Response<Boolean>(true, "deleted successfully");
+	}
+
+	@ApiOperation(value = "Returns Advertisement data by given id")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@GetMapping("/fetchAds/{id}")
+	public Response<AdvertisementBo> fetchAd(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller fetch product");
+		return new Response<AdvertisementBo>(this.advertisementService.fetchAd(id), "success");
+	}
+
+	@ApiOperation(value = "fetch Advertisement List")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PostMapping("/fetchAdsList")
+	public ListResponseWithCount<AdvertisementBo> fetchAdvertisementList(
+			@RequestBody @Valid PaginationBo paginationbo) {
+		log.info("Inside controller fetch Advertisement List");
+		return this.advertisementService.fetchAdvertisementList(paginationbo);
+	}
+
+	@ApiOperation(value = " Advertisement")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PutMapping("/updateClicks/{id}")
+	public Response<AdvertisementBo> updateClick(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller update clicks");
+		return new Response<AdvertisementBo>(this.advertisementService.updateClick(id), "success");
+	}
+
+	@ApiOperation(value = " Advertisement")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@PutMapping("/updateAdsStatus/{id}")
+	public Response<AdvertisementBo> updateAdsStatus(@PathVariable("id") @Valid String id) {
+		log.info("Inside controller update clicks");
+		return new Response<AdvertisementBo>(this.advertisementService.updateAdsStatus(id), "success");
+	}
+}
