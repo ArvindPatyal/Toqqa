@@ -136,7 +136,7 @@ public class Helper {
 	}
 
 	public boolean isValidNumber(String number){
-		Pattern pattern = Pattern.compile("^\\d{10}$");
+		Pattern pattern = Pattern.compile("^\\d{8,11}$");
 		Matcher matcher = pattern.matcher(number);
 		return matcher.matches();
 	}
