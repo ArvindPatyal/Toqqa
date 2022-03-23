@@ -5,6 +5,7 @@ import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.AdvertisementPayload;
 import com.toqqa.payload.AdvertisementUpdate;
 import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.ToggleAdStatus;
 
 public interface AdvertisementService {
 
@@ -20,6 +21,6 @@ public interface AdvertisementService {
 
 	AdvertisementBo updateClick(String id);
 
-	AdvertisementBo updateAdsStatus(String id);
+	AdvertisementBo updateAdsStatus(ToggleAdStatus toggleAdStatus);
 
 }

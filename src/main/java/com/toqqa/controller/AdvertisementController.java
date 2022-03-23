@@ -2,6 +2,7 @@ package com.toqqa.controller;
 
 import javax.validation.Valid;
 
+import com.toqqa.payload.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.AdvertisementBo;
 import com.toqqa.bo.PaginationBo;
-import com.toqqa.payload.AdvertisementPayload;
-import com.toqqa.payload.AdvertisementUpdate;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.Response;
 import com.toqqa.service.AdvertisementService;
 
 import io.swagger.annotations.ApiOperation;
@@ -37,7 +34,7 @@ public class AdvertisementController {
 	@ApiOperation(value = "Create Advertisement")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
-	@PostMapping("/createAds")
+	@PostMapping("/createAd")
 	public Response<AdvertisementBo> createAd(@ModelAttribute @Valid AdvertisementPayload advertisementPayload) {
 		log.info("Inside controller add order");
 		return new Response<AdvertisementBo>(this.advertisementService.createAds(advertisementPayload), "success");
@@ -46,7 +43,7 @@ public class AdvertisementController {
 	@ApiOperation(value = "Update Advertisement")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
-	@PutMapping("/updateAds")
+	@PutMapping("/updateAd")
 	public Response<AdvertisementBo> createAd(@ModelAttribute @Valid AdvertisementUpdate advertisementUpdate) {
 		log.info("Inside controller update Advertisement");
 		return new Response<AdvertisementBo>(this.advertisementService.updateAd(advertisementUpdate), "success");
@@ -62,7 +59,7 @@ public class AdvertisementController {
 	@ApiOperation(value = "Returns Advertisement data by given id")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
-	@GetMapping("/fetchAds/{id}")
+	@GetMapping("/fetchAd/{id}")
 	public Response<AdvertisementBo> fetchAd(@PathVariable("id") @Valid String id) {
 		log.info("Inside controller fetch product");
 		return new Response<AdvertisementBo>(this.advertisementService.fetchAd(id), "success");
@@ -71,7 +68,7 @@ public class AdvertisementController {
 	@ApiOperation(value = "fetch Advertisement List")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
-	@PostMapping("/fetchAdsList")
+	@PostMapping("/fetchAdList")
 	public ListResponseWithCount<AdvertisementBo> fetchAdvertisementList(
 			@RequestBody @Valid PaginationBo paginationbo) {
 		log.info("Inside controller fetch Advertisement List");
@@ -90,9 +87,9 @@ public class AdvertisementController {
 	@ApiOperation(value = " Advertisement")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
-	@PutMapping("/updateAdsStatus/{id}")
-	public Response<AdvertisementBo> updateAdsStatus(@PathVariable("id") @Valid String id) {
+	@PostMapping("/updateAdsStatus")
+	public Response<AdvertisementBo> updateAdsStatus(@RequestBody @Valid ToggleAdStatus request) {
 		log.info("Inside controller update clicks");
-		return new Response<AdvertisementBo>(this.advertisementService.updateAdsStatus(id), "success");
+		return new Response<AdvertisementBo>(this.advertisementService.updateAdsStatus(request), "success");
 	}
 }

@@ -21,8 +21,6 @@ public class ProductBo {
 
 	private String description;
 
-//	private String details;
-
 	private Long unitsInStock;
 
 	private Double pricePerUnit;
@@ -72,7 +70,6 @@ public class ProductBo {
 		product.getProductSubCategories().forEach(pc -> {
 			this.productSubCategories.add(new ProductSubCategoryBo(pc));
 		});
-
 	}
 	public ProductBo(Product product,List<String> images) {
 		this.id = product.getId();

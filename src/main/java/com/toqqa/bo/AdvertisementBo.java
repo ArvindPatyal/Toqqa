@@ -1,38 +1,47 @@
 package com.toqqa.bo;
 
-import java.util.Date;
-
 import com.toqqa.domain.Advertisement;
-
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 public class AdvertisementBo {
 
-	private String id;
+    private String id;
 
-	private String description;
+    private String description;
 
-	private Date createdDate;
+    private Date createdDate;
 
-	private Date modificationDate;
+    private Date modificationDate;
 
-	private Integer clicks;
+    private Integer clicks;
 
-	private String banner;
+    private String banner;
 
-	private String productId;
+    private ProductBo product;
 
-	public AdvertisementBo(Advertisement advertisement) {
+    public AdvertisementBo(Advertisement advertisement) {
 
-		this.id = advertisement.getId();
-		this.description = advertisement.getDescription();
-		this.createdDate = advertisement.getCreatedDate();
-		this.modificationDate = advertisement.getModificationDate();
-		this.clicks = advertisement.getClicks();
-		this.banner = advertisement.getBanner();
-		this.productId = advertisement.getProduct().getId();
+        this.id = advertisement.getId();
+        this.description = advertisement.getDescription();
+        this.createdDate = advertisement.getCreatedDate();
+        this.modificationDate = advertisement.getModificationDate();
+        this.clicks = advertisement.getClicks();
+        this.banner = advertisement.getBanner();
+    }
 
-	}
+    public AdvertisementBo(Advertisement advertisement, ProductBo product) {
+
+        this.id = advertisement.getId();
+        this.description = advertisement.getDescription();
+        this.createdDate = advertisement.getCreatedDate();
+        this.modificationDate = advertisement.getModificationDate();
+        this.clicks = advertisement.getClicks();
+        this.banner = advertisement.getBanner();
+        this.product = product;
+
+    }
 
 }

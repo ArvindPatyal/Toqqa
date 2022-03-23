@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import com.toqqa.bo.ProductBo;
+import com.toqqa.domain.Attachment;
+import com.toqqa.payload.ToggleAdStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.toqqa.bo.AdvertisementBo;
@@ -29,6 +33,7 @@ import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Service
 @Slf4j
@@ -54,8 +59,10 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Override
 	public AdvertisementBo createAds(AdvertisementPayload advertisementPayload) {
-
 		log.info("Inside create Advertisement");
+		if(!this.authenticationService.isSME()){
+			throw new AccessDeniedException("user is not an sme");
+		}
 		User user = this.authenticationService.currentUser();
 		Advertisement ads = new Advertisement();
 		ads.setIsDeleted(false);
@@ -64,30 +71,36 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		ads.setUser(user);
 		ads.setProduct(this.productRepo.findById(advertisementPayload.getProductId()).get());
 		ads.setClicks(0);
-		ads.setCreatedDate(new Date());
-		ads.setModificationDate(new Date());
-
 		try {
 			ads.setBanner(this.storageService
 					.uploadFileAsync(advertisementPayload.getBanner(), user.getId(), FolderConstants.BANNER.getValue())
 					.get());
-
 		} catch (InterruptedException | ExecutionException e) {
-
 			e.printStackTrace();
 		}
 		this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		AdvertisementBo bo = new AdvertisementBo(ads);
-		bo.setBanner(this.prepareResource(ads.getBanner()));
+		ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+		AdvertisementBo bo = new AdvertisementBo(ads,productBo);
+		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
 		return bo;
 
 	}
 
-	private void updateOldAdsStatus(User user) {
+	private ProductBo prepareProduct(AdvertisementBo bo){
+		log.info("inside prepare product");
+		bo.getProduct().getImages().forEach(image->{
+			 image = this.helper.prepareResource(image);
+			 bo.getProduct().getImages().add(image);
+		});
+		bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().getBanner()));
+		return bo.getProduct();
+	}
 
+	private void updateOldAdsStatus(User user) {
 		log.info("Inside advertisement update ads Status");
-		List<Advertisement> ads = this.advertisementRepo.findByUserAndIsActive(user, true);
+		List<Advertisement> ads = this.advertisementRepo.findByUserAndIsActiveAndIsDeleted(user, true,false);
 		ads.forEach(ad -> {
 			ad.setIsActive(false);
 			this.advertisementRepo.saveAndFlush(ad);
@@ -96,39 +109,34 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Override
 	public AdvertisementBo updateAd(AdvertisementUpdate advertisementUpdate) {
-
 		log.info("Inside Update Advertisement");
+		if(!this.authenticationService.isSME()){
+			throw new AccessDeniedException("user is not an sme");
+		}
 		User user = this.authenticationService.currentUser();
 		Advertisement ads = this.advertisementRepo.findById(advertisementUpdate.getId()).get();
-		ads.setModificationDate(new Date());
 		ads.setDescription(advertisementUpdate.getDescription());
 		ads.setProduct(this.productRepo.findById(advertisementUpdate.getProductId()).get());
 		try {
 			ads.setBanner(this.storageService
 					.uploadFileAsync(advertisementUpdate.getBanner(), user.getId(), FolderConstants.BANNER.getValue())
 					.get());
-
 		} catch (InterruptedException | ExecutionException e) {
-
 			e.printStackTrace();
 		}
-
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		AdvertisementBo bo = new AdvertisementBo(ads);
-		bo.setBanner(this.prepareResource(ads.getBanner()));
+		ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+		AdvertisementBo bo = new AdvertisementBo(ads,productBo);
+		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
 		return bo;
 	}
 
-	private String prepareResource(String location) {
-		if (this.helper.notNullAndBlank(location)) {
-			return this.storageService.generatePresignedUrl(location);
-		}
-		return "";
-	}
-
 	public void deleteAd(String id) {
+		log.info("inside delete ad");
 		Advertisement ad = this.advertisementRepo.findById(id).get();
 		ad.setIsDeleted(true);
+		ad.setIsActive(false);
 		this.advertisementRepo.saveAndFlush(ad);
 	}
 
@@ -137,23 +145,34 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		log.info("Inside fetch advertisement");
 		Optional<Advertisement> advertisement = this.advertisementRepo.findById(id);
 		if (advertisement.isPresent()) {
-			return new AdvertisementBo(advertisement.get());
+			ProductBo productBo=new ProductBo(advertisement.get().getProduct(),this.helper.prepareAttachments(advertisement.get().getProduct().getAttachments()));
+			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			AdvertisementBo bo = new AdvertisementBo(advertisement.get(),productBo);
+			bo.setBanner(this.helper.prepareResource(advertisement.get().getBanner()));
+			return bo;
 		}
 		throw new BadRequestException("no advertisement found with id= " + id);
 	}
 
 	@Override
 	public ListResponseWithCount<AdvertisementBo> fetchAdvertisementList(PaginationBo paginationBo) {
+		log.info("inside fetch advertisementList ");
 		User user = this.authenticationService.currentUser();
 		Page<Advertisement> allAdvertisements = null;
 		if (this.authenticationService.isAdmin()) {
-			allAdvertisements = this.advertisementRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+			allAdvertisements = this.advertisementRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),false);
 		} else {
 			allAdvertisements = this.advertisementRepo
-					.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
+					.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
 		}
 		List<AdvertisementBo> bos = new ArrayList<AdvertisementBo>();
-		allAdvertisements.forEach(advertisement -> bos.add(new AdvertisementBo(advertisement)));
+		allAdvertisements.forEach(advertisement -> {
+			ProductBo productBo=new ProductBo(advertisement.getProduct(),this.helper.prepareAttachments(advertisement.getProduct().getAttachments()));
+			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			AdvertisementBo bo = new AdvertisementBo(advertisement,productBo);
+			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
+			bos.add(bo);
+		});
 		return new ListResponseWithCount<AdvertisementBo>(bos, "", allAdvertisements.getTotalElements(),
 				paginationBo.getPageNumber(), allAdvertisements.getTotalPages());
 	}
@@ -166,18 +185,23 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		ads.setModificationDate(new Date());
 		ads = this.advertisementRepo.saveAndFlush(ads);
 		return new AdvertisementBo(ads);
-
 	}
 
 	@Override
-	public AdvertisementBo updateAdsStatus(String id) {
+	public AdvertisementBo updateAdsStatus(ToggleAdStatus status) {
 		log.info("Inside update Ads Status");
 		User user = this.authenticationService.currentUser();
-		Advertisement ads = this.advertisementRepo.getById(id);
-		ads.setIsActive(ads.getIsActive());
-		ads.setModificationDate(new Date());
-		this.updateOldAdsStatus(user);
-		ads = this.advertisementRepo.saveAndFlush(ads);
-		return new AdvertisementBo(ads);
+		Advertisement ads = this.advertisementRepo.findById(status.getAdId()).get();
+		if(ads!=null) {
+			ads.setIsActive(status.getStatus());
+			this.updateOldAdsStatus(user);
+			ads = this.advertisementRepo.saveAndFlush(ads);
+			ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			AdvertisementBo bo = new AdvertisementBo(ads,productBo);
+			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
+			return bo;
+		}
+		throw new BadRequestException("invalid ad id "+ status.getAdId());
 	}
 }

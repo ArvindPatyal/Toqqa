@@ -13,8 +13,9 @@ import com.toqqa.domain.User;
 @Repository
 public interface AdvertisementRepository extends JpaRepository<Advertisement, String> {
 
-	Page<Advertisement> findByUser(Pageable pageRequest, User user);
+	Page<Advertisement> findByUserAndIsDeleted(Pageable pageRequest, User user,Boolean isDeleted);
 	
-	List<Advertisement> findByUserAndIsActive(User user,Boolean isActive);
+	List<Advertisement> findByUserAndIsActiveAndIsDeleted(User user,Boolean isActive,Boolean isDeleted);
 
+	Page<Advertisement> findByIsDeleted(Pageable pageable,Boolean isDeleted);
 }

@@ -5,20 +5,23 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.toqqa.domain.Attachment;
+import com.toqqa.service.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Component
 public class Helper {
+	@Autowired
+	private StorageService storageService;
 
 	private static final Logger logger = LoggerFactory.getLogger(Helper.class);
 	private static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss z";
@@ -139,5 +142,20 @@ public class Helper {
 		Pattern pattern = Pattern.compile("^\\d{8,11}$");
 		Matcher matcher = pattern.matcher(number);
 		return matcher.matches();
+	}
+	public String prepareResource(String location) {
+		if (this.notNullAndBlank(location)) {
+			return this.storageService.generatePresignedUrl(location);
+		}
+		return "";
+	}
+
+	public List<String> prepareAttachments(List<Attachment> attachments){
+		List<String> atts = new ArrayList<>();
+		final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+		attachments.forEach(att->{
+			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
+		});
+		return atts;
 	}
 }
