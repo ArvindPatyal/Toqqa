@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
 			if(!EmailValidator.getInstance().isValid(userSignUp.getEmail())){
 				throw new BadRequestException("invalid email value : "+userSignUp.getEmail());
 			}
-			user.setEmail(userSignUp.getEmail());
+			user.setEmail(userSignUp.getEmail().toLowerCase());
 		}
 		user.setFirstName(userSignUp.getFirstName());
 		if(this.helper.notNullAndBlank(userSignUp.getPhone())) {
