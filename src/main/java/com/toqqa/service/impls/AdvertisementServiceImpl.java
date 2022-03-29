@@ -191,8 +191,9 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 	public AdvertisementBo updateAdsStatus(ToggleAdStatus status) {
 		log.info("Inside update Ads Status");
 		User user = this.authenticationService.currentUser();
-		Advertisement ads = this.advertisementRepo.findById(status.getAdId()).get();
-		if(ads!=null) {
+		Optional<Advertisement> ad = this.advertisementRepo.findById(status.getAdId());
+		if(ad.isPresent()) {
+			Advertisement ads = ad.get();
 			ads.setIsActive(status.getStatus());
 			this.updateOldAdsStatus(user);
 			ads = this.advertisementRepo.saveAndFlush(ads);

@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 public class ToggleAdStatus {
 
     @NotNull
-    @NotEmpty
     private Boolean status;
     @NotNull
     @NotEmpty
