@@ -1,19 +1,6 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
-import com.toqqa.util.Helper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.toqqa.bo.FileBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.constants.FileType;
@@ -33,213 +20,228 @@ import com.toqqa.service.AttachmentService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
-
+import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
 public class ProductServiceImpl implements ProductService {
 
-	@Autowired
-	private ProductRepository productRepo;
+    @Autowired
+    ProductCategoryRepository productCategoryRepo;
+    @Autowired
+    ProductSubCategoryRepository productSubCategoryRepo;
+    @Autowired
+    private ProductRepository productRepo;
+    @Autowired
+    private AuthenticationService authenticationService;
 
-	@Autowired
-	ProductCategoryRepository productCategoryRepo;
+    @Autowired
+    private StorageService storageService;
 
-	@Autowired
-	ProductSubCategoryRepository productSubCategoryRepo;
+    @Value("${pageSize}")
+    private Integer pageSize;
 
-	@Autowired
-	private AuthenticationService authenticationService;
+    @Autowired
+    private AttachmentService attachmentService;
 
-	@Autowired
-	private StorageService storageService;
+    @Autowired
+    private AttachmentRepository attachmentRepository;
 
-	@Value("${pageSize}")
-	private Integer pageSize;
+    @Autowired
+    private Helper helper;
 
-	@Autowired
-	private AttachmentService attachmentService;
+    @Override
+    public ProductBo addProduct(AddProduct addProduct) {
+        log.info("Inside Add Product");
+        Product product = new Product();
 
-	@Autowired
-	private AttachmentRepository attachmentRepository;
+        product.setProductName(addProduct.getProductName());
+        product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
+        product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
+        product.setDescription(addProduct.getDescription());
+        // product.setDetails(addProduct.getDetails());
+        product.setUnitsInStock(addProduct.getUnitsInStock());
+        product.setPricePerUnit(addProduct.getPricePerUnit());
+        product.setDiscount(addProduct.getDiscount());
+        product.setMaximumUitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
+        product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
 
-	@Autowired
-	private Helper helper;
+        if (addProduct.getExpiryDate() != null)
+            product.setExpiryDate(new Date(addProduct.getExpiryDate()));
 
-	@Override
-	public ProductBo addProduct(AddProduct addProduct) {
-		log.info("Inside Add Product");
-		Product product = new Product();
+        product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
+        product.setManufacturerName(addProduct.getManufacturerName());
+        product.setUser(authenticationService.currentUser());
+        product.setIsDeleted(false);
 
-		product.setProductName(addProduct.getProductName());
-		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
-		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
-		product.setDescription(addProduct.getDescription());
-		// product.setDetails(addProduct.getDetails());
-		product.setUnitsInStock(addProduct.getUnitsInStock());
-		product.setPricePerUnit(addProduct.getPricePerUnit());
-		product.setDiscount(addProduct.getDiscount());
-		product.setMaximumUitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
-		product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
+        if (addProduct.getManufacturingDate() != null)
+            product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
-		if(addProduct.getExpiryDate()!=null)
-		product.setExpiryDate(new Date(addProduct.getExpiryDate()));
+        List<Attachment> attachments = new ArrayList<Attachment>();
+        for (MultipartFile imageFile : addProduct.getImages()) {
+            if (imageFile != null && !imageFile.isEmpty())
+                try {
+                    String location = this.storageService
+                            .uploadFileAsync(imageFile, product.getUser().getId(), FolderConstants.PRODUCTS.getValue())
+                            .get();
+                    attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
+                            imageFile.getOriginalFilename(), imageFile.getContentType()));
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
 
-		product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
-		product.setManufacturerName(addProduct.getManufacturerName());
-		product.setUser(authenticationService.currentUser());
-		product.setIsDeleted(false);
+        }
 
-		if(addProduct.getManufacturingDate()!=null)
-		product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
+        try {
+            if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
+                product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
+                        FolderConstants.BANNER.getValue()).get());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
-		for (MultipartFile imageFile : addProduct.getImages()) {
-			if (imageFile != null && !imageFile.isEmpty())
-				try {
-					String location = this.storageService
-							.uploadFileAsync(imageFile, product.getUser().getId(), FolderConstants.PRODUCTS.getValue())
-							.get();
-					attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
-							imageFile.getOriginalFilename(), imageFile.getContentType()));
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-				}
+        product.setAttachments(attachments);
+        product = this.productRepo.saveAndFlush(product);
 
-		}
+        return new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
+    }
 
-		try {
-			if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
-				product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
-						FolderConstants.BANNER.getValue()).get());
-			}			
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
+    private String prepareResource(String location) {
+        if (this.helper.notNullAndBlank(location)) {
+            return this.storageService.generatePresignedUrl(location);
+        }
+        return "";
+    }
 
-		product.setAttachments(attachments);
-		product = this.productRepo.saveAndFlush(product);
+    @Override
+    public ProductBo updateProduct(UpdateProduct updateProduct) {
+        log.info("inside update Product");
+        Product product = this.productRepo.findById(updateProduct.getProductId()).get();
+        if (product != null) {
+            product.setProductName(updateProduct.getProductName());
+            product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
+            product.setProductSubCategories(
+                    this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
+            product.setUser(authenticationService.currentUser());
 
-		return new ProductBo(product,this.prepareAttachments(product.getAttachments()));
-	}
+            product.setDescription(updateProduct.getDescription());
+            // product.setDetails(updateProduct.getDetails());
+            product.setUnitsInStock(updateProduct.getUnitsInStock());
+            product.setPricePerUnit(updateProduct.getPricePerUnit());
+            product.setDiscount(updateProduct.getDiscount());
+            product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
+            product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
 
-	private String prepareResource(String location) {
-		if (this.helper.notNullAndBlank(location)) {
-			return this.storageService.generatePresignedUrl(location);
-		}
-		return "";
-	}
+            if (updateProduct.getExpiryDate() != null)
+                product.setExpiryDate(new Date(updateProduct.getExpiryDate()));
 
-	@Override
-	public ProductBo updateProduct(UpdateProduct updateProduct) {
-		log.info("Inside update Product");
-		Product product = this.productRepo.findById(updateProduct.getProductId()).get();
-		if (product != null) {
-			product.setProductName(updateProduct.getProductName());
-			product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
-			product.setProductSubCategories(
-					this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
-			product.setUser(authenticationService.currentUser());
+            product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
+            product.setManufacturerName(updateProduct.getManufacturerName());
 
-			product.setDescription(updateProduct.getDescription());
-			// product.setDetails(updateProduct.getDetails());
-			product.setUnitsInStock(updateProduct.getUnitsInStock());
-			product.setPricePerUnit(updateProduct.getPricePerUnit());
-			product.setDiscount(updateProduct.getDiscount());
-			product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
-			product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
+            if (updateProduct.getManufacturingDate() != null)
+                product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
 
-			if(updateProduct.getExpiryDate()!=null)
-				product.setExpiryDate(new Date(updateProduct.getExpiryDate()));
+            List<Attachment> attachments = new ArrayList<Attachment>();
+            this.attachmentRepository.deleteAll(product.getAttachments());
 
-			product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
-			product.setManufacturerName(updateProduct.getManufacturerName());
+            if (updateProduct.getImages() != null && !updateProduct.getImages().isEmpty()) {
+                for (MultipartFile imageFile : updateProduct.getImages()) {
+                    if (imageFile != null && !imageFile.isEmpty())
+                        try {
+                            String location = this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
+                                    FolderConstants.PRODUCTS.getValue()).get();
+                            attachments
+                                    .add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
+                                            imageFile.getOriginalFilename(), imageFile.getContentType()));
+                        } catch (InterruptedException | ExecutionException e) {
+                            e.printStackTrace();
+                        }
 
-			if(updateProduct.getManufacturingDate()!=null)
-			product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
+                }
+            }
 
-			List<Attachment> attachments = new ArrayList<Attachment>();
-			this.attachmentRepository.deleteAll(product.getAttachments());
+            try {
+                if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
+                    product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
+                            product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
 
-			for (MultipartFile imageFile : updateProduct.getImages()) {
-				if (imageFile != null && !imageFile.isEmpty())
-					try {
-						String location = this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
-								FolderConstants.PRODUCTS.getValue()).get();
-						attachments
-								.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
-										imageFile.getOriginalFilename(), imageFile.getContentType()));
-					} catch (InterruptedException | ExecutionException e) {
-						e.printStackTrace();
-					}
+            product.setAttachments(attachments);
+            product = this.productRepo.saveAndFlush(product);
+            return new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
+        }
+        throw new BadRequestException("Invalid Product Id");
+    }
 
-			}
-						
-			try {
-				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
-					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
-							product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
-				}				
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
+    /*private List<FileBo> prepareProductAttachments(List<Attachment> attachments) {
+        List<FileBo> atts = new ArrayList<>();
+        final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        attachments.forEach(att -> {
+            atts.add(new FileBo(att.getId(),this.storageService.generatePresignedUrl(att.getLocation())));
+        });
+        return atts;
+    }*/
 
-			product.setAttachments(attachments);
-			product = this.productRepo.saveAndFlush(product);
-			return new ProductBo(product,this.prepareAttachments(product.getAttachments()));
-		}
-		throw new BadRequestException("Invalid Product Id");
-	}
+    @Override
+    public ProductBo fetchProduct(String id) {
+        log.info("Inside fetch product");
+        Optional<Product> product = this.productRepo.findById(id);
+        if (product.isPresent()) {
+            ProductBo bo = new ProductBo(product.get(), this.helper.prepareProductAttachments(product.get().getAttachments()));
+            bo.setBanner(this.prepareResource(bo.getBanner()));
+            return bo;
+        }
+        throw new BadRequestException("no product found with id= " + id);
+    }
 
-	private List<String> prepareAttachments(List<Attachment> attachments){
-		List<String> atts = new ArrayList<>();
-		final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-		attachments.forEach(att->{
-			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
-		});
-		return atts;
-	}
+    @Override
+    public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
+		log.info("inside fetch products");
+        User user = this.authenticationService.currentUser();
+        Page<Product> allProducts = null;
 
-	@Override
-	public ProductBo fetchProduct(String id) {
-		log.info("Inside fetch product");
-		Optional<Product> product = this.productRepo.findById(id);
-		if (product.isPresent()) {
-			ProductBo bo = new ProductBo(product.get(),this.prepareAttachments(product.get().getAttachments()));
-			bo.setBanner(this.prepareResource(bo.getBanner()));
-			return bo;
-		}
-		throw new BadRequestException("no product found with id= " + id);
-	}
+        if (this.authenticationService.isAdmin()) {
+            allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), false);
+        } else {
+            allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, false);
+        }
+        List<ProductBo> bos = new ArrayList<ProductBo>();
+        allProducts.forEach(product -> {
+            ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
+            bo.setBanner(this.prepareResource(bo.getBanner()));
+            bos.add(bo);
+        });
+        return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
 
-	@Override
-	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
-		User user = this.authenticationService.currentUser();
-		Page<Product> allProducts = null;
+    }
 
-		if (this.authenticationService.isAdmin()) {
-			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),false);
-		} else {
-			allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user,false);
-		}
-		List<ProductBo> bos = new ArrayList<ProductBo>();
-		allProducts.forEach(product -> {
-			ProductBo bo = new ProductBo(product,this.prepareAttachments(product.getAttachments()));
-			bo.setBanner(this.prepareResource(bo.getBanner()));
-			bos.add(bo);
-		});
-		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
+    public void deleteProduct(String id) {
+        log.info("inside delete product");
+        Product prod = this.productRepo.findById(id).get();
+        prod.setIsDeleted(true);
+        this.productRepo.saveAndFlush(prod);
+    }
 
-	}
+    public void updateProductImage(String request){
 
-	public void deleteProduct(String id) {
-
-		Product prod = this.productRepo.findById(id).get();
-		prod.setIsDeleted(true);
-		this.productRepo.saveAndFlush(prod);
-
-	}
+    }
 
 }

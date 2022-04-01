@@ -80,7 +80,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}
 		this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+		ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 		AdvertisementBo bo = new AdvertisementBo(ads,productBo);
 		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
@@ -88,7 +88,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	}
 
-	private ProductBo prepareProduct(AdvertisementBo bo){
+	/*private ProductBo prepareProduct(AdvertisementBo bo){
 		log.info("inside prepare product");
 		bo.getProduct().getImages().forEach(image->{
 			 image = this.helper.prepareResource(image);
@@ -96,7 +96,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		});
 		bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().getBanner()));
 		return bo.getProduct();
-	}
+	}*/
 
 	private void updateOldAdsStatus(User user) {
 		log.info("Inside advertisement update ads Status");
@@ -125,7 +125,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			e.printStackTrace();
 		}
 		ads = this.advertisementRepo.saveAndFlush(ads);
-		ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+		ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 		AdvertisementBo bo = new AdvertisementBo(ads,productBo);
 		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
@@ -145,7 +145,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		log.info("Inside fetch advertisement");
 		Optional<Advertisement> advertisement = this.advertisementRepo.findById(id);
 		if (advertisement.isPresent()) {
-			ProductBo productBo=new ProductBo(advertisement.get().getProduct(),this.helper.prepareAttachments(advertisement.get().getProduct().getAttachments()));
+			ProductBo productBo=new ProductBo(advertisement.get().getProduct(),this.helper.prepareProductAttachments(advertisement.get().getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(advertisement.get(),productBo);
 			bo.setBanner(this.helper.prepareResource(advertisement.get().getBanner()));
@@ -167,7 +167,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}
 		List<AdvertisementBo> bos = new ArrayList<AdvertisementBo>();
 		allAdvertisements.forEach(advertisement -> {
-			ProductBo productBo=new ProductBo(advertisement.getProduct(),this.helper.prepareAttachments(advertisement.getProduct().getAttachments()));
+			ProductBo productBo=new ProductBo(advertisement.getProduct(),this.helper.prepareProductAttachments(advertisement.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(advertisement,productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
@@ -197,7 +197,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			ads.setIsActive(status.getStatus());
 			this.updateOldAdsStatus(user);
 			ads = this.advertisementRepo.saveAndFlush(ads);
-			ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+			ProductBo productBo=new ProductBo(ads.getProduct(),this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(ads,productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));

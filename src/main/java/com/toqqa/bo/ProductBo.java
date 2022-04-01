@@ -1,5 +1,6 @@
 package com.toqqa.bo;
 
+import java.io.File;
 import java.util.*;
 
 import com.toqqa.domain.Product;
@@ -17,7 +18,7 @@ public class ProductBo {
 
 	private List<ProductSubCategoryBo> productSubCategories =new ArrayList<ProductSubCategoryBo>();
 
-	private List<String> images=new ArrayList<>();
+	private List<FileBo> images=new ArrayList<>();
 
 	private String description;
 
@@ -71,7 +72,7 @@ public class ProductBo {
 			this.productSubCategories.add(new ProductSubCategoryBo(pc));
 		});
 	}
-	public ProductBo(Product product,List<String> images) {
+	public ProductBo(Product product,List<FileBo> images) {
 		this.id = product.getId();
 		this.productName = product.getProductName();
 		this.description = product.getDescription();

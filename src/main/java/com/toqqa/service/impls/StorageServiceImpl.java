@@ -123,9 +123,11 @@ public class StorageServiceImpl implements StorageService {
             String pathArr[] = location.split("/");
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
-            calendar.add(Calendar.MINUTE, 1);
+            calendar.add(Calendar.MINUTE, 30);
             return s3Client.generatePresignedUrl(bucketName+"/"+pathArr[1]+"/"+pathArr[2],pathArr[3],calendar.getTime()).toString();
         }
         return "";
     }
+
+
 }

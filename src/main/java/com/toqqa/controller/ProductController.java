@@ -56,15 +56,16 @@ public class ProductController {
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/fetchProductList")
     public ListResponseWithCount<ProductBo> fetchProductList(@RequestBody @Valid PaginationBo paginationbo) {
-		log.info("Inside controller fetch Product List");
-		return this.productService.fetchProductList(paginationbo);
-
-	}
-        @DeleteMapping("/delete/{id}")
-        public Response<?> deleteProduct (@PathVariable("id") @Valid String id){
-            log.info("Inside controller fetch product");
-            this.productService.deleteProduct(id);
-            return new Response<Boolean>(true, "deleted successfully");
-        }
+        log.info("Inside controller fetch Product List");
+        return this.productService.fetchProductList(paginationbo);
 
     }
+
+    @DeleteMapping("/delete/{id}")
+    public Response<?> deleteProduct(@PathVariable("id") @Valid String id) {
+        log.info("Inside controller fetch product");
+        this.productService.deleteProduct(id);
+        return new Response<Boolean>(true, "deleted successfully");
+    }
+
+}

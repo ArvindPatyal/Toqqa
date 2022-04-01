@@ -19,7 +19,7 @@ public class AddProduct {
 	@NotNull
 	private List<String> productCategory;
 
-	@NotNull
+//	@NotNull
 	private List<String> productSubCategory;
 
 	@NotNull

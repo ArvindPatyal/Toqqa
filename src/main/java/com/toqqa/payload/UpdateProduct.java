@@ -22,10 +22,10 @@ public class UpdateProduct {
 	@NotNull
 	private List<String> productCategory;
 
-	@NotNull
+//	@NotNull
 	private List<String> productSubCategory;
 
-	@NotNull
+//	@NotNull
 	private List<MultipartFile> images;
 
 	@NotNull
@@ -58,7 +58,7 @@ public class UpdateProduct {
 	
 	private Long manufacturingDate;
 	
-	@NotNull
+//	@NotNull
 	private MultipartFile banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
