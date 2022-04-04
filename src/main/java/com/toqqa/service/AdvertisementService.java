@@ -1,5 +1,7 @@
 package com.toqqa.service;
 
+import java.util.List;
+
 import com.toqqa.bo.AdvertisementBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.AdvertisementPayload;
@@ -22,5 +24,6 @@ public interface AdvertisementService {
 	AdvertisementBo updateClick(String id);
 
 	AdvertisementBo updateAdsStatus(ToggleAdStatus toggleAdStatus);
-
+	
+	List<AdvertisementBo> fetchTopActiveAdds();
 }
