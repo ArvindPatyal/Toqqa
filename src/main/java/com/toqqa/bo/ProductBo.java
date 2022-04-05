@@ -27,7 +27,7 @@ public class ProductBo {
 
 	private Double discount;
 
-	private Integer maximumUitsInOneOrder;
+	private Integer maximumUnitsInOneOrder;
 
 	private Integer minimumUnitsInOneOrder;
 
@@ -56,7 +56,7 @@ public class ProductBo {
 		this.unitsInStock = product.getUnitsInStock();
 		this.pricePerUnit = product.getPricePerUnit();
 		this.discount = product.getDiscount();
-		this.maximumUitsInOneOrder = product.getMaximumUitsInOneOrder();
+		this.maximumUnitsInOneOrder = product.getMaximumUnitsInOneOrder();
 		this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
 		this.expiryDate = product.getExpiryDate();
 		this.countryOfOrigin = product.getCountryOfOrigin();
@@ -78,7 +78,7 @@ public class ProductBo {
 		this.unitsInStock = product.getUnitsInStock();
 		this.pricePerUnit = product.getPricePerUnit();
 		this.discount = product.getDiscount();
-		this.maximumUitsInOneOrder = product.getMaximumUitsInOneOrder();
+		this.maximumUnitsInOneOrder = product.getMaximumUnitsInOneOrder();
 		this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
 		this.expiryDate = product.getExpiryDate();
 		this.countryOfOrigin = product.getCountryOfOrigin();
