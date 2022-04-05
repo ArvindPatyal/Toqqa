@@ -117,14 +117,15 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		User user = this.authenticationService.currentUser();
 		Advertisement ads = this.advertisementRepo.findById(advertisementUpdate.getId()).get();
 		ads.setDescription(advertisementUpdate.getDescription());
-		ads.setProduct(this.productRepo.findById(advertisementUpdate.getProductId()).get());
+		ads.setProduct(this.productRepo.findById(advertisementUpdate.getProductId()).get());				
+		if(advertisementUpdate.getBanner()!=null& !advertisementUpdate.getBanner().isEmpty()) {
 		try {
 			ads.setBanner(this.storageService
 					.uploadFileAsync(advertisementUpdate.getBanner(), user.getId(), FolderConstants.BANNER.getValue())
 					.get());
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
-		}
+		}}
 		ads = this.advertisementRepo.saveAndFlush(ads);
 		ProductBo productBo = new ProductBo(ads.getProduct(),
 				this.helper.prepareAttachments(ads.getProduct().getAttachments()));
