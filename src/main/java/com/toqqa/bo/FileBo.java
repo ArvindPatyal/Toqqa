@@ -9,7 +9,7 @@ public class FileBo {
 
     private String id;
 
-    private String file;
+    private String imageUrl;
 
 
 }

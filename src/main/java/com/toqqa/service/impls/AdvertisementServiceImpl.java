@@ -80,6 +80,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}
 	//	this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
+
 		ProductBo productBo = new ProductBo(ads.getProduct(),
 				this.helper.prepareAttachments(ads.getProduct().getAttachments()));
 		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
@@ -89,7 +90,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	}
 
-	private ProductBo prepareProduct(AdvertisementBo bo) {
+
+	/*private ProductBo prepareProduct(AdvertisementBo bo){
 		log.info("inside prepare product");
 		bo.getProduct().getImages().forEach(image -> {
 			image = this.helper.prepareResource(image);
@@ -97,7 +99,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		});
 		bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().getBanner()));
 		return bo.getProduct();
-	}
+	}*/
 
 	private void updateOldAdsStatus(User user) {
 		log.info("Inside advertisement update ads Status");
