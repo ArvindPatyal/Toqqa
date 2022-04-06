@@ -8,4 +8,7 @@ import com.toqqa.domain.Attachment;
 @Repository
 public interface AttachmentRepository extends JpaRepository<Attachment, String> {
 
+	void deleteById(String id);
+	
+	
 }

@@ -1,6 +1,18 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.FileBo;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.constants.FileType;
@@ -10,238 +22,269 @@ import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.AddProduct;
+import com.toqqa.payload.FileUpload;
 import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.Response;
 import com.toqqa.payload.UpdateProduct;
 import com.toqqa.repository.AttachmentRepository;
 import com.toqqa.repository.ProductCategoryRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.ProductSubCategoryRepository;
+import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AttachmentService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
 public class ProductServiceImpl implements ProductService {
 
-    @Autowired
-    ProductCategoryRepository productCategoryRepo;
-    @Autowired
-    ProductSubCategoryRepository productSubCategoryRepo;
-    @Autowired
-    private ProductRepository productRepo;
-    @Autowired
-    private AuthenticationService authenticationService;
+	@Autowired
+	private ProductRepository productRepo;
 
-    @Autowired
-    private StorageService storageService;
+	@Autowired
+	ProductCategoryRepository productCategoryRepo;
 
-    @Value("${pageSize}")
-    private Integer pageSize;
+	@Autowired
+	ProductSubCategoryRepository productSubCategoryRepo;
 
-    @Autowired
-    private AttachmentService attachmentService;
+	@Autowired
+	private AuthenticationService authenticationService;
 
-    @Autowired
-    private AttachmentRepository attachmentRepository;
+	@Autowired
+	private StorageService storageService;
 
-    @Autowired
-    private Helper helper;
+	@Value("${pageSize}")
+	private Integer pageSize;
 
-    @Override
-    public ProductBo addProduct(AddProduct addProduct) {
-        log.info("Inside Add Product");
-        Product product = new Product();
+	@Autowired
+	private AttachmentService attachmentService;
 
-        product.setProductName(addProduct.getProductName());
-        product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
-        product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
-        product.setDescription(addProduct.getDescription());
-        // product.setDetails(addProduct.getDetails());
-        product.setUnitsInStock(addProduct.getUnitsInStock());
-        product.setPricePerUnit(addProduct.getPricePerUnit());
-        product.setDiscount(addProduct.getDiscount());
-        product.setMaximumUitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
-        product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
+	@Autowired
+	private AttachmentRepository attachmentRepository;
 
-        if (addProduct.getExpiryDate() != null)
-            product.setExpiryDate(new Date(addProduct.getExpiryDate()));
+	@Autowired
+	private UserRepository userRepository;
 
-        product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
-        product.setManufacturerName(addProduct.getManufacturerName());
-        product.setUser(authenticationService.currentUser());
-        product.setIsDeleted(false);
+	@Autowired
+	private Helper helper;
 
-        if (addProduct.getManufacturingDate() != null)
-            product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
+	@Override
+	public ProductBo addProduct(AddProduct addProduct) {
+		log.info("Inside Add Product");
+		Product product = new Product();
 
-        List<Attachment> attachments = new ArrayList<Attachment>();
-        for (MultipartFile imageFile : addProduct.getImages()) {
-            if (imageFile != null && !imageFile.isEmpty())
-                try {
-                    String location = this.storageService
-                            .uploadFileAsync(imageFile, product.getUser().getId(), FolderConstants.PRODUCTS.getValue())
-                            .get();
-                    attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
-                            imageFile.getOriginalFilename(), imageFile.getContentType()));
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
+		product.setProductName(addProduct.getProductName());
+		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
+		product.setProductSubCategories(this.productSubCategoryRepo.findAllById(addProduct.getProductSubCategory()));
+		product.setDescription(addProduct.getDescription());
+		// product.setDetails(addProduct.getDetails());
+		product.setUnitsInStock(addProduct.getUnitsInStock());
+		product.setPricePerUnit(addProduct.getPricePerUnit());
+		product.setDiscount(addProduct.getDiscount());
+		product.setMaximumUnitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
+		product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
 
-        }
+		if (addProduct.getExpiryDate() != null)
+			product.setExpiryDate(new Date(addProduct.getExpiryDate()));
 
-        try {
-            if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
-                product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
-                        FolderConstants.BANNER.getValue()).get());
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+		product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
+		product.setManufacturerName(addProduct.getManufacturerName());
+		product.setUser(authenticationService.currentUser());
+		product.setIsDeleted(false);
 
-        product.setAttachments(attachments);
-        product = this.productRepo.saveAndFlush(product);
+		if (addProduct.getManufacturingDate() != null)
+			product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
-        return new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-    }
+		product = this.productRepo.saveAndFlush(product);
+		
+		List<Attachment> attachments = new ArrayList<>();
 
-    private String prepareResource(String location) {
-        if (this.helper.notNullAndBlank(location)) {
-            return this.storageService.generatePresignedUrl(location);
-        }
-        return "";
-    }
+		for (MultipartFile imageFile : addProduct.getImages()) {
+			if (imageFile != null && !imageFile.isEmpty())
+				try {
+					String location = this.storageService
+							.uploadFileAsync(imageFile, product.getUser().getId(), FolderConstants.PRODUCTS.getValue())
+							.get();
+					attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
+							imageFile.getOriginalFilename(), imageFile.getContentType(), product));
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
 
-    @Override
-    public ProductBo updateProduct(UpdateProduct updateProduct) {
-        log.info("inside update Product");
-        Product product = this.productRepo.findById(updateProduct.getProductId()).get();
-        if (product != null) {
-            product.setProductName(updateProduct.getProductName());
-            product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
-            product.setProductSubCategories(
-                    this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
-            product.setUser(authenticationService.currentUser());
+		}
+		product.setAttachments(attachments);
 
-            product.setDescription(updateProduct.getDescription());
-            // product.setDetails(updateProduct.getDetails());
-            product.setUnitsInStock(updateProduct.getUnitsInStock());
-            product.setPricePerUnit(updateProduct.getPricePerUnit());
-            product.setDiscount(updateProduct.getDiscount());
-            product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
-            product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
+		try {
+			if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
+				product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
+						FolderConstants.BANNER.getValue()).get());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 
-            if (updateProduct.getExpiryDate() != null)
-                product.setExpiryDate(new Date(updateProduct.getExpiryDate()));
+		return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
+	}
 
-            product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
-            product.setManufacturerName(updateProduct.getManufacturerName());
+	private String prepareResource(String location) {
+		if (this.helper.notNullAndBlank(location)) {
+			return this.storageService.generatePresignedUrl(location);
+		}
+		return "";
+	}
 
-            if (updateProduct.getManufacturingDate() != null)
-                product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
+	@Override
+	public ProductBo updateProduct(UpdateProduct updateProduct) {
+		log.info("Inside update Product");
+		Product product = this.productRepo.findById(updateProduct.getProductId()).get();
+		if (product != null) {
+			product.setProductName(updateProduct.getProductName());
+			product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
+			product.setProductSubCategories(
+					this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
+			product.setUser(authenticationService.currentUser());
 
-            List<Attachment> attachments = new ArrayList<Attachment>();
-            this.attachmentRepository.deleteAll(product.getAttachments());
+			product.setDescription(updateProduct.getDescription());
+			// product.setDetails(updateProduct.getDetails());
+			product.setUnitsInStock(updateProduct.getUnitsInStock());
+			product.setPricePerUnit(updateProduct.getPricePerUnit());
+			product.setDiscount(updateProduct.getDiscount());
+			product.setMaximumUnitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
+			product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
 
-            if (updateProduct.getImages() != null && !updateProduct.getImages().isEmpty()) {
-                for (MultipartFile imageFile : updateProduct.getImages()) {
-                    if (imageFile != null && !imageFile.isEmpty())
-                        try {
-                            String location = this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
-                                    FolderConstants.PRODUCTS.getValue()).get();
-                            attachments
-                                    .add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
-                                            imageFile.getOriginalFilename(), imageFile.getContentType()));
-                        } catch (InterruptedException | ExecutionException e) {
-                            e.printStackTrace();
-                        }
+			if (updateProduct.getExpiryDate() != null)
+				product.setExpiryDate(new Date(updateProduct.getExpiryDate()));
 
-                }
-            }
+			product.setCountryOfOrigin(updateProduct.getCountryOfOrigin());
+			product.setManufacturerName(updateProduct.getManufacturerName());
 
-            try {
-                if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
-                    product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
-                            product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+			if (updateProduct.getManufacturingDate() != null)
+				product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
 
-            product.setAttachments(attachments);
-            product = this.productRepo.saveAndFlush(product);
-            return new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-        }
-        throw new BadRequestException("Invalid Product Id");
-    }
+			
 
-    /*private List<FileBo> prepareProductAttachments(List<Attachment> attachments) {
-        List<FileBo> atts = new ArrayList<>();
-        final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-        attachments.forEach(att -> {
-            atts.add(new FileBo(att.getId(),this.storageService.generatePresignedUrl(att.getLocation())));
-        });
-        return atts;
-    }*/
+			try {
+				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
+					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
+							product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+			product = this.productRepo.saveAndFlush(product);
+			
+			List<Attachment> attachments = new ArrayList<>();
+			
+			for (MultipartFile imageFile : updateProduct.getImages()) {
+				if (imageFile != null && !imageFile.isEmpty())
+					try {
+						String location = this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
+								FolderConstants.PRODUCTS.getValue()).get();
+						attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
+										imageFile.getOriginalFilename(), imageFile.getContentType(), product));
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
 
-    @Override
-    public ProductBo fetchProduct(String id) {
-        log.info("Inside fetch product");
-        Optional<Product> product = this.productRepo.findById(id);
-        if (product.isPresent()) {
-            ProductBo bo = new ProductBo(product.get(), this.helper.prepareProductAttachments(product.get().getAttachments()));
-            bo.setBanner(this.prepareResource(bo.getBanner()));
-            return bo;
-        }
-        throw new BadRequestException("no product found with id= " + id);
-    }
+			}
+			product.setAttachments(attachments);
+			return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
+		}
+		throw new BadRequestException("Invalid Product Id");
+	}
 
-    @Override
-    public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
-		log.info("inside fetch products");
-        User user = this.authenticationService.currentUser();
-        Page<Product> allProducts = null;
+	private List<String> prepareAttachments(List<Attachment> attachments) {
+		List<String> atts = new ArrayList<>();
+		attachments.forEach(att -> {
+			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
+		});
+		return atts;
+	}
 
-        if (this.authenticationService.isAdmin()) {
-            allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), false);
-        } else {
-            allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, false);
-        }
-        List<ProductBo> bos = new ArrayList<ProductBo>();
-        allProducts.forEach(product -> {
-            ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-            bo.setBanner(this.prepareResource(bo.getBanner()));
-            bos.add(bo);
-        });
-        return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(), paginationBo.getPageNumber(), allProducts.getTotalPages());
+	@Override
+	public ProductBo fetchProduct(String id) {
+		log.info("Inside fetch product");
+		Optional<Product> product = this.productRepo.findById(id);
+		if (product.isPresent()) {
+			ProductBo bo = new ProductBo(product.get(), this.prepareAttachments(product.get().getAttachments()));
+			bo.setBanner(this.prepareResource(bo.getBanner()));
+			return bo;
+		}
+		throw new BadRequestException("no product found with id= " + id);
+	}
 
-    }
+	@Override
+	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
+		User user = this.authenticationService.currentUser();
+		Page<Product> allProducts = null;
 
-    public void deleteProduct(String id) {
-        log.info("inside delete product");
-        Product prod = this.productRepo.findById(id).get();
-        prod.setIsDeleted(true);
-        this.productRepo.saveAndFlush(prod);
-    }
+		if (this.authenticationService.isAdmin()) {
+			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),
+					false);
+		} else {
+			allProducts = this.productRepo
+					.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, false);
+		}
+		List<ProductBo> bos = new ArrayList<ProductBo>();
+		allProducts.forEach(product -> {
+			ProductBo bo = new ProductBo(product, this.prepareAttachments(product.getAttachments()));
+			bo.setBanner(this.prepareResource(bo.getBanner()));
+			bos.add(bo);
+		});
+		return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(),
+				paginationBo.getPageNumber(), allProducts.getTotalPages());
 
-    public void updateProductImage(String request){
+	}
 
-    }
+	public void deleteProduct(String id) {
+
+		Product prod = this.productRepo.findById(id).get();
+		prod.setIsDeleted(true);
+		this.productRepo.saveAndFlush(prod);
+
+	}
+	@Override
+	public void deleteAttachment(String id) {
+
+		this.attachmentRepository.deleteById(id);
+
+	}
+
+	@Override
+	public Response<String> updateProductImage(FileUpload file) {
+
+		Product prod = this.productRepo.findById(file.getId()).get();
+		String presignedUrl = null;
+		if (prod != null) {
+			MultipartFile image = file.getFile();
+			if (image != null) {
+				try {
+					String location = this.storageService
+							.uploadFileAsync(image, prod.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get();
+					Attachment attachment = this.attachmentService.addAttachment(location,
+							FileType.PRODUCT_IMAGE.getValue(), image.getOriginalFilename(), image.getContentType(),
+							prod);
+
+					List<Attachment> attachments = new ArrayList<Attachment>();
+					attachments.addAll(prod.getAttachments());
+					attachments.add(attachment);
+					prod.setAttachments(attachments);
+					this.productRepo.saveAndFlush(prod);
+					presignedUrl = this.helper.prepareResource(location);
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+			return new Response<String>(presignedUrl, "Image Uploaded Successfully");
+		}
+
+		throw new BadRequestException("Invalid Product Id");
+
+	}
 
 }

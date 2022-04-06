@@ -11,8 +11,7 @@ public class AdvertisementUpdate {
 
 	@NotNull
 	private String id;
-
-	@NotNull
+	
 	private MultipartFile banner;
     
 	@NotNull

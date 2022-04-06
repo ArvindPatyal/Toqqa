@@ -18,4 +18,6 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, St
 	List<Advertisement> findByUserAndIsActiveAndIsDeleted(User user,Boolean isActive,Boolean isDeleted);
 
 	Page<Advertisement> findByIsDeleted(Pageable pageable,Boolean isDeleted);
+	
+	List<Advertisement> findTop10ByOrderByQueueDateAsc();
 }
