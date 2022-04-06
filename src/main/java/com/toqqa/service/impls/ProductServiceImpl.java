@@ -10,10 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.constants.FileType;
 import com.toqqa.constants.FolderConstants;
@@ -22,6 +23,9 @@ import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.AddProduct;
+import com.toqqa.payload.ListProductRequest;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.ToggleStatus;
 import com.toqqa.payload.FileUpload;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
@@ -37,7 +41,6 @@ import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
-
 
 @Service
 @Slf4j
@@ -100,10 +103,8 @@ public class ProductServiceImpl implements ProductService {
 		if (addProduct.getManufacturingDate() != null)
 			product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
-		product = this.productRepo.saveAndFlush(product);
-		
+		product = this.productRepo.saveAndFlush(product);		
 		List<Attachment> attachments = new ArrayList<>();
-
 		for (MultipartFile imageFile : addProduct.getImages()) {
 			if (imageFile != null && !imageFile.isEmpty())
 				try {
@@ -128,6 +129,8 @@ public class ProductServiceImpl implements ProductService {
 			e.printStackTrace();
 		}
 
+		product.setAttachments(attachments);
+		product = this.productRepo.saveAndFlush(product);
 		return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
 	}
 
@@ -192,6 +195,15 @@ public class ProductServiceImpl implements ProductService {
 					}
 
 			}
+
+			try {
+				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
+					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
+							product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
 			product.setAttachments(attachments);
 			return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
 		}
@@ -219,16 +231,16 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public ListResponseWithCount<ProductBo> fetchProductList(PaginationBo paginationBo) {
+	public ListResponseWithCount<ProductBo> fetchProductList(ListProductRequest paginationBo) {
 		User user = this.authenticationService.currentUser();
 		Page<Product> allProducts = null;
 
 		if (this.authenticationService.isAdmin()) {
 			allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),
-					false);
+					paginationBo.getIsInActive());
 		} else {
 			allProducts = this.productRepo
-					.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, false);
+					.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, paginationBo.getIsInActive());
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> {
@@ -285,6 +297,24 @@ public class ProductServiceImpl implements ProductService {
 
 		throw new BadRequestException("Invalid Product Id");
 
+	}
+
+	@Override
+	public ProductBo updateProductStatus(ToggleStatus toggleStatus) {
+		log.info("Inside update Product status");
+		if (!this.authenticationService.isSME()) {
+			throw new AccessDeniedException("user is not an sme");
+		}
+		Optional<Product> prd = this.productRepo.findById(toggleStatus.getId());
+		if (prd.isPresent()) {
+			Product prds = prd.get();
+			prds.setIsDeleted(toggleStatus.getStatus());
+			prds = this.productRepo.saveAndFlush(prds);
+			return new ProductBo(prds);
+
+		}
+
+		throw new BadRequestException("invalid product id " + toggleStatus.getId());
 	}
 
 }

@@ -19,4 +19,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
 	Page<Product> findByIsDeleted(Pageable pageRequest, Boolean isDeleted);
 
+	//List<Product> findByUserAndIsActiveAndIsDeleted(User user, Boolean isActive, Boolean isDeleted);
+
 }
