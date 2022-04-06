@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.toqqa.domain.Attachment;
+import com.toqqa.domain.Product;
 import com.toqqa.repository.AttachmentRepository;
 import com.toqqa.service.AttachmentService;
 
@@ -14,13 +15,13 @@ public class AttachmentServiceImpl implements AttachmentService {
 	private AttachmentRepository attachmentRepo;
 
 	@Override
-	public Attachment addAttachment(String location, String fileType, String fileName, String mimeType) {
+	public Attachment addAttachment(String location, String fileType, String fileName, String mimeType,Product product) {
 		Attachment att = new Attachment();
 		att.setFileName(fileName);
 		att.setFileType(fileType);
 		att.setLocation(location);
 		att.setMimeType(mimeType);
-
+		att.setProduct(product);
 		att = this.attachmentRepo.saveAndFlush(att);
 
 		return att;

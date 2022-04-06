@@ -5,12 +5,15 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -39,7 +42,7 @@ public class Product {
 
 	private Double discount;
 
-	private Integer maximumUitsInOneOrder;
+	private Integer maximumUnitsInOneOrder;
 
 	private Integer minimumUnitsInOneOrder;
 
@@ -73,8 +76,7 @@ public class Product {
 	@JoinTable(name = "product_subcategories", inverseJoinColumns = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
 	private List<ProductSubCategory> productSubCategories;
 
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "product_attachments", inverseJoinColumns = @JoinColumn(name = "attachment_id"), joinColumns = @JoinColumn(name = "product_id"))
+	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY)    
 	private List<Attachment> attachments;
 
 }

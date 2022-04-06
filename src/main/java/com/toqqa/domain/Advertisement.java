@@ -39,6 +39,8 @@ public class Advertisement {
 	private Boolean isDeleted;
 
 	private Boolean isActive;
+	
+	private Date queueDate;
 
 	@OneToOne
 	@JoinColumn(name = "product_id")

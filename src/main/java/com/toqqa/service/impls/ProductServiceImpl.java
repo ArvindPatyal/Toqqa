@@ -26,17 +26,20 @@ import com.toqqa.payload.AddProduct;
 import com.toqqa.payload.ListProductRequest;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ToggleStatus;
+import com.toqqa.payload.FileUpload;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.Response;
 import com.toqqa.payload.UpdateProduct;
 import com.toqqa.repository.AttachmentRepository;
 import com.toqqa.repository.ProductCategoryRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.ProductSubCategoryRepository;
+import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AttachmentService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -68,6 +71,9 @@ public class ProductServiceImpl implements ProductService {
 	private AttachmentRepository attachmentRepository;
 
 	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
 	private Helper helper;
 
 	@Override
@@ -83,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setUnitsInStock(addProduct.getUnitsInStock());
 		product.setPricePerUnit(addProduct.getPricePerUnit());
 		product.setDiscount(addProduct.getDiscount());
-		product.setMaximumUitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
+		product.setMaximumUnitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
 		product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
 
 		if (addProduct.getExpiryDate() != null)
@@ -97,7 +103,8 @@ public class ProductServiceImpl implements ProductService {
 		if (addProduct.getManufacturingDate() != null)
 			product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		product = this.productRepo.saveAndFlush(product);		
+		List<Attachment> attachments = new ArrayList<>();
 		for (MultipartFile imageFile : addProduct.getImages()) {
 			if (imageFile != null && !imageFile.isEmpty())
 				try {
@@ -105,12 +112,13 @@ public class ProductServiceImpl implements ProductService {
 							.uploadFileAsync(imageFile, product.getUser().getId(), FolderConstants.PRODUCTS.getValue())
 							.get();
 					attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
-							imageFile.getOriginalFilename(), imageFile.getContentType()));
+							imageFile.getOriginalFilename(), imageFile.getContentType(), product));
 				} catch (InterruptedException | ExecutionException e) {
 					e.printStackTrace();
 				}
 
 		}
+		product.setAttachments(attachments);
 
 		try {
 			if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
@@ -123,7 +131,6 @@ public class ProductServiceImpl implements ProductService {
 
 		product.setAttachments(attachments);
 		product = this.productRepo.saveAndFlush(product);
-
 		return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
 	}
 
@@ -150,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
 			product.setUnitsInStock(updateProduct.getUnitsInStock());
 			product.setPricePerUnit(updateProduct.getPricePerUnit());
 			product.setDiscount(updateProduct.getDiscount());
-			product.setMaximumUitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
+			product.setMaximumUnitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
 			product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
 
 			if (updateProduct.getExpiryDate() != null)
@@ -162,17 +169,27 @@ public class ProductServiceImpl implements ProductService {
 			if (updateProduct.getManufacturingDate() != null)
 				product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
 
-			List<Attachment> attachments = new ArrayList<Attachment>();
-			this.attachmentRepository.deleteAll(product.getAttachments());
+			
 
+			try {
+				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
+					product.setBanner(this.storageService.uploadFileAsync(updateProduct.getBanner(),
+							product.getUser().getId(), FolderConstants.BANNER.getValue()).get());
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+			product = this.productRepo.saveAndFlush(product);
+			
+			List<Attachment> attachments = new ArrayList<>();
+			
 			for (MultipartFile imageFile : updateProduct.getImages()) {
 				if (imageFile != null && !imageFile.isEmpty())
 					try {
 						String location = this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
 								FolderConstants.PRODUCTS.getValue()).get();
-						attachments
-								.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
-										imageFile.getOriginalFilename(), imageFile.getContentType()));
+						attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
+										imageFile.getOriginalFilename(), imageFile.getContentType(), product));
 					} catch (InterruptedException | ExecutionException e) {
 						e.printStackTrace();
 					}
@@ -187,9 +204,7 @@ public class ProductServiceImpl implements ProductService {
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
-
 			product.setAttachments(attachments);
-			product = this.productRepo.saveAndFlush(product);
 			return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
 		}
 		throw new BadRequestException("Invalid Product Id");
@@ -197,7 +212,6 @@ public class ProductServiceImpl implements ProductService {
 
 	private List<String> prepareAttachments(List<Attachment> attachments) {
 		List<String> atts = new ArrayList<>();
-		final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 		attachments.forEach(att -> {
 			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
 		});
@@ -244,6 +258,44 @@ public class ProductServiceImpl implements ProductService {
 		Product prod = this.productRepo.findById(id).get();
 		prod.setIsDeleted(true);
 		this.productRepo.saveAndFlush(prod);
+
+	}
+	@Override
+	public void deleteAttachment(String id) {
+
+		this.attachmentRepository.deleteById(id);
+
+	}
+
+	@Override
+	public Response<String> updateProductImage(FileUpload file) {
+
+		Product prod = this.productRepo.findById(file.getId()).get();
+		String presignedUrl = null;
+		if (prod != null) {
+			MultipartFile image = file.getFile();
+			if (image != null) {
+				try {
+					String location = this.storageService
+							.uploadFileAsync(image, prod.getUser().getId(), FolderConstants.PRODUCTS.getValue()).get();
+					Attachment attachment = this.attachmentService.addAttachment(location,
+							FileType.PRODUCT_IMAGE.getValue(), image.getOriginalFilename(), image.getContentType(),
+							prod);
+
+					List<Attachment> attachments = new ArrayList<Attachment>();
+					attachments.addAll(prod.getAttachments());
+					attachments.add(attachment);
+					prod.setAttachments(attachments);
+					this.productRepo.saveAndFlush(prod);
+					presignedUrl = this.helper.prepareResource(location);
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+			return new Response<String>(presignedUrl, "Image Uploaded Successfully");
+		}
+
+		throw new BadRequestException("Invalid Product Id");
 
 	}
 

@@ -1,8 +1,9 @@
 package com.toqqa.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
-import com.toqqa.payload.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.AdvertisementBo;
 import com.toqqa.bo.PaginationBo;
+import com.toqqa.payload.AdvertisementPayload;
+import com.toqqa.payload.AdvertisementUpdate;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.ToggleAdStatus;
 import com.toqqa.service.AdvertisementService;
 
 import io.swagger.annotations.ApiOperation;
@@ -75,7 +81,7 @@ public class AdvertisementController {
 		return this.advertisementService.fetchAdvertisementList(paginationbo);
 	}
 
-	@ApiOperation(value = " Advertisement")
+	@ApiOperation(value = "updateClick")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/updateClicks/{id}")
@@ -84,12 +90,21 @@ public class AdvertisementController {
 		return new Response<AdvertisementBo>(this.advertisementService.updateClick(id), "success");
 	}
 
-	@ApiOperation(value = " Advertisement")
+	@ApiOperation(value = "updateAdsStatus")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/updateAdsStatus")
 	public Response<AdvertisementBo> updateAdsStatus(@RequestBody @Valid ToggleAdStatus request) {
 		log.info("Inside controller update clicks");
 		return new Response<AdvertisementBo>(this.advertisementService.updateAdsStatus(request), "success");
+	}
+
+	@ApiOperation(value = "fetchTopAds")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+	@GetMapping("/fetchTopAds")
+	public List<AdvertisementBo> fetchTopActiveAdds() {
+		log.info("Inside controller update clicks");
+		return this.advertisementService.fetchTopActiveAdds();
 	}
 }

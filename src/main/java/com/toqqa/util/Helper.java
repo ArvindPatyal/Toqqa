@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.toqqa.bo.FileBo;
 import com.toqqa.domain.Attachment;
 import com.toqqa.service.StorageService;
 import org.slf4j.Logger;
@@ -150,10 +151,16 @@ public class Helper {
 		return "";
 	}
 
+	public List<FileBo> prepareProductAttachments(List<Attachment> attachments){
+		List<FileBo> atts = new ArrayList<>();
+		attachments.forEach(att -> {
+			atts.add(new FileBo(att.getId(),this.storageService.generatePresignedUrl(att.getLocation())));
+		});
+		return atts;
+	}
 	public List<String> prepareAttachments(List<Attachment> attachments){
 		List<String> atts = new ArrayList<>();
-		final String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-		attachments.forEach(att->{
+		attachments.forEach(att -> {
 			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
 		});
 		return atts;
