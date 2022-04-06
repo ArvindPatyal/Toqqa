@@ -105,4 +105,3 @@ public class ProductController {
             return this.productService.updateProductImage(file);
         }
     }
-}

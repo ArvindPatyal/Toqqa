@@ -82,7 +82,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		ads = this.advertisementRepo.saveAndFlush(ads);
 
 		ProductBo productBo = new ProductBo(ads.getProduct(),
-				this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+				this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 		AdvertisementBo bo = new AdvertisementBo(ads, productBo);
 		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
@@ -130,7 +130,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		}}
 		ads = this.advertisementRepo.saveAndFlush(ads);
 		ProductBo productBo = new ProductBo(ads.getProduct(),
-				this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+				this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 		AdvertisementBo bo = new AdvertisementBo(ads, productBo);
 		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
@@ -151,7 +151,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		Optional<Advertisement> advertisement = this.advertisementRepo.findById(id);
 		if (advertisement.isPresent()) {
 			ProductBo productBo = new ProductBo(advertisement.get().getProduct(),
-					this.helper.prepareAttachments(advertisement.get().getProduct().getAttachments()));
+					this.helper.prepareProductAttachments(advertisement.get().getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(advertisement.get(), productBo);
 			bo.setBanner(this.helper.prepareResource(advertisement.get().getBanner()));
@@ -175,7 +175,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		List<AdvertisementBo> bos = new ArrayList<AdvertisementBo>();
 		allAdvertisements.forEach(advertisement -> {
 			ProductBo productBo = new ProductBo(advertisement.getProduct(),
-					this.helper.prepareAttachments(advertisement.getProduct().getAttachments()));
+					this.helper.prepareProductAttachments(advertisement.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(advertisement, productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
@@ -206,7 +206,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			ads = this.advertisementRepo.saveAndFlush(ads);
 			this.updateOldAdsStatus(user);
 			ProductBo productBo = new ProductBo(ads.getProduct(),
-					this.helper.prepareAttachments(ads.getProduct().getAttachments()));
+					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(ads, productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
@@ -225,7 +225,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		ads.forEach(ad ->
 		{
 			ProductBo productBo = new ProductBo(ad.getProduct(),
-					this.helper.prepareAttachments(ad.getProduct().getAttachments()));
+					this.helper.prepareProductAttachments(ad.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(ad, productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));

@@ -103,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
 		if (addProduct.getManufacturingDate() != null)
 			product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
-		product = this.productRepo.saveAndFlush(product);		
+		product = this.productRepo.saveAndFlush(product);
 		List<Attachment> attachments = new ArrayList<>();
 		for (MultipartFile imageFile : addProduct.getImages()) {
 			if (imageFile != null && !imageFile.isEmpty())
@@ -131,7 +131,7 @@ public class ProductServiceImpl implements ProductService {
 
 		product.setAttachments(attachments);
 		product = this.productRepo.saveAndFlush(product);
-		return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
+		return new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
 	}
 
 	private String prepareResource(String location) {
@@ -169,7 +169,7 @@ public class ProductServiceImpl implements ProductService {
 			if (updateProduct.getManufacturingDate() != null)
 				product.setManufacturingDate(new Date(updateProduct.getManufacturingDate()));
 
-			
+
 
 			try {
 				if (updateProduct.getBanner() != null && !updateProduct.getBanner().isEmpty()) {
@@ -180,9 +180,9 @@ public class ProductServiceImpl implements ProductService {
 				e.printStackTrace();
 			}
 			product = this.productRepo.saveAndFlush(product);
-			
+
 			List<Attachment> attachments = new ArrayList<>();
-			
+
 			for (MultipartFile imageFile : updateProduct.getImages()) {
 				if (imageFile != null && !imageFile.isEmpty())
 					try {
@@ -205,17 +205,9 @@ public class ProductServiceImpl implements ProductService {
 				e.printStackTrace();
 			}
 			product.setAttachments(attachments);
-			return new ProductBo(product, this.prepareAttachments(product.getAttachments()));
+			return new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
 		}
 		throw new BadRequestException("Invalid Product Id");
-	}
-
-	private List<String> prepareAttachments(List<Attachment> attachments) {
-		List<String> atts = new ArrayList<>();
-		attachments.forEach(att -> {
-			atts.add(this.storageService.generatePresignedUrl(att.getLocation()));
-		});
-		return atts;
 	}
 
 	@Override
@@ -223,7 +215,7 @@ public class ProductServiceImpl implements ProductService {
 		log.info("Inside fetch product");
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
-			ProductBo bo = new ProductBo(product.get(), this.prepareAttachments(product.get().getAttachments()));
+			ProductBo bo = new ProductBo(product.get(), this.helper.prepareProductAttachments(product.get().getAttachments()));
 			bo.setBanner(this.prepareResource(bo.getBanner()));
 			return bo;
 		}
@@ -244,7 +236,7 @@ public class ProductServiceImpl implements ProductService {
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> {
-			ProductBo bo = new ProductBo(product, this.prepareAttachments(product.getAttachments()));
+			ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
 			bo.setBanner(this.prepareResource(bo.getBanner()));
 			bos.add(bo);
 		});
