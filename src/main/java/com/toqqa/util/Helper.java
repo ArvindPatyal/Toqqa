@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import com.toqqa.bo.FileBo;
 import com.toqqa.domain.Attachment;
+import com.toqqa.repository.AttachmentRepository;
 import com.toqqa.service.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class Helper {
 	@Autowired
 	private StorageService storageService;
+
+	@Autowired
+	private AttachmentRepository attachmentRepository;
 
 	private static final Logger logger = LoggerFactory.getLogger(Helper.class);
 	private static final String DATE_FORMAT = "MM/dd/yyyy HH:mm:ss z";
@@ -149,6 +153,13 @@ public class Helper {
 			return this.storageService.generatePresignedUrl(location);
 		}
 		return "";
+	}
+	public FileBo prepareAttachmentResource(String location) {
+		Optional<Attachment> attachment= this.attachmentRepository.findByLocation(location);
+		if(attachment.isPresent()) {
+			return new FileBo( attachment.get().getId(),this.storageService.generatePresignedUrl(attachment.get().getLocation()));
+		}
+		return null;
 	}
 
 	public List<FileBo> prepareProductAttachments(List<Attachment> attachments){

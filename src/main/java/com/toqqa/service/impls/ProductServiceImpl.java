@@ -118,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
         product = this.productRepo.saveAndFlush(product);
 
         ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-        bo.setBanner(this.helper.prepareResource(bo.getBanner()));
+        bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
         return bo;
     }
 
@@ -181,7 +181,7 @@ public class ProductServiceImpl implements ProductService {
 
             product.setAttachments(attachments);*/
             ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-            bo.setBanner(this.helper.prepareResource(bo.getBanner()));
+            bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
             return bo;
         }
         throw new BadRequestException("Invalid Product Id");
@@ -193,7 +193,7 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> product = this.productRepo.findById(id);
         if (product.isPresent()) {
             ProductBo bo = new ProductBo(product.get(), this.helper.prepareProductAttachments(product.get().getAttachments()));
-            bo.setBanner(this.prepareResource(bo.getBanner()));
+                bo.setBanner(this.helper.prepareAttachmentResource(product.get().getBanner()));
             return bo;
         }
         throw new BadRequestException("no product found with id= " + id);
@@ -215,7 +215,7 @@ public class ProductServiceImpl implements ProductService {
         List<ProductBo> bos = new ArrayList<ProductBo>();
         allProducts.forEach(product -> {
             ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-            bo.setBanner(this.prepareResource(bo.getBanner()));
+            bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
             bos.add(bo);
         });
         return new ListResponseWithCount<ProductBo>(bos, "", allProducts.getTotalElements(),
@@ -278,8 +278,9 @@ public class ProductServiceImpl implements ProductService {
             Product prds = prd.get();
             prds.setIsDeleted(toggleStatus.getStatus());
             prds = this.productRepo.saveAndFlush(prds);
+            ProductBo bo = new ProductBo(prds,this.helper.prepareProductAttachments(prds.getAttachments()));
+            bo.setBanner(this.helper.prepareAttachmentResource(prds.getBanner()));
             return new ProductBo(prds);
-
         }
 
         throw new BadRequestException("invalid product id " + toggleStatus.getId());

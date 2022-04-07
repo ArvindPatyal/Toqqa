@@ -1,48 +1,48 @@
 package com.toqqa.bo;
 
-import java.io.File;
-import java.util.*;
-
 import com.toqqa.domain.Product;
-
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Data
 public class ProductBo {
 
-	private String id;
+    private String id;
 
-	private String productName;
+    private String productName;
 
-	private List<ProductCategoryBo> productCategories = new ArrayList<ProductCategoryBo>();
+    private List<ProductCategoryBo> productCategories = new ArrayList<ProductCategoryBo>();
 
-	private List<ProductSubCategoryBo> productSubCategories =new ArrayList<ProductSubCategoryBo>();
+    private List<ProductSubCategoryBo> productSubCategories = new ArrayList<ProductSubCategoryBo>();
 
-	private List<FileBo> images=new ArrayList<>();
+    private List<FileBo> images = new ArrayList<>();
 
-	private String description;
+    private String description;
 
-	private Long unitsInStock;
+    private Long unitsInStock;
 
-	private Double pricePerUnit;
+    private Double pricePerUnit;
 
-	private Double discount;
+    private Double discount;
 
-	private Integer maximumUnitsInOneOrder;
+    private Integer maximumUnitsInOneOrder;
 
-	private Integer minimumUnitsInOneOrder;
+    private Integer minimumUnitsInOneOrder;
 
-	private Date expiryDate;
+    private Date expiryDate;
 
-	private String countryOfOrigin;
+    private String countryOfOrigin;
 
-	private String manufacturerName;
-	
-	private Boolean isDeleted;
-	
-	private Date ManufacturingDate;
-	
-	private String banner;
+    private String manufacturerName;
+
+    private Boolean isDeleted;
+
+    private Date ManufacturingDate;
+
+    private FileBo banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
 
@@ -50,50 +50,51 @@ public class ProductBo {
 
 //	private Boolean delieveredOutsideOfDelieveryRadius;
 
-	public ProductBo(Product product) {
-		this.id = product.getId();
-		this.productName = product.getProductName();
-		this.description = product.getDescription();
-		this.unitsInStock = product.getUnitsInStock();
-		this.pricePerUnit = product.getPricePerUnit();
-		this.discount = product.getDiscount();
-		this.maximumUnitsInOneOrder = product.getMaximumUnitsInOneOrder();
-		this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
-		this.expiryDate = product.getExpiryDate();
-		this.countryOfOrigin = product.getCountryOfOrigin();
-		this.manufacturerName = product.getManufacturerName();
-		this.isDeleted = product.getIsDeleted();
-		this.ManufacturingDate = product.getManufacturingDate();	
-		this.banner = product.getBanner();
-		product.getProductCategories().forEach(pc -> {
-			this.productCategories.add(new ProductCategoryBo(pc));
-		});
-		product.getProductSubCategories().forEach(pc -> {
-			this.productSubCategories.add(new ProductSubCategoryBo(pc));
-		});
-	}
-	public ProductBo(Product product,List<FileBo> images) {
-		this.id = product.getId();
-		this.productName = product.getProductName();
-		this.description = product.getDescription();
-		this.unitsInStock = product.getUnitsInStock();
-		this.pricePerUnit = product.getPricePerUnit();
-		this.discount = product.getDiscount();
-		this.maximumUnitsInOneOrder = product.getMaximumUnitsInOneOrder();
-		this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
-		this.expiryDate = product.getExpiryDate();
-		this.countryOfOrigin = product.getCountryOfOrigin();
-		this.manufacturerName = product.getManufacturerName();
-		this.isDeleted = product.getIsDeleted();
-		this.banner = product.getBanner();
-		product.getProductCategories().forEach(pc -> {
-			this.productCategories.add(new ProductCategoryBo(pc));
-		});
-		product.getProductSubCategories().forEach(pc -> {
-			this.productSubCategories.add(new ProductSubCategoryBo(pc));
-		});
-		this.images.addAll(images);
-		this.ManufacturingDate = product.getManufacturingDate();
-	}
+    public ProductBo(Product product) {
+        this.id = product.getId();
+        this.productName = product.getProductName();
+        this.description = product.getDescription();
+        this.unitsInStock = product.getUnitsInStock();
+        this.pricePerUnit = product.getPricePerUnit();
+        this.discount = product.getDiscount();
+        this.maximumUnitsInOneOrder = product.getMaximumUnitsInOneOrder();
+        this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
+        this.expiryDate = product.getExpiryDate();
+        this.countryOfOrigin = product.getCountryOfOrigin();
+        this.manufacturerName = product.getManufacturerName();
+        this.isDeleted = product.getIsDeleted();
+        this.ManufacturingDate = product.getManufacturingDate();
+//		this.banner = product.getBanner();
+        product.getProductCategories().forEach(pc -> {
+            this.productCategories.add(new ProductCategoryBo(pc));
+        });
+        product.getProductSubCategories().forEach(pc -> {
+            this.productSubCategories.add(new ProductSubCategoryBo(pc));
+        });
+    }
+
+    public ProductBo(Product product, List<FileBo> images) {
+        this.id = product.getId();
+        this.productName = product.getProductName();
+        this.description = product.getDescription();
+        this.unitsInStock = product.getUnitsInStock();
+        this.pricePerUnit = product.getPricePerUnit();
+        this.discount = product.getDiscount();
+        this.maximumUnitsInOneOrder = product.getMaximumUnitsInOneOrder();
+        this.minimumUnitsInOneOrder = product.getMinimumUnitsInOneOrder();
+        this.expiryDate = product.getExpiryDate();
+        this.countryOfOrigin = product.getCountryOfOrigin();
+        this.manufacturerName = product.getManufacturerName();
+        this.isDeleted = product.getIsDeleted();
+//		this.banner = product.getBanner();
+        product.getProductCategories().forEach(pc -> {
+            this.productCategories.add(new ProductCategoryBo(pc));
+        });
+        product.getProductSubCategories().forEach(pc -> {
+            this.productSubCategories.add(new ProductSubCategoryBo(pc));
+        });
+        this.images.addAll(images);
+        this.ManufacturingDate = product.getManufacturingDate();
+    }
 
 }

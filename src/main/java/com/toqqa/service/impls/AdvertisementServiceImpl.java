@@ -83,7 +83,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 		ProductBo productBo = new ProductBo(ads.getProduct(),
 				this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
-		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+		productBo.setBanner(this.helper.prepareAttachmentResource(ads.getProduct().getBanner()));
 		AdvertisementBo bo = new AdvertisementBo(ads, productBo);
 		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
 		return bo;
@@ -131,7 +131,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		ads = this.advertisementRepo.saveAndFlush(ads);
 		ProductBo productBo = new ProductBo(ads.getProduct(),
 				this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
-		productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+		productBo.setBanner(this.helper.prepareAttachmentResource(ads.getProduct().getBanner()));
 		AdvertisementBo bo = new AdvertisementBo(ads, productBo);
 		bo.setBanner(this.helper.prepareResource(ads.getBanner()));
 		return bo;
@@ -152,7 +152,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		if (advertisement.isPresent()) {
 			ProductBo productBo = new ProductBo(advertisement.get().getProduct(),
 					this.helper.prepareProductAttachments(advertisement.get().getProduct().getAttachments()));
-			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(advertisement.get().getProduct().getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(advertisement.get(), productBo);
 			bo.setBanner(this.helper.prepareResource(advertisement.get().getBanner()));
 			return bo;
@@ -176,7 +176,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		allAdvertisements.forEach(advertisement -> {
 			ProductBo productBo = new ProductBo(advertisement.getProduct(),
 					this.helper.prepareProductAttachments(advertisement.getProduct().getAttachments()));
-			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(advertisement.getProduct().getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(advertisement, productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			bos.add(bo);
@@ -207,7 +207,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			this.updateOldAdsStatus(user);
 			ProductBo productBo = new ProductBo(ads.getProduct(),
 					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
-			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(ads.getProduct().getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(ads, productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			return bo;
@@ -226,7 +226,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		{
 			ProductBo productBo = new ProductBo(ad.getProduct(),
 					this.helper.prepareProductAttachments(ad.getProduct().getAttachments()));
-			productBo.setBanner(this.helper.prepareResource(productBo.getBanner()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(ad.getProduct().getBanner()));
 			AdvertisementBo bo = new AdvertisementBo(ad, productBo);
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			adds.add(bo);
