@@ -32,9 +32,6 @@ public class UpdateProduct {
 	private String description;
 
 	@NotNull
-	private String details;
-
-	@NotNull
 	private Long unitsInStock;
 
 	@NotNull
@@ -59,7 +56,7 @@ public class UpdateProduct {
 	private Long manufacturingDate;
 	
 //	@NotNull
-	private MultipartFile banner;
+	private String banner;
 
 // To Do Awaiting Feedback Around These Two Fields..
 

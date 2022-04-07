@@ -2,6 +2,8 @@ package com.toqqa.controller;
 
 import javax.validation.Valid;
 
+import com.toqqa.bo.FileBo;
+import com.toqqa.payload.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.ProductBo;
-import com.toqqa.payload.AddProduct;
-import com.toqqa.payload.ListProductRequest;
-import com.toqqa.payload.FileUpload;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.ToggleStatus;
-import com.toqqa.payload.UpdateProduct;
 import com.toqqa.service.ProductService;
 
 import io.swagger.annotations.ApiOperation;
@@ -92,16 +87,15 @@ public class ProductController {
         @DeleteMapping("/deleteattachment/{id}")
     	public Response<?> deleteAttachment(@PathVariable("id") @Valid String id) {
     		log.info("Inside controller delete attachment");
-    		this.productService.deleteAttachment(id);
-    		return new Response<Boolean>(true, "deleted successfully");
+    		return new Response<Boolean>(this.productService.deleteAttachment(id), "deleted successfully");
     	}
         
         @ApiOperation(value = "Update Product Image")
         @ApiResponses(value = {@ApiResponse(code = 200, message = ""),
                 @ApiResponse(code = 400, message = "Bad Request!")})
         @PutMapping("/updateProductImage")
-        public Response<String> updateProductImage(@ModelAttribute @Valid FileUpload file) {
-            log.info("Inside controller update product");
+        public ListResponse<FileBo> updateProductImage(@ModelAttribute @Valid FileUpload file) {
+            log.info("Inside controller updateProductImage");
             return this.productService.updateProductImage(file);
         }
     }
