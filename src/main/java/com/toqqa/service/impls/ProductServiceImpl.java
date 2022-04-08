@@ -98,21 +98,24 @@ public class ProductServiceImpl implements ProductService {
                             .get();
                     attachments.add(this.attachmentService.addAttachment(location, FileType.PRODUCT_IMAGE.getValue(),
                             imageFile.getOriginalFilename(), imageFile.getContentType(), product));
+
+                    if(addProduct.getBanner().getOriginalFilename().equals(imageFile.getOriginalFilename())){
+                        product.setBanner(location);
+                    }
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
-
         }
         product.setAttachments(attachments);
 
-        try {
+        /*try {
             if (addProduct.getBanner() != null && !addProduct.getBanner().isEmpty()) {
                 product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(), product.getUser().getId(),
                         FolderConstants.BANNER.getValue()).get());
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-        }
+        }*/
 
         product.setAttachments(attachments);
         product = this.productRepo.saveAndFlush(product);
