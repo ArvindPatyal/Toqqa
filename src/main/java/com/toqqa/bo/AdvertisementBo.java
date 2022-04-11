@@ -22,6 +22,8 @@ public class AdvertisementBo {
 
     private ProductBo product;
 
+    private Boolean isActive;
+
     public AdvertisementBo(Advertisement advertisement) {
 
         this.id = advertisement.getId();
@@ -30,6 +32,7 @@ public class AdvertisementBo {
         this.modificationDate = advertisement.getModificationDate();
         this.clicks = advertisement.getClicks();
         this.banner = advertisement.getBanner();
+        this.isActive=advertisement.getIsActive();
     }
 
     public AdvertisementBo(Advertisement advertisement, ProductBo product) {
@@ -41,7 +44,7 @@ public class AdvertisementBo {
         this.clicks = advertisement.getClicks();
         this.banner = advertisement.getBanner();
         this.product = product;
-
+        this.isActive=advertisement.getIsActive();
     }
 
 }
