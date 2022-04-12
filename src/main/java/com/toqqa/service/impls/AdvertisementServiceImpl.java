@@ -201,10 +201,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		User user = this.authenticationService.currentUser();
 		Optional<Advertisement> ad = this.advertisementRepo.findById(status.getAdId());
 		if (ad.isPresent()) {
+			if(status.getStatus()){
+				this.updateOldAdsStatus(user);
+			}
 			Advertisement ads = ad.get();
 			ads.setIsActive(status.getStatus());			
 			ads = this.advertisementRepo.saveAndFlush(ads);
-			this.updateOldAdsStatus(user);
 			ProductBo productBo = new ProductBo(ads.getProduct(),
 					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareAttachmentResource(ads.getProduct().getBanner()));

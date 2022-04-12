@@ -59,7 +59,7 @@ public class AdvertisementController {
 	public Response<?> deleteAdvertisement(@PathVariable("id") @Valid String id) {
 		log.info("Inside controller delete product");
 		this.advertisementService.deleteAd(id);
-		return new Response<Boolean>(true, "deleted successfully");
+		return new Response<Boolean>(true, "success");
 	}
 
 	@ApiOperation(value = "Returns Advertisement data by given id")

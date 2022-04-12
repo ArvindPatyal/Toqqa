@@ -77,7 +77,7 @@ public class ProductController {
     @DeleteMapping("/deleteattachment/{id}")
     public Response<?> deleteAttachment(@PathVariable("id") @Valid String id) {
         log.info("Inside controller delete attachment");
-        return new Response<Boolean>(this.productService.deleteAttachment(id), "deleted successfully");
+        return new Response<Boolean>(this.productService.deleteAttachment(id), "product disabled successfully");
     }
 
     @ApiOperation(value = "Update Product Image")
