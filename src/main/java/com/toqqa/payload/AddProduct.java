@@ -1,9 +1,10 @@
 package com.toqqa.payload;
 
-import java.util.Date;
 import java.util.List;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -39,10 +40,13 @@ public class AddProduct {
 	private Double pricePerUnit;
 
 	@NotNull
+	@DecimalMax("100.00")
+	@DecimalMin("0.00")
 	private Double discount;
 
 	private Integer maximumUnitsInOneOrder;
 
+	@Min(value = 1)
 	private Integer minimumUnitsInOneOrder;
 
 	@NotNull
