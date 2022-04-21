@@ -44,11 +44,9 @@ public class ProductBo {
 
     private FileBo banner;
 
-// To Do Awaiting Feedback Around These Two Fields..
+    private Boolean deliveredInSpecifiedRadius;
 
-//	private Boolean doYouDelieverInSpecifiedRadius;
-
-//	private Boolean delieveredOutsideOfDelieveryRadius;
+    private Boolean delieveredOutsideSpecifiedRadius;
 
     public ProductBo(Product product) {
         this.id = product.getId();
@@ -71,6 +69,8 @@ public class ProductBo {
         product.getProductSubCategories().forEach(pc -> {
             this.productSubCategories.add(new ProductSubCategoryBo(pc));
         });
+        this.deliveredInSpecifiedRadius=product.getDeliveredInSpecifiedRadius();
+        this.delieveredOutsideSpecifiedRadius=product.getDelieveredOutsideSpecifiedRadius();
     }
 
     public ProductBo(Product product, List<FileBo> images) {
@@ -95,6 +95,8 @@ public class ProductBo {
         });
         this.images.addAll(images);
         this.ManufacturingDate = product.getManufacturingDate();
+        this.deliveredInSpecifiedRadius=product.getDeliveredInSpecifiedRadius();
+        this.delieveredOutsideSpecifiedRadius=product.getDelieveredOutsideSpecifiedRadius();
     }
 
 }

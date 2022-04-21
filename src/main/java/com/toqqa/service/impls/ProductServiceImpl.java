@@ -106,7 +106,8 @@ public class ProductServiceImpl implements ProductService {
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		product.setIsDeleted(false);
-
+		product.setDeliveredInSpecifiedRadius(addProduct.getDeliveredInSpecifiedRadius());
+		product.setDelieveredOutsideSpecifiedRadius(addProduct.getDelieveredOutsideSpecifiedRadius());
 		if (addProduct.getManufacturingDate() != null)
 			product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
@@ -189,24 +190,10 @@ public class ProductServiceImpl implements ProductService {
 				Attachment attachment = this.attachmentRepository.findById(updateProduct.getBanner()).get();
 				product.setBanner(attachment.getLocation());
 			}
-
+			product.setDeliveredInSpecifiedRadius(updateProduct.getDeliveredInSpecifiedRadius());
+			product.setDelieveredOutsideSpecifiedRadius(updateProduct.getDelieveredOutsideSpecifiedRadius());
 			product = this.productRepo.saveAndFlush(product);
 
-			/*
-			 * List<Attachment> attachments = new ArrayList<>();
-			 * 
-			 * if(this.helper.notNullAndHavingData(updateProduct.getImages())) for
-			 * (MultipartFile imageFile : updateProduct.getImages()) { if (imageFile != null
-			 * && !imageFile.isEmpty()) try { String location =
-			 * this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
-			 * FolderConstants.PRODUCTS.getValue()).get();
-			 * attachments.add(this.attachmentService.addAttachment(location,
-			 * FileType.PRODUCT_IMAGE.getValue(), imageFile.getOriginalFilename(),
-			 * imageFile.getContentType(), product)); } catch (InterruptedException |
-			 * ExecutionException e) { e.printStackTrace(); } }
-			 * 
-			 * product.setAttachments(attachments);
-			 */
 			ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
 			bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
 			return bo;

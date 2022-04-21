@@ -58,10 +58,8 @@ public class UpdateProduct {
 //	@NotNull
 	private String banner;
 
-// To Do Awaiting Feedback Around These Two Fields..
+	private Boolean deliveredInSpecifiedRadius;
 
-//	private Boolean doYouDelieverInSpecifiedRadius;
-
-//	private Boolean delieveredOutsideOfDelieveryRadius;
+	private Boolean delieveredOutsideSpecifiedRadius;
 
 }
