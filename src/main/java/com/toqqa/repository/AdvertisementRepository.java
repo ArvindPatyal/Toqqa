@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.toqqa.domain.Advertisement;
-import com.toqqa.domain.CartItem;
-import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
 
 @Repository
@@ -24,4 +22,7 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, St
 	List<Advertisement> findTop10ByOrderByQueueDateAsc();
 
 	Advertisement findByProduct_Id(String id);
+
+	List<Advertisement> findByOrderByQueueDateAsc();
+
 }

@@ -27,6 +27,7 @@ import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ToggleAdStatus;
 import com.toqqa.repository.AdvertisementRepository;
 import com.toqqa.repository.ProductRepository;
+import com.toqqa.repository.SmeRepository;
 import com.toqqa.service.AdvertisementService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.StorageService;
@@ -46,6 +47,9 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Autowired
 	private ProductRepository productRepo;
+
+	@Autowired
+	private SmeRepository smeRepo;
 
 	@Value("${pageSize}")
 	private Integer pageSize;
@@ -78,7 +82,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
-	//	this.updateOldAdsStatus(user);
+		// this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
 
 		ProductBo productBo = new ProductBo(ads.getProduct(),
@@ -90,16 +94,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	}
 
-
-	/*private ProductBo prepareProduct(AdvertisementBo bo){
-		log.info("inside prepare product");
-		bo.getProduct().getImages().forEach(image -> {
-			image = this.helper.prepareResource(image);
-			bo.getProduct().getImages().add(image);
-		});
-		bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().getBanner()));
-		return bo.getProduct();
-	}*/
+	/*
+	 * private ProductBo prepareProduct(AdvertisementBo bo){
+	 * log.info("inside prepare product"); bo.getProduct().getImages().forEach(image
+	 * -> { image = this.helper.prepareResource(image);
+	 * bo.getProduct().getImages().add(image); });
+	 * bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().
+	 * getBanner())); return bo.getProduct(); }
+	 */
 
 	private void updateOldAdsStatus(User user) {
 		log.info("Inside advertisement update ads Status");
@@ -119,15 +121,15 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		User user = this.authenticationService.currentUser();
 		Advertisement ads = this.advertisementRepo.findById(advertisementUpdate.getId()).get();
 		ads.setDescription(advertisementUpdate.getDescription());
-		ads.setProduct(this.productRepo.findById(advertisementUpdate.getProductId()).get());				
-		if(advertisementUpdate.getBanner()!=null& !advertisementUpdate.getBanner().isEmpty()) {
-		try {
-			ads.setBanner(this.storageService
-					.uploadFileAsync(advertisementUpdate.getBanner(), user.getId(), FolderConstants.BANNER.getValue())
-					.get());
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}}
+		ads.setProduct(this.productRepo.findById(advertisementUpdate.getProductId()).get());
+		if (advertisementUpdate.getBanner() != null) {
+			try {
+				ads.setBanner(this.storageService.uploadFileAsync(advertisementUpdate.getBanner(), user.getId(),
+						FolderConstants.BANNER.getValue()).get());
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
 		ads = this.advertisementRepo.saveAndFlush(ads);
 		ProductBo productBo = new ProductBo(ads.getProduct(),
 				this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
@@ -201,11 +203,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		User user = this.authenticationService.currentUser();
 		Optional<Advertisement> ad = this.advertisementRepo.findById(status.getAdId());
 		if (ad.isPresent()) {
-			if(status.getStatus()){
+			if (status.getStatus()) {
 				this.updateOldAdsStatus(user);
 			}
 			Advertisement ads = ad.get();
-			ads.setIsActive(status.getStatus());			
+			ads.setIsActive(status.getStatus());
 			ads = this.advertisementRepo.saveAndFlush(ads);
 			ProductBo productBo = new ProductBo(ads.getProduct(),
 					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
@@ -219,13 +221,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Override
 	public List<AdvertisementBo> fetchTopActiveAdds() {
-		
+
 		List<Advertisement> ads = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
-		
+
 		List<AdvertisementBo> adds = new ArrayList<AdvertisementBo>();
-		
-		ads.forEach(ad ->
-		{
+
+		ads.forEach(ad -> {
 			ProductBo productBo = new ProductBo(ad.getProduct(),
 					this.helper.prepareProductAttachments(ad.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareAttachmentResource(ad.getProduct().getBanner()));
@@ -233,16 +234,44 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			adds.add(bo);
 		});
-		
+
 		return adds;
 	}
-	
+
 	@Scheduled(fixedRate = 14400000)
-	private void resetAdds()
-	{
+	private void resetAdds() {
 		List<Advertisement> ads = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
 		Advertisement ad = ads.get(0);
 		ad.setQueueDate(new Date());
 		this.advertisementRepo.saveAndFlush(ad);
+	}
+
+	@Override
+	@Scheduled(fixedRate = 14400000)
+	public List<AdvertisementBo> queueNumber() {
+
+		List<Advertisement> ads = advertisementRepo.findByOrderByQueueDateAsc();
+
+		List<Advertisement> ad = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
+
+		// ads.subList(0, 10).clear();
+
+		ads.removeIf(x -> ad.contains(x));
+
+		List<AdvertisementBo> adb = new ArrayList<>();
+		System.out.println(ads.size());
+		int queue = 0;
+		for (Advertisement a : ads) {
+			queue += 1;
+			ProductBo productBo = new ProductBo(a.getProduct(),
+					this.helper.prepareProductAttachments(a.getProduct().getAttachments()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(a.getProduct().getBanner()));
+			AdvertisementBo bo = new AdvertisementBo(a, productBo);
+			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
+			bo.setQueueNumber(queue);
+			adb.add(bo);
+		}
+		return adb;
+
 	}
 }
