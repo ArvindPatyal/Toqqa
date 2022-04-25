@@ -46,7 +46,6 @@ public class AddProduct {
 
 	private Integer maximumUnitsInOneOrder;
 
-	@Min(value = 1)
 	private Integer minimumUnitsInOneOrder;
 
 	@NotNull

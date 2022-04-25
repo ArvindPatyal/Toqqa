@@ -81,13 +81,11 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductBo addProduct(AddProduct addProduct) {
 		log.info("Inside Add Product");
-		if (addProduct.getMaximumUnitsInOneOrder() < addProduct.getMinimumUnitsInOneOrder()) {
-			throw new BadRequestException("Max. value greater then min. value");
+		if(addProduct.getMaximumUnitsInOneOrder()!=null&&addProduct.getMinimumUnitsInOneOrder()!=null) {
+			if (addProduct.getMaximumUnitsInOneOrder() < addProduct.getMinimumUnitsInOneOrder()) {
+				throw new BadRequestException("Max. value greater then min. value");
+			}
 		}
-//		if (addProduct.getDiscount() > addProduct.getPricePerUnit()) {
-//			throw new BadRequestException("Discount amount greater then PricePerUnit");
-//			
-//		}
 		Product product = new Product();
 		product.setProductName(addProduct.getProductName());
 		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
@@ -158,9 +156,13 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductBo updateProduct(UpdateProduct updateProduct) {
 		log.info("inside update Product");
-		if (updateProduct.getMaximumUnitsInOneOrder() < updateProduct.getMinimumUnitsInOneOrder()) {
-			throw new BadRequestException("Max. value greater then min. value");
+
+		if(updateProduct.getMaximumUnitsInOneOrder()!=null && updateProduct.getMinimumUnitsInOneOrder()!=null) {
+			if (updateProduct.getMaximumUnitsInOneOrder() < updateProduct.getMinimumUnitsInOneOrder()) {
+				throw new BadRequestException("Max. value greater then min. value");
+			}
 		}
+
 		Product product = this.productRepo.findById(updateProduct.getProductId()).get();
 		if (product != null) {
 			product.setProductName(updateProduct.getProductName());

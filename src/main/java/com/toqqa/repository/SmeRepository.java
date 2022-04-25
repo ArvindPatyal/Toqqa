@@ -8,4 +8,6 @@ import com.toqqa.domain.Sme;
 @Repository
 public interface SmeRepository extends JpaRepository<Sme, String> {
 
+    Sme findByUserId(String userId);
+
 }
