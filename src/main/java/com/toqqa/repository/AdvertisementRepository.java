@@ -22,7 +22,12 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, St
 	List<Advertisement> findTop10ByOrderByQueueDateAsc();
 
 	Advertisement findByProduct_Id(String id);
-
+	
 	List<Advertisement> findByOrderByQueueDateAsc();
+
+	List<Advertisement> findByIsActiveOrderByQueueDateAsc(boolean b);
+
+	List<Advertisement> findTop10ByIsActiveOrderByQueueDateAsc(boolean b);
+	
 
 }

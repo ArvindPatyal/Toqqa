@@ -27,7 +27,6 @@ import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ToggleAdStatus;
 import com.toqqa.repository.AdvertisementRepository;
 import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.SmeRepository;
 import com.toqqa.service.AdvertisementService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.StorageService;
@@ -47,9 +46,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Autowired
 	private ProductRepository productRepo;
-
-	@Autowired
-	private SmeRepository smeRepo;
 
 	@Value("${pageSize}")
 	private Integer pageSize;
@@ -183,8 +179,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			bos.add(bo);
 		});
-		return new ListResponseWithCount<AdvertisementBo>(bos, "", allAdvertisements.getTotalElements(),
-				paginationBo.getPageNumber(), allAdvertisements.getTotalPages());
+		return new ListResponseWithCount<AdvertisementBo>(alotQueueNumber(bos), "",
+				allAdvertisements.getTotalElements(), paginationBo.getPageNumber(), allAdvertisements.getTotalPages());
 	}
 
 	@Override
@@ -247,31 +243,37 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 	}
 
 	@Override
-	@Scheduled(fixedRate = 14400000)
-	public List<AdvertisementBo> queueNumber() {
+	// @Scheduled(fixedRate = 14400000)
+	public List<AdvertisementBo> alotQueueNumber(List<AdvertisementBo> bos) {
 
-		List<Advertisement> ads = advertisementRepo.findByOrderByQueueDateAsc();
+		List<Advertisement> listAds = advertisementRepo.findByIsActiveOrderByQueueDateAsc(true);
 
-		List<Advertisement> ad = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
+		List<Advertisement> topListad = advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
 
-		// ads.subList(0, 10).clear();
+		listAds.removeIf(x -> topListad.contains(x));
 
-		ads.removeIf(x -> ad.contains(x));
+		List<AdvertisementBo> adsBo = new ArrayList<>();
 
-		List<AdvertisementBo> adb = new ArrayList<>();
-		System.out.println(ads.size());
-		int queue = 0;
-		for (Advertisement a : ads) {
-			queue += 1;
-			ProductBo productBo = new ProductBo(a.getProduct(),
-					this.helper.prepareProductAttachments(a.getProduct().getAttachments()));
-			productBo.setBanner(this.helper.prepareAttachmentResource(a.getProduct().getBanner()));
-			AdvertisementBo bo = new AdvertisementBo(a, productBo);
-			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
-			bo.setQueueNumber(queue);
-			adb.add(bo);
+		List<AdvertisementBo> adsbos = new ArrayList<>();
+
+		for (Advertisement ads : listAds) {
+
+			ProductBo productBo = new ProductBo(ads.getProduct(),
+					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(ads.getProduct().getBanner()));
+			AdvertisementBo adbo = new AdvertisementBo(ads, productBo);
+			adbo.setQueueNumber(listAds.indexOf(ads) + 1);
+			adsBo.add(adbo);
+
+			for (AdvertisementBo adbs : bos) {
+				if (ads.getId().equals(adbs.getId())) {
+					adbs.setQueueNumber(adbo.getQueueNumber());
+					adsbos.add(adbs);
+				}
+
+			}
 		}
-		return adb;
 
+		return adsbos;
 	}
 }
