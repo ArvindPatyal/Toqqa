@@ -73,9 +73,6 @@ public class ProductServiceImpl implements ProductService {
 	private AdvertisementRepository advertisementRepo;
 
 	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
 	private Helper helper;
 
 	@Override

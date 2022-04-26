@@ -3,6 +3,9 @@ package com.toqqa.payload;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -38,10 +41,12 @@ public class UpdateProduct {
 	private Double pricePerUnit;
 
 	@NotNull
+	@DecimalMax("100.00")
+	@DecimalMin("0.00")
 	private Double discount;
 
 	private Integer maximumUnitsInOneOrder;
-
+	@Min(value = 1)
 	private Integer minimumUnitsInOneOrder;
 
 	@NotNull
@@ -52,9 +57,9 @@ public class UpdateProduct {
 
 	@NotNull
 	private String manufacturerName;
-	
+
 	private Long manufacturingDate;
-	
+
 //	@NotNull
 	private String banner;
 

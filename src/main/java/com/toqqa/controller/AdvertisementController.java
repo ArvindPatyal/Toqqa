@@ -107,12 +107,14 @@ public class AdvertisementController {
 		log.info("Inside controller update clicks");
 		return this.advertisementService.fetchTopActiveAdds();
 	}
-	@ApiOperation(value = "queueNumber")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
-			@ApiResponse(code = 400, message = "Bad Request!") })
-	@GetMapping("/queueNumber")
-	public List<AdvertisementBo> queueNumber() {
-		log.info("Inside controller queueNumber");
-		return this.advertisementService.queueNumber();
-	}
+
+//	@ApiOperation(value = "allotQueueNumber")
+//	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+//			@ApiResponse(code = 400, message = "Bad Request!") })
+//	@GetMapping("/queueNumber/{id}")
+//	public List<AdvertisementBo> allotQueueNumber(@PathVariable("id") @Valid String id) {
+//		log.info("Inside controller queueNumber");
+//		return this.advertisementService.allotQueueNumber(id);
+//		
+//	}
 }
