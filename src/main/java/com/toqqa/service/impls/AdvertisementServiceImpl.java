@@ -120,7 +120,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		Advertisement ads = this.advertisementRepo.findById(advertisementUpdate.getId()).get();
 		ads.setDescription(advertisementUpdate.getDescription());
 		ads.setProduct(this.productRepo.findById(advertisementUpdate.getProductId()).get());				
-		if(advertisementUpdate.getBanner()!=null& !advertisementUpdate.getBanner().isEmpty()) {
+		if(advertisementUpdate.getBanner()!=null) {
 		try {
 			ads.setBanner(this.storageService
 					.uploadFileAsync(advertisementUpdate.getBanner(), user.getId(), FolderConstants.BANNER.getValue())
