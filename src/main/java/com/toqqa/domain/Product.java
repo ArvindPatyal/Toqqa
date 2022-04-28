@@ -62,11 +62,9 @@ public class Product {
 	@CreationTimestamp
 	private Date createdAt;
 
-// To Do Awaiting Feedback Around These Two Fields..
+	private Boolean deliveredInSpecifiedRadius;
 
-//	private Boolean doYouDelieverInSpecifiedRadius;
-
-//	private Boolean delieveredOutsideOfDelieveryRadius;
+	private Boolean delieveredOutsideSpecifiedRadius;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")

@@ -8,4 +8,6 @@ import com.toqqa.domain.Agent;
 @Repository
 public interface AgentRepository extends JpaRepository<Agent, String> {
 
+    Agent findByUserId(String userId);
+
 }

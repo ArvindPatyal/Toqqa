@@ -78,13 +78,11 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductBo addProduct(AddProduct addProduct) {
 		log.info("Inside Add Product");
-		if (addProduct.getMaximumUnitsInOneOrder() < addProduct.getMinimumUnitsInOneOrder()) {
-			throw new BadRequestException("Max. value greater then min. value");
+		if(addProduct.getMaximumUnitsInOneOrder()!=null&&addProduct.getMinimumUnitsInOneOrder()!=null) {
+			if (addProduct.getMaximumUnitsInOneOrder() < addProduct.getMinimumUnitsInOneOrder()) {
+				throw new BadRequestException("Max. value greater then min. value");
+			}
 		}
-//		if (addProduct.getDiscount() > addProduct.getPricePerUnit()) {
-//			throw new BadRequestException("Discount amount greater then PricePerUnit");
-//			
-//		}
 		Product product = new Product();
 		product.setProductName(addProduct.getProductName());
 		product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
@@ -103,7 +101,8 @@ public class ProductServiceImpl implements ProductService {
 		product.setManufacturerName(addProduct.getManufacturerName());
 		product.setUser(authenticationService.currentUser());
 		product.setIsDeleted(false);
-
+		product.setDeliveredInSpecifiedRadius(addProduct.getDeliveredInSpecifiedRadius());
+		product.setDelieveredOutsideSpecifiedRadius(addProduct.getDelieveredOutsideSpecifiedRadius());
 		if (addProduct.getManufacturingDate() != null)
 			product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
 
@@ -154,9 +153,13 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductBo updateProduct(UpdateProduct updateProduct) {
 		log.info("inside update Product");
-		if (updateProduct.getMaximumUnitsInOneOrder() < updateProduct.getMinimumUnitsInOneOrder()) {
-			throw new BadRequestException("Max. value greater then min. value");
+
+		if(updateProduct.getMaximumUnitsInOneOrder()!=null && updateProduct.getMinimumUnitsInOneOrder()!=null) {
+			if (updateProduct.getMaximumUnitsInOneOrder() < updateProduct.getMinimumUnitsInOneOrder()) {
+				throw new BadRequestException("Max. value greater then min. value");
+			}
 		}
+
 		Product product = this.productRepo.findById(updateProduct.getProductId()).get();
 		if (product != null) {
 			product.setProductName(updateProduct.getProductName());
@@ -186,24 +189,10 @@ public class ProductServiceImpl implements ProductService {
 				Attachment attachment = this.attachmentRepository.findById(updateProduct.getBanner()).get();
 				product.setBanner(attachment.getLocation());
 			}
-
+			product.setDeliveredInSpecifiedRadius(updateProduct.getDeliveredInSpecifiedRadius());
+			product.setDelieveredOutsideSpecifiedRadius(updateProduct.getDelieveredOutsideSpecifiedRadius());
 			product = this.productRepo.saveAndFlush(product);
 
-			/*
-			 * List<Attachment> attachments = new ArrayList<>();
-			 * 
-			 * if(this.helper.notNullAndHavingData(updateProduct.getImages())) for
-			 * (MultipartFile imageFile : updateProduct.getImages()) { if (imageFile != null
-			 * && !imageFile.isEmpty()) try { String location =
-			 * this.storageService.uploadFileAsync(imageFile, product.getUser().getId(),
-			 * FolderConstants.PRODUCTS.getValue()).get();
-			 * attachments.add(this.attachmentService.addAttachment(location,
-			 * FileType.PRODUCT_IMAGE.getValue(), imageFile.getOriginalFilename(),
-			 * imageFile.getContentType(), product)); } catch (InterruptedException |
-			 * ExecutionException e) { e.printStackTrace(); } }
-			 * 
-			 * product.setAttachments(attachments);
-			 */
 			ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
 			bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
 			return bo;

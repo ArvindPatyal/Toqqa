@@ -126,7 +126,7 @@ public class AgentServiceImpl implements AgentService {
 	@Override
 	public AgentBo fetchAgent(String id) {
 		log.info("Inside fetch Agent");
-		Agent agent = this.agentRepo.findById(id).get();
+		Agent agent = this.agentRepo.findByUserId(id);
 		if (agent!=null) {
 			AgentBo bo = new AgentBo(agent);
 			bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));

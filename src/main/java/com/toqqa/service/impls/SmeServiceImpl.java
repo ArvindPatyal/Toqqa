@@ -190,8 +190,8 @@ public class SmeServiceImpl implements SmeService {
 
     @Override
     public SmeBo fetchSme(String id) {
-        log.info("Inside fetch Agent");
-        Sme sme = this.smeRepo.findById(id).get();
+        log.info("Inside fetch sme");
+        Sme sme = this.smeRepo.findByUserId(id);
         if (sme != null) {
             SmeBo bo =new SmeBo(sme);
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
