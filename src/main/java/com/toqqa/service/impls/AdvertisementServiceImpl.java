@@ -78,7 +78,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
-	//	this.updateOldAdsStatus(user);
+		// this.updateOldAdsStatus(user);
 		ads = this.advertisementRepo.saveAndFlush(ads);
 
 		ProductBo productBo = new ProductBo(ads.getProduct(),
@@ -90,16 +90,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	}
 
-
-	/*private ProductBo prepareProduct(AdvertisementBo bo){
-		log.info("inside prepare product");
-		bo.getProduct().getImages().forEach(image -> {
-			image = this.helper.prepareResource(image);
-			bo.getProduct().getImages().add(image);
-		});
-		bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().getBanner()));
-		return bo.getProduct();
-	}*/
+	/*
+	 * private ProductBo prepareProduct(AdvertisementBo bo){
+	 * log.info("inside prepare product"); bo.getProduct().getImages().forEach(image
+	 * -> { image = this.helper.prepareResource(image);
+	 * bo.getProduct().getImages().add(image); });
+	 * bo.getProduct().setBanner(this.helper.prepareResource(bo.getProduct().
+	 * getBanner())); return bo.getProduct(); }
+	 */
 
 	private void updateOldAdsStatus(User user) {
 		log.info("Inside advertisement update ads Status");
@@ -128,6 +126,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}}
+
 		ads = this.advertisementRepo.saveAndFlush(ads);
 		ProductBo productBo = new ProductBo(ads.getProduct(),
 				this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
@@ -181,8 +180,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			bos.add(bo);
 		});
-		return new ListResponseWithCount<AdvertisementBo>(bos, "", allAdvertisements.getTotalElements(),
-				paginationBo.getPageNumber(), allAdvertisements.getTotalPages());
+		return new ListResponseWithCount<AdvertisementBo>(alotQueueNumber(bos), "",
+				allAdvertisements.getTotalElements(), paginationBo.getPageNumber(), allAdvertisements.getTotalPages());
 	}
 
 	@Override
@@ -201,11 +200,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 		User user = this.authenticationService.currentUser();
 		Optional<Advertisement> ad = this.advertisementRepo.findById(status.getAdId());
 		if (ad.isPresent()) {
-			if(status.getStatus()){
+			if (status.getStatus()) {
 				this.updateOldAdsStatus(user);
 			}
 			Advertisement ads = ad.get();
-			ads.setIsActive(status.getStatus());			
+			ads.setIsActive(status.getStatus());
 			ads = this.advertisementRepo.saveAndFlush(ads);
 			ProductBo productBo = new ProductBo(ads.getProduct(),
 					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
@@ -219,13 +218,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
 	@Override
 	public List<AdvertisementBo> fetchTopActiveAdds() {
-		
+
 		List<Advertisement> ads = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
-		
+
 		List<AdvertisementBo> adds = new ArrayList<AdvertisementBo>();
-		
-		ads.forEach(ad ->
-		{
+
+		ads.forEach(ad -> {
 			ProductBo productBo = new ProductBo(ad.getProduct(),
 					this.helper.prepareProductAttachments(ad.getProduct().getAttachments()));
 			productBo.setBanner(this.helper.prepareAttachmentResource(ad.getProduct().getBanner()));
@@ -233,16 +231,50 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 			bo.setBanner(this.helper.prepareResource(bo.getBanner()));
 			adds.add(bo);
 		});
-		
+
 		return adds;
 	}
-	
+
 	@Scheduled(fixedRate = 14400000)
-	private void resetAdds()
-	{
+	private void resetAdds() {
 		List<Advertisement> ads = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
 		Advertisement ad = ads.get(0);
 		ad.setQueueDate(new Date());
 		this.advertisementRepo.saveAndFlush(ad);
+	}
+
+	@Override
+	// @Scheduled(fixedRate = 14400000)
+	public List<AdvertisementBo> alotQueueNumber(List<AdvertisementBo> bos) {
+
+		List<Advertisement> listAds = advertisementRepo.findByIsActiveOrderByQueueDateAsc(true);
+
+		List<Advertisement> topListad = advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
+
+		listAds.removeIf(x -> topListad.contains(x));
+
+		List<AdvertisementBo> adsBo = new ArrayList<>();
+
+		List<AdvertisementBo> adsbos = new ArrayList<>();
+
+		for (Advertisement ads : listAds) {
+
+			ProductBo productBo = new ProductBo(ads.getProduct(),
+					this.helper.prepareProductAttachments(ads.getProduct().getAttachments()));
+			productBo.setBanner(this.helper.prepareAttachmentResource(ads.getProduct().getBanner()));
+			AdvertisementBo adbo = new AdvertisementBo(ads, productBo);
+			adbo.setQueueNumber(listAds.indexOf(ads) + 1);
+			adsBo.add(adbo);
+
+			for (AdvertisementBo adbs : bos) {
+				if (ads.getId().equals(adbs.getId())) {
+					adbs.setQueueNumber(adbo.getQueueNumber());
+					adsbos.add(adbs);
+				}
+
+			}
+		}
+
+		return adsbos;
 	}
 }

@@ -24,6 +24,10 @@ public interface AdvertisementService {
 	AdvertisementBo updateClick(String id);
 
 	AdvertisementBo updateAdsStatus(ToggleAdStatus toggleAdStatus);
-	
+
 	List<AdvertisementBo> fetchTopActiveAdds();
+
+	List<AdvertisementBo> alotQueueNumber(List<AdvertisementBo> bos);
+	
+
 }
