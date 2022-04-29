@@ -1,53 +1,52 @@
 package com.toqqa.domain;
 
-import java.util.Date;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-
-import lombok.Data;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import javax.persistence.*;
+import java.util.Date;
+
 @Entity
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Advertisement {
 
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-	private String id;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    private String id;
 
-	private String description;
+    private String description;
 
-	@CreationTimestamp
-	private Date createdDate;
+    @CreationTimestamp
+    private Date createdDate;
 
-	@UpdateTimestamp
-	private Date modificationDate;
+    @UpdateTimestamp
+    private Date modificationDate;
 
-	private Integer clicks;
+    private Integer clicks;
 
-	private String banner;
+    private String banner;
 
-	private Boolean isDeleted;
+    private Boolean isDeleted;
 
-	private Boolean isActive;
-	
-	private Date queueDate;
+    private Boolean isActive;
 
-	@OneToOne
-	@JoinColumn(name = "product_id")
-	private Product product;
+    private Date queueDate;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
+    @OneToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }
