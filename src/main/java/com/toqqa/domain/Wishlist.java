@@ -29,7 +29,7 @@ public class Wishlist {
     @CreationTimestamp
     private Date createdDate;
 
-    @OneToMany
+    @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
     private List<WishlistItem> wishlistItems;
 
 }

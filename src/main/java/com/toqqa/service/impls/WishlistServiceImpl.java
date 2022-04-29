@@ -5,6 +5,7 @@ import com.toqqa.bo.WishlistItemBo;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.payload.Response;
 import com.toqqa.payload.WishlistItemPayload;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistItemRepository;
@@ -14,15 +15,15 @@ import com.toqqa.service.WishlistService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
+@Transactional
 public class WishlistServiceImpl implements WishlistService {
     @Autowired
     WishlistRepository wishlistRepository;
@@ -35,9 +36,10 @@ public class WishlistServiceImpl implements WishlistService {
     ProductRepository productRepository;
 
     @Override
-    public WishlistBo createWishlist(WishlistItemPayload wishlistItemPayload) {
+
+    public Response toggleWishlist(WishlistItemPayload wishlistItemPayload) {
         log.info("Inside Service create wishlist");
-        Wishlist wishlist = this.wishlistRepository.findByUser_id(authenticationService.currentUser().getId());
+        Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 
         if (wishlist == null) {
             wishlist = new Wishlist();
@@ -46,14 +48,13 @@ public class WishlistServiceImpl implements WishlistService {
             Boolean isExists = wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(wishlistItemPayload.getProductId()));
             if (isExists) {
                 this.deleteWishlistItem(wishlistItemPayload.getProductId());
+                return new Response(true, "item removed from wishlist");
             }
-        }
 
+        }
         wishlist = this.wishlistRepository.saveAndFlush(wishlist);
         wishlist.setWishlistItems(persistWishlistItems(wishlistItemPayload, wishlist));
-
-
-        return new WishlistBo(wishlist, this.fetchWishlistItems(wishlist));
+        return new Response(true, "item added to wishlist");
     }
 
 
@@ -83,20 +84,20 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public WishlistBo fetchWishlist() {
-        log.info("Inside fetch wishlist");
-        Optional<Wishlist> wishlist = this.wishlistRepository.findByUserId(authenticationService.currentUser().getId());
-        if (wishlist.isPresent()) {
-            return new WishlistBo(wishlist.get(), this.fetchWishlistItems(wishlist.get()));
+        log.info("Inside  Service fetch wishlist");
+        Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+        if (wishlist != null) {
+            return new WishlistBo(wishlist, this.fetchWishlistItems(wishlist));
         }
         throw new BadRequestException("no wishlist such found ");
     }
 
 
-    @Transactional
+
     @Override
     public void deleteWishlistItem(String productId) {
         log.info("Inside Service delete wishlist");
-        String wishlistId = wishlistRepository.findWishlistIdByUser_id(authenticationService.currentUser().getId()).getId();
+        String wishlistId = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId()).getId();
         wishlistItemRepository.deleteByProductIdAndWishlist_Id(productId, wishlistId);
 
     }

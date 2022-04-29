@@ -25,9 +25,9 @@ public class WishlistController {
     @ApiOperation(value = "create wishlist")
     @PostMapping("/create")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    public Response<WishlistBo> createWishlist(@RequestBody @Valid WishlistItemPayload wishlistItemPayload) {
+    public Response toggleWishlist(@RequestBody @Valid WishlistItemPayload wishlistItemPayload) {
         log.info("Inside Controller create wishlist");
-        return new Response<WishlistBo>(wishlistService.createWishlist(wishlistItemPayload), "Sucess");
+        return wishlistService.toggleWishlist(wishlistItemPayload);
     }
 
     @ApiOperation(value = " view wishlist")
