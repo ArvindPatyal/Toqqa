@@ -24,10 +24,12 @@ import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderItemPayload;
 import com.toqqa.payload.OrderPayload;
+import com.toqqa.repository.DeliveryAddressRepository;
 import com.toqqa.repository.OrderInfoRepository;
 import com.toqqa.repository.OrderItemRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.EmailService;
 import com.toqqa.service.OrderInfoService;
 import com.toqqa.util.Helper;
 
@@ -35,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@Transactional(propagation = Propagation.REQUIRED)
 public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Autowired
@@ -45,30 +48,46 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Autowired
 	private ProductRepository productRepo;
+
+	@Autowired
+	private DeliveryAddressRepository addressRepo;
+
 	@Autowired
 	private AuthenticationService authenticationService;
+
 	@Autowired
 	private Helper helper;
 
 	@Value("${pageSize}")
 	private Integer pageSize;
 
+	@Autowired
+	private EmailService emailService;
+
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
 	public OrderInfoBo placeOrder(OrderPayload orderPayload) {
 		log.info("Inside Add OrderInfo");
 		OrderInfo orderInfo = new OrderInfo();
 		orderInfo.setAmount(orderPayload.getAmount());
 		orderInfo.setCreatedDate(new Date());
+		orderInfo.setEmail(orderPayload.getEmail());
+		orderInfo.setPhone(orderPayload.getPhone());
+		orderInfo.setFirstName(orderPayload.getFirstName());
+		orderInfo.setLastName(orderPayload.getLastName());
+		orderInfo.setAddress(this.addressRepo.findById(orderPayload.getAddressId()).get());
 		orderInfo.setUser(this.authenticationService.currentUser());
 		orderInfo.setOrderStatus(OrderConstants.ORDER_PLACED.getValue());
-
 		orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 		orderInfo.setOrderItems(this.persistOrderItems(orderPayload.getItems(), orderInfo));
-		return new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo));
+		OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo));
+		if (orderInfo.getEmail() != null) {
+			this.emailService.sendOrderEmail(orderInfo);
+		} else {
+			// TODO handle else case in future
+		}
+		return bo;
 	}
 
-	@Transactional(propagation = Propagation.REQUIRED)
 	private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
 		log.info("persist OrderItems");
 		List<OrderItem> oItems = new ArrayList<OrderItem>();
