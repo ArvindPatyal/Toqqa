@@ -47,8 +47,10 @@ public class FavouriteServiceImpl implements FavouriteService {
         } else {
             boolean isExists = favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(favouriteSmePayload.getSmeId()));
             if (isExists) {
-                return this.removeSme(favouriteSmePayload.getSmeId());
+                this.removeSme(favouriteSmePayload.getSmeId());
+                return new Response(true, "Added to favourites Successfully");
             }
+
         }
         favouriteRepository.saveAndFlush(favourite);
         favourite.setFavouriteSmes(this.persistSmes(favouriteSmePayload, favourite));
@@ -88,7 +90,8 @@ public class FavouriteServiceImpl implements FavouriteService {
     @Override
     public Response removeSme(String smeId) {
         log.info("Inside Service removeSme");
-        favouriteSmeRepository.deleteBySmeIdAndFavourite(smeId, favouriteRepository.findByUser(authenticationService.currentUser()));
+        String favouriteId = favouriteRepository.findByUser(authenticationService.currentUser()).getId();
+        favouriteSmeRepository.deleteBySmeIdAndFavourite_Id(smeId, favouriteId);
         return new Response(true, "removed Successfully");
     }
 }

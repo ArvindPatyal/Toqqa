@@ -11,5 +11,5 @@ import java.util.List;
 public interface FavouriteSmeRepository extends JpaRepository<FavouriteSme, String> {
     List<FavouriteSme> findByFavourite(Favourite favourite);
 
-    void deleteBySmeIdAndFavourite(String smeId, Favourite favourite);
+    void deleteBySmeIdAndFavourite_Id(String smeId, String favouriteId);
 }

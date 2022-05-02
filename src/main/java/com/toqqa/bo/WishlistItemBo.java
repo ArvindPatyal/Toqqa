@@ -20,6 +20,5 @@ public class WishlistItemBo {
     public WishlistItemBo(WishlistItem wishlistItem) {
         this.id = wishlistItem.getId();
         this.product = new ProductBo(wishlistItem.getProduct());
-        ;
     }
 }
