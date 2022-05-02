@@ -48,7 +48,7 @@ public class AddProduct {
 
 	private Integer minimumUnitsInOneOrder;
 
-	@NotNull
+//	@NotNull
 	private Long expiryDate;
 
 	@NotNull

@@ -48,7 +48,7 @@ public class UpdateProduct {
 	@Min(value = 1)
 	private Integer minimumUnitsInOneOrder;
 
-	@NotNull
+//	@NotNull
 	private Long expiryDate;
 
 	@NotNull
