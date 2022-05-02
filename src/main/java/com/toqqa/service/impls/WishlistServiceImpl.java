@@ -15,15 +15,16 @@ import com.toqqa.service.WishlistService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(propagation = Propagation.REQUIRED)
 public class WishlistServiceImpl implements WishlistService {
     @Autowired
     WishlistRepository wishlistRepository;
@@ -48,7 +49,7 @@ public class WishlistServiceImpl implements WishlistService {
             Boolean isExists = wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(wishlistItemPayload.getProductId()));
             if (isExists) {
                 this.deleteWishlistItem(wishlistItemPayload.getProductId());
-                return new Response(true, "item removed from wishlist");
+                return new Response(true, "item added to wishlist");
             }
 
         }
@@ -91,7 +92,6 @@ public class WishlistServiceImpl implements WishlistService {
         }
         throw new BadRequestException("no wishlist such found ");
     }
-
 
 
     @Override
