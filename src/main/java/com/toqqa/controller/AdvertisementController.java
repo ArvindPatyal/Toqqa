@@ -95,18 +95,18 @@ public class AdvertisementController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/updateAdsStatus")
 	public Response<AdvertisementBo> updateAdsStatus(@RequestBody @Valid ToggleAdStatus request) {
-		log.info("Inside controller update clicks");
+		log.info("Inside controller update ad status");
 		return new Response<AdvertisementBo>(this.advertisementService.updateAdsStatus(request), "success");
 	}
 
-	@ApiOperation(value = "fetchTopAds")
+	/*@ApiOperation(value = "fetchTopAds")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@GetMapping("/fetchTopAds")
 	public List<AdvertisementBo> fetchTopActiveAdds() {
-		log.info("Inside controller update clicks");
+		log.info("Inside controller fetch top ads");
 		return this.advertisementService.fetchTopActiveAdds();
-	}
+	}*/
 
 //	@ApiOperation(value = "allotQueueNumber")
 //	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),

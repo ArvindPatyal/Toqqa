@@ -25,9 +25,9 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, St
 	
 	List<Advertisement> findByOrderByQueueDateAsc();
 
-	List<Advertisement> findByIsActiveOrderByQueueDateAsc(boolean b);
+	List<Advertisement> findByIsActiveOrderByQueueDateAsc(boolean isActive);
 
-	List<Advertisement> findTop10ByIsActiveOrderByQueueDateAsc(boolean b);
+	List<Advertisement> findTop10ByIsActiveOrderByQueueDateAsc(boolean isActive);
 	
 
 }

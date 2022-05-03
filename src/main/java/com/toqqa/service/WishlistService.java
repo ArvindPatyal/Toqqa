@@ -17,7 +17,9 @@ public interface WishlistService {
 
     Response toggleWishlist(WishlistItemPayload wishlistItemPayload);
 
-    Boolean isWishListItem(List<ProductBo> productBos, Wishlist wishlist);
+//    Boolean isWishListItem(List<ProductBo> productBos, Wishlist wishlist);
+
+    Boolean isWishListItem(ProductBo productBo, Wishlist wishlist);
 
     void deleteWishlistItem(String productId);
 

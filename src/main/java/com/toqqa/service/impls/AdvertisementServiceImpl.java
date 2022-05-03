@@ -217,7 +217,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public List<AdvertisementBo> fetchTopActiveAdds() {
-        List<Advertisement> ads = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
+        log.info("inside top active ads.");
+        List<Advertisement> ads = this.advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
         List<AdvertisementBo> adds = new ArrayList<AdvertisementBo>();
 
         ads.forEach(ad -> {

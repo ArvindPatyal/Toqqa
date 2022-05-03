@@ -44,9 +44,10 @@ public class WishlistController {
     @ApiOperation(value = "delete from wishlist")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
     @DeleteMapping("/deleteItem/{productId}")
-    public void deleteWishlist(@PathVariable("productId") @Valid String productId) {
+    public Response deleteWishlist(@PathVariable("productId") @Valid String productId) {
         log.info("Inside Controller delete wishlist");
         wishlistService.deleteWishlistItem(productId);
+        return new Response(true,"item removed successfully");
     }
 }
 

@@ -2,7 +2,6 @@ package com.toqqa.service.impls;
 
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.WishlistItemBo;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
 import com.toqqa.payload.*;
@@ -80,21 +79,23 @@ public class WishlistServiceImpl implements WishlistService {
         request.setPageNumber(bo.getPageNumber());
         ListResponseWithCount<ProductBo> list = this.productService.fetchProductList(request);
         Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
-        System.out.println(list.getData().size());
-
-        List<ProductBo> wishlistProducts =  list.getData().stream().filter(productBo -> {
+        List<ProductBo> wishlistProducts =  new ArrayList<>();
+        list.getData().forEach(productBo -> {
+            if(this.isWishListItem(productBo,wishlist)){
+                productBo.setIsInWishList(true);
+                wishlistProducts.add(productBo);
+            }
+        });
+        /*List<ProductBo> wishlistProducts =  list.getData().stream().filter(productBo -> {
             return productBo.getId().equals(wishlist.getWishlistItems()
                     .stream().map(wishlistItem -> wishlistItem.getProductId()).findFirst().get());
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList());*/
         return new ListResponse(wishlistProducts, "");
     }
 
     @Override
-    public Boolean isWishListItem(List<ProductBo> productBos, Wishlist wishlist){
-        return productBos.stream().anyMatch(productBo -> {
-            return productBo.getId().equals(wishlist.getWishlistItems()
-                    .stream().map(wishlistItem -> wishlistItem.getProductId()).findFirst().get());
-        });
+    public Boolean isWishListItem(ProductBo productBo, Wishlist wishlist){
+        return wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(productBo.getId()));
     }
 
     @Override
