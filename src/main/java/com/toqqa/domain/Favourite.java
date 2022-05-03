@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -14,22 +16,20 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "product_category")
-
-public class ProductCategory {
+public class Favourite {
 
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-
     private String id;
 
-    private String productCategory;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @OneToMany(mappedBy = "productCategory")
-    private List<ProductSubCategory> productSubCategories;
+    @CreationTimestamp
+    private Date createdDate;
 
-    @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
-    private List<Product> products;
-
+    @OneToMany(mappedBy = "favourite", cascade = CascadeType.ALL)
+    private List<FavouriteSme> favouriteSmes;
 }

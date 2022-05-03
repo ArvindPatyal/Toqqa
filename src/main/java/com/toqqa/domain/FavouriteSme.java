@@ -7,29 +7,27 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "product_category")
-
-public class ProductCategory {
+public class FavouriteSme {
 
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-
     private String id;
 
-    private String productCategory;
+    @Column(name = "sme_id")
+    private String smeId;
 
-    @OneToMany(mappedBy = "productCategory")
-    private List<ProductSubCategory> productSubCategories;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "sme_id", insertable = false, updatable = false)
+    private Sme sme;
 
-    @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
-    private List<Product> products;
-
+    @ManyToOne
+    @JoinColumn(name = "favourite_id")
+    private Favourite favourite;
 }

@@ -1,20 +1,20 @@
 package com.toqqa.payload;
 
-import javax.validation.constraints.NotNull;
-
-import com.toqqa.bo.PaginationBo;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ListProductRequest extends PaginationBo {
+public class FavouriteSmePayload {
 
-	@NotNull
-	private Boolean isInActive;
+    @NotEmpty
+    @NotNull
+    private String smeId;
 }

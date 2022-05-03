@@ -1,34 +1,31 @@
 package com.toqqa.domain;
 
-import java.util.List;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
-@Data
-@Table(name = "category")
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "category")
 public class Category {
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-	private String id;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    private String id;
 
-	private String category;
+    private String category;
 
-	@OneToMany(mappedBy = "category")
-	private List<SubCategory> subCategories;
+    @OneToMany(mappedBy = "category")
+    private List<SubCategory> subCategories;
 
-	@ManyToMany(mappedBy = "businessCatagory")
-	private List<Sme> smes;
+    @ManyToMany(mappedBy = "businessCatagory")
+    private List<Sme> smes;
 }
