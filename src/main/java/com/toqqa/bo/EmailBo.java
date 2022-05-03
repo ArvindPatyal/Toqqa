@@ -2,9 +2,12 @@ package com.toqqa.bo;
 
 import java.util.Map;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class EmailBo {
 
 	private String mailTo;

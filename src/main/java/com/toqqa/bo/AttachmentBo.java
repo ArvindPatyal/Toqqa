@@ -4,9 +4,12 @@ import javax.validation.constraints.NotNull;
 
 import com.toqqa.domain.Attachment;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AttachmentBo {
 
 	private String id;

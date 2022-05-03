@@ -1,11 +1,14 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.Advertisement;
-import lombok.Data;
+import lombok.*;
 
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AdvertisementBo {
 
 	private String id;

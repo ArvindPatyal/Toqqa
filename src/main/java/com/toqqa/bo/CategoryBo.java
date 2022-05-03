@@ -1,9 +1,12 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.Category;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CategoryBo {
 	private String id;
 	private String category;

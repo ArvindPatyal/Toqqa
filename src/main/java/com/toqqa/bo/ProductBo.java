@@ -1,13 +1,16 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.Product;
-import lombok.Data;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductBo {
 
     private String id;
