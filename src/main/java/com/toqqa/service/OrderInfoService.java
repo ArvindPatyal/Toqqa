@@ -10,7 +10,7 @@ public interface OrderInfoService {
 	OrderInfoBo placeOrder(OrderPayload orderPayload);
 
 	OrderInfoBo fetchOrderInfo(String id);
-	
+
 	ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationbo);
 
 }

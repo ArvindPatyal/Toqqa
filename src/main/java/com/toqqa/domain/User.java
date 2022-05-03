@@ -76,7 +76,7 @@ public class User {
 	private String agentId;
 
 	private Boolean isDeleted;
-	
+
 	private Date createdAt;
 
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -85,5 +85,8 @@ public class User {
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<Product> products = new ArrayList<>();
+
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)    
+	private List<DeliveryAddress> deliveryAddress;
 
 }

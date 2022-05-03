@@ -17,17 +17,25 @@ public class OrderInfoBo {
 	private Date createdDate;
 	private String orderStatus;
 	private List<OrderItemBo> orderItemBo;
+	private String firstName;
+	private String lastName;
+	private String email;
+	private String phone;
 	private Double amount;
-	
+	private DeliveryAddressBo address;
 
 	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo) {
 
 		this.id = orderInfo.getId();
 		this.createdDate = orderInfo.getCreatedDate();
-		this.orderStatus=orderInfo.getOrderStatus();
-		this.amount=orderInfo.getAmount();
-		this.orderItemBo =  orderItemBo;
-		
-	}
+		this.orderStatus = orderInfo.getOrderStatus();
+		this.amount = orderInfo.getAmount();
+		this.orderItemBo = orderItemBo;
+		this.email = orderInfo.getEmail();
+		this.phone = orderInfo.getPhone();
+		this.firstName = orderInfo.getFirstName();
+		this.lastName = orderInfo.getLastName();
+		this.address = new DeliveryAddressBo(orderInfo.getAddress());
 
+	}
 }
