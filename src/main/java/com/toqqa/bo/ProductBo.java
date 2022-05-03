@@ -48,6 +48,8 @@ public class ProductBo {
 
     private Boolean delieveredOutsideSpecifiedRadius;
 
+    private Boolean isInWishList=false;
+
     public ProductBo(Product product) {
         this.id = product.getId();
         this.productName = product.getProductName();

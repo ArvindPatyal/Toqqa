@@ -1,9 +1,12 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.FavouriteSme;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class FavouriteSmeBo {
     private String id;
     private SmeBo smeBo;

@@ -27,7 +27,7 @@ public interface AdvertisementService {
 
 	List<AdvertisementBo> fetchTopActiveAdds();
 
-	List<AdvertisementBo> alotQueueNumber(List<AdvertisementBo> bos);
+//	List<AdvertisementBo> alotQueueNumber(List<AdvertisementBo> bos);
 	
 
 }

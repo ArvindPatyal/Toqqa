@@ -1,16 +1,16 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.WishlistBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.ProductBo;
 import com.toqqa.bo.WishlistItemBo;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.WishlistItemPayload;
+import com.toqqa.payload.*;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistItemRepository;
 import com.toqqa.repository.WishlistRepository;
 import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.ProductService;
 import com.toqqa.service.WishlistService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +21,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class WishlistServiceImpl implements WishlistService {
     @Autowired
-    WishlistRepository wishlistRepository;
-
+    private WishlistRepository wishlistRepository;
     @Autowired
-    WishlistItemRepository wishlistItemRepository;
+    private WishlistItemRepository wishlistItemRepository;
     @Autowired
-    AuthenticationService authenticationService;
+    private AuthenticationService authenticationService;
     @Autowired
-    ProductRepository productRepository;
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductService productService;
 
     @Override
 
@@ -72,33 +74,36 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
-    public List<WishlistItemBo> fetchWishlistItems(Wishlist wishlist) {
-        log.info("Inside Service show wishlist");
+    public ListResponse fetchWishlist(PaginationBo bo) {
+        log.info("inside Service fetch wishlist");
+        ListProductRequest request = new ListProductRequest(false);
+        request.setPageNumber(bo.getPageNumber());
+        ListResponseWithCount<ProductBo> list = this.productService.fetchProductList(request);
+        Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+        System.out.println(list.getData().size());
 
-        List<WishlistItem> wishlistItems = wishlistItemRepository.findByWishlist(wishlist);
-        List<WishlistItemBo> wishlistItemBo = new ArrayList<>();
-        wishlistItems.forEach(item -> wishlistItemBo.add(new WishlistItemBo(item)));
-
-
-        return wishlistItemBo;
+        List<ProductBo> wishlistProducts =  list.getData().stream().filter(productBo -> {
+            return productBo.getId().equals(wishlist.getWishlistItems()
+                    .stream().map(wishlistItem -> wishlistItem.getProductId()).findFirst().get());
+        }).collect(Collectors.toList());
+        return new ListResponse(wishlistProducts, "");
     }
 
     @Override
-    public WishlistBo fetchWishlist() {
-        log.info("Inside  Service fetch wishlist");
-        Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
-        if (wishlist != null) {
-            return new WishlistBo(wishlist, this.fetchWishlistItems(wishlist));
-        }
-        throw new BadRequestException("no wishlist such found ");
+    public Boolean isWishListItem(List<ProductBo> productBos, Wishlist wishlist){
+        return productBos.stream().anyMatch(productBo -> {
+            return productBo.getId().equals(wishlist.getWishlistItems()
+                    .stream().map(wishlistItem -> wishlistItem.getProductId()).findFirst().get());
+        });
     }
-
 
     @Override
     public void deleteWishlistItem(String productId) {
         log.info("Inside Service delete wishlist");
-        String wishlistId = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId()).getId();
-        wishlistItemRepository.deleteByProductIdAndWishlist_Id(productId, wishlistId);
-
+        Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+        wishlistItemRepository.deleteByProductIdAndWishlist_Id(productId, wishlist.getId());
+        if (wishlist.getWishlistItems().size() <= 0) {
+            wishlistRepository.delete(wishlist);
+        }
     }
 }

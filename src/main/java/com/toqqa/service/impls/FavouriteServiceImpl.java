@@ -2,18 +2,27 @@ package com.toqqa.service.impls;
 
 import com.toqqa.bo.FavouriteBo;
 import com.toqqa.bo.FavouriteSmeBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Favourite;
 import com.toqqa.domain.FavouriteSme;
+import com.toqqa.domain.Sme;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.FavouriteSmePayload;
+import com.toqqa.payload.ListResponse;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.FavouriteRepository;
 import com.toqqa.repository.FavouriteSmeRepository;
 import com.toqqa.repository.SmeRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.FavouriteService;
+import com.toqqa.service.SmeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -28,13 +38,16 @@ import java.util.List;
 public class FavouriteServiceImpl implements FavouriteService {
 
     @Autowired
-    AuthenticationService authenticationService;
+    private AuthenticationService authenticationService;
     @Autowired
-    FavouriteRepository favouriteRepository;
+    private FavouriteRepository favouriteRepository;
     @Autowired
-    FavouriteSmeRepository favouriteSmeRepository;
+    private FavouriteSmeRepository favouriteSmeRepository;
     @Autowired
-    SmeRepository smeRepository;
+    private SmeRepository smeRepository;
+    @Autowired
+    private SmeService smeService;
+
 
 
     @Override
@@ -57,8 +70,18 @@ public class FavouriteServiceImpl implements FavouriteService {
         return new Response(true, "Added to favourites Successfully");
     }
 
+    @Override
+    public ListResponse<SmeBo> fetchFavoriteList(PaginationBo bo) {
+        ListResponseWithCount<SmeBo> smeList = this.smeService.fetchSmeList(bo);
+        Favourite favourite = this.favouriteRepository.findByUser(this.authenticationService.currentUser());
+        List<SmeBo> favoriteSmes = smeList.getData().stream().filter(smeBo -> {
+            return smeBo.getId().equals(favourite.getFavouriteSmes().stream().map(favouriteSme -> favouriteSme.getSmeId()).findFirst().get());
+        }).collect(Collectors.toList());
+        return new ListResponse<>(favoriteSmes,"");
+    }
 
-    public List<FavouriteSme> persistSmes(FavouriteSmePayload favouriteSmePayload, Favourite favourite) {
+
+    private List<FavouriteSme> persistSmes(FavouriteSmePayload favouriteSmePayload, Favourite favourite) {
         log.info("Inside Service persistSmes");
         FavouriteSme favouriteSme = new FavouriteSme();
         favouriteSme.setSmeId(favouriteSmePayload.getSmeId());
@@ -69,7 +92,7 @@ public class FavouriteServiceImpl implements FavouriteService {
     }
 
 
-    public List<FavouriteSmeBo> fetchFavouriteSme(Favourite favourite) {
+    private List<FavouriteSmeBo> fetchFavouriteSme(Favourite favourite) {
         log.info("Inside Service fetchFavouriteSme");
         List<FavouriteSme> favouriteSmes = favouriteSmeRepository.findByFavourite(favourite);
         List<FavouriteSmeBo> favouriteSmeBoList = new ArrayList<>();
@@ -77,15 +100,7 @@ public class FavouriteServiceImpl implements FavouriteService {
         return favouriteSmeBoList;
     }
 
-    @Override
-    public FavouriteBo fetchFavourite() {
-        log.info("Inside Service fetchfavourite");
-        Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
-        if (favourite != null) {
-            return new FavouriteBo(favourite, this.fetchFavouriteSme(favourite));
-        }
-        throw new BadRequestException("no such wishlist found");
-    }
+
 
     @Override
     public Response removeSme(String smeId) {

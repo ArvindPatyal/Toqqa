@@ -24,7 +24,7 @@ public class AdvertisementBo {
 
 	private Boolean isActive;
 	
-	private Integer queueNumber;
+//	private Integer queueNumber;
 
 	public AdvertisementBo(Advertisement advertisement) {
 

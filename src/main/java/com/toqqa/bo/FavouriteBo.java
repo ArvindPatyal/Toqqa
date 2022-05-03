@@ -1,11 +1,14 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.Favourite;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FavouriteBo {
     private String id;
     private List<FavouriteSmeBo> favouriteSmeBoList;

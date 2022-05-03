@@ -1,6 +1,7 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.WishlistBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.WishlistItemPayload;
 import com.toqqa.service.WishlistService;
@@ -16,7 +17,7 @@ import javax.validation.Valid;
 
 @Slf4j
 @RestController
-@RequestMapping("api/user/wishlist")
+@RequestMapping("/api/wishlist")
 public class WishlistController {
 
     @Autowired
@@ -31,11 +32,11 @@ public class WishlistController {
     }
 
     @ApiOperation(value = " view wishlist")
-    @GetMapping("/userWishlist")
+    @PostMapping("/fetchList")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    public Response<WishlistBo> showWishlist() {
+    public ListResponse fetchWishlist(@RequestBody @Valid PaginationBo bo) {
         log.info("Inside Controller view Wishlist");
-        return new Response<WishlistBo>(wishlistService.fetchWishlist(), "Sucess");
+        return wishlistService.fetchWishlist(bo);
 
     }
 
