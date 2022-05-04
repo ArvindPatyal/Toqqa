@@ -13,7 +13,7 @@ public class DeliveryAddressUpdate {
 	private String city;
 
 	@NotNull
-	private String street;
+	private String address;
 
 	@NotNull
 	private String postCode;
@@ -23,9 +23,6 @@ public class DeliveryAddressUpdate {
 
 	@NotNull
 	private String country;
-
-	@NotNull
-	private String houseNumber;
 
 	@NotNull
 	private String deliveryAddressId;

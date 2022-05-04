@@ -40,11 +40,10 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
 		deliveryAddress.setUser(this.authenticationService.currentUser());
 		deliveryAddress.setCity(addressPayload.getCity());
-		deliveryAddress.setStreet(addressPayload.getStreet());
+		deliveryAddress.setAddress(addressPayload.getAddress());
 		deliveryAddress.setPostCode(addressPayload.getPostCode());
 		deliveryAddress.setState(addressPayload.getState());
 		deliveryAddress.setCountry(addressPayload.getCountry());
-		deliveryAddress.setHouseNumber(addressPayload.getHouseNumber());
 
 		deliveryAddress = this.addressRepo.saveAndFlush(deliveryAddress);
 
@@ -59,11 +58,10 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 		DeliveryAddress deliveryAddress = this.addressRepo.findById(addresstUpdate.getDeliveryAddressId()).get();
 
 		deliveryAddress.setCity(addresstUpdate.getCity());
-		deliveryAddress.setStreet(addresstUpdate.getStreet());
+		deliveryAddress.setAddress(addresstUpdate.getAddress());
 		deliveryAddress.setPostCode(addresstUpdate.getPostCode());
 		deliveryAddress.setState(addresstUpdate.getState());
 		deliveryAddress.setCountry(addresstUpdate.getCountry());
-		deliveryAddress.setHouseNumber(addresstUpdate.getHouseNumber());
 		deliveryAddress = this.addressRepo.saveAndFlush(deliveryAddress);
 		return new DeliveryAddressBo(deliveryAddress);
 	}
@@ -82,11 +80,9 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
 			dabo.setCity(a.getCity());
 			dabo.setCountry(a.getCountry());
-			dabo.setHouseNumber(a.getHouseNumber());
+			dabo.setAddress(a.getAddress());
 			dabo.setPostCode(a.getPostCode());
 			dabo.setState(a.getState());
-			dabo.setStreet(a.getStreet());
-
 			addressBo.add(dabo);
 
 		});
