@@ -13,7 +13,7 @@ public class DeliveryAddressPayload {
 	private String city;
 
 	@NotNull
-	private String street;
+	private String address;
 
 	@NotNull
 	private String postCode;
@@ -23,8 +23,5 @@ public class DeliveryAddressPayload {
 
 	@NotNull
 	private String country;
-
-	@NotNull
-	private String houseNumber;
 
 }

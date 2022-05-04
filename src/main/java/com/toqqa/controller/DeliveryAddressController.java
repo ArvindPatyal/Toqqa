@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
+import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.service.DeliveryAddressService;
 
@@ -58,9 +59,9 @@ public class DeliveryAddressController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchAddress/{id}")
-	public List<DeliveryAddressBo> fetchAddress(@PathVariable("id") @Valid String id) {
+	public ListResponse<DeliveryAddressBo> fetchAddress(@PathVariable("id") @Valid String id) {
 		log.info("Inside controller fetch user");
-		return this.deliveryAddressService.fetchAddress(id);
+		return new ListResponse<DeliveryAddressBo>(this.deliveryAddressService.fetchAddress(id),"");
 	}
 
 	@DeleteMapping("/deleteAddress/{id}")

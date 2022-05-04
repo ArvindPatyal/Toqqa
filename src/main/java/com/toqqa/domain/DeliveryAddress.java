@@ -29,9 +29,7 @@ public class DeliveryAddress {
 
 	private String country;
 
-	private String houseNumber;
-
-	private String street;
+	private String address;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
