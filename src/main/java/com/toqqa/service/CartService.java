@@ -1,14 +1,18 @@
 package com.toqqa.service;
 
-import com.toqqa.bo.CartBo;
-import com.toqqa.payload.CartPayload;
-import com.toqqa.payload.CartUpdate;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.payload.CartItemPayload;
+import com.toqqa.payload.CartUpdatePayload;
+import com.toqqa.payload.ListResponse;
+import com.toqqa.payload.Response;
 
 public interface CartService {
 
-	CartBo addToCart(CartPayload cartPayload);
+    Response manageCart(CartItemPayload cartPayItemload);
 
-	CartBo updateCart(CartUpdate cartUpdate);
+    Response updateCart(CartUpdatePayload cartUpdatePayload);
 
-	CartBo fetchCart(String id);
+    Response deleteCartItem(String productId);
+
+    ListResponse fetchCart(PaginationBo paginationBo);
 }

@@ -21,11 +21,11 @@ public class CartItem {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    @NotNull
-    private Double amount;
+    @Column(name = "product_id")
+    private String productId;
 
-    @OneToOne
-    @JoinColumn(name = "product_id")
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product product;
 
     @NotNull
