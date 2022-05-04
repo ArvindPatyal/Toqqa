@@ -5,21 +5,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class CartItemPayload {
-
+@NoArgsConstructor
+public class CartUpdatePayload {
 
 	@NotNull
-	@NotEmpty
 	private String productId;
 
 	@NotNull
 	private Integer quantity;
+
 
 }
