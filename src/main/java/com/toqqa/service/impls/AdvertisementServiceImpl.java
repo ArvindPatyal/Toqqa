@@ -233,12 +233,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return adds;
     }
 
-    @Scheduled(fixedRate = 14400000)
+    @Scheduled(fixedRate = 14400000,initialDelay =14400000)
     private void resetAdds() {
-        List<Advertisement> ads = this.advertisementRepo.findTop10ByOrderByQueueDateAsc();
-        Advertisement ad = ads.get(0);
-        ad.setQueueDate(new Date());
-        this.advertisementRepo.saveAndFlush(ad);
+        List<Advertisement> ads = this.advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
+        if(this.helper.notNullAndHavingData(ads)) {
+            Advertisement ad = ads.get(0);
+            ad.setQueueDate(new Date());
+            this.advertisementRepo.saveAndFlush(ad);
+        }
     }
 
 	/*@Override

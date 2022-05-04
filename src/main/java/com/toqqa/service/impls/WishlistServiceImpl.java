@@ -11,6 +11,7 @@ import com.toqqa.repository.WishlistRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.WishlistService;
+import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class WishlistServiceImpl implements WishlistService {
     private ProductRepository productRepository;
     @Autowired
     private ProductService productService;
+    @Autowired
+    private Helper helper;
 
     @Override
 
@@ -86,25 +89,28 @@ public class WishlistServiceImpl implements WishlistService {
                 wishlistProducts.add(productBo);
             }
         });
-        /*List<ProductBo> wishlistProducts =  list.getData().stream().filter(productBo -> {
-            return productBo.getId().equals(wishlist.getWishlistItems()
-                    .stream().map(wishlistItem -> wishlistItem.getProductId()).findFirst().get());
-        }).collect(Collectors.toList());*/
         return new ListResponse(wishlistProducts, "");
     }
 
     @Override
     public Boolean isWishListItem(ProductBo productBo, Wishlist wishlist){
-        return wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(productBo.getId()));
+        if(wishlist!=null && helper.notNullAndHavingData(wishlist.getWishlistItems()))
+            return wishlist.getWishlistItems()
+                .stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(productBo.getId()));
+        else
+            return false;
     }
 
     @Override
     public void deleteWishlistItem(String productId) {
         log.info("Inside Service delete wishlist");
         Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
-        wishlistItemRepository.deleteByProductIdAndWishlist_Id(productId, wishlist.getId());
-        if (wishlist.getWishlistItems().size() <= 0) {
-            wishlistRepository.delete(wishlist);
+        if(wishlist!=null&&this.helper.notNullAndHavingData(wishlist.getWishlistItems())) {
+            wishlistItemRepository.deleteByProductIdAndWishlist(productId, wishlist);
+            wishlist.getWishlistItems().removeIf(wishlistItem -> wishlistItem.getProductId().equals(productId) && wishlistItem.getWishlist().equals(wishlist));
+            if (wishlist.getWishlistItems().size() <= 0) {
+                wishlistRepository.delete(wishlist);
+            }
         }
     }
 }
