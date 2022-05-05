@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.toqqa.constants.PaymentConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -69,7 +70,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		log.info("Inside Add OrderInfo");
 		OrderInfo orderInfo = new OrderInfo();
 		orderInfo.setAmount(orderPayload.getAmount());
-		orderInfo.setCreatedDate(new Date());
 		orderInfo.setEmail(orderPayload.getEmail());
 		orderInfo.setPhone(orderPayload.getPhone());
 		orderInfo.setFirstName(orderPayload.getFirstName());
@@ -77,6 +77,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		orderInfo.setAddress(this.addressRepo.findById(orderPayload.getAddressId()).get());
 		orderInfo.setUser(this.authenticationService.currentUser());
 		orderInfo.setOrderStatus(OrderConstants.ORDER_PLACED.getValue());
+		orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
 		orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 		orderInfo.setOrderItems(this.persistOrderItems(orderPayload.getItems(), orderInfo));
 		OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo));
