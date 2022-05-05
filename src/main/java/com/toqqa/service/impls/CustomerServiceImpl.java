@@ -48,9 +48,9 @@ public class CustomerServiceImpl implements CustomerService {
 		log.info("Inside productList");
 		Page<Product> products = null;
 
-		if (bo.getProductCategoryId() != null) {
+		if (helper.notNullAndHavingData(bo.getProductCategoryIds())) {
 			products = this.prRepository.findByProductCategories_IdInAndIsDeleted(
-					PageRequest.of(bo.getPageNumber(), pageSize), bo.getProductCategoryId(), false);
+					PageRequest.of(bo.getPageNumber(), pageSize), bo.getProductCategoryIds(), false);
 		} else {
 			products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize), false);
 		}
