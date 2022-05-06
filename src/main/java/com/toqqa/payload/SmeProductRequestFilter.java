@@ -5,19 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartUpdatePayload {
-
-	@NotNull
-	private String productId;
-
-	@NotNull
-	private Integer quantity;
+public class SmeProductRequestFilter extends ListProductRequest {
 
 
+    private List<String> productCategoryIds;
 }

@@ -102,17 +102,17 @@ public class CartServiceImpl implements CartService {
 
 
     @Override
-    public Response updateCart(CartUpdatePayload cartUpdatePayload) {
+    public Response updateCart(CartItemPayload cartItemPayload) {
 
         Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
         if (cart == null) {
             return new Response(true, "cart not found");
         }
-        CartItem cartItem = cartItemRepo.findByProduct_Id(cartUpdatePayload.getProductId());
-        if (cartUpdatePayload.getQuantity() <= 0) {
-            this.deleteCartItem(cartUpdatePayload.getProductId());
+        CartItem cartItem = cartItemRepo.findByProduct_Id(cartItemPayload.getProductId());
+        if (cartItemPayload.getQuantity() <= 0) {
+            this.deleteCartItem(cartItemPayload.getProductId());
         } else {
-            cartItem.setQuantity(cartUpdatePayload.getQuantity());
+            cartItem.setQuantity(cartItemPayload.getQuantity());
             cartItemRepo.saveAndFlush(cartItem);
         }
         return new Response(true, "Cart Updated Sucessfully");

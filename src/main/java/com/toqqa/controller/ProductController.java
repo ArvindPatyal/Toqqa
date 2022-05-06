@@ -88,4 +88,14 @@ public class ProductController {
         log.info("inside controller updateProductImage");
         return this.productService.updateProductImage(file);
     }
+
+
+    @ApiOperation(value = "filtered productList for sme")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "sucess"),
+            @ApiResponse(code = 400, message = "Bad request")})
+    @PostMapping("/smeProductList")
+    public ListResponseWithCount smeProductList(@RequestBody @Valid SmeProductRequestFilter smeProductRequestFilter) {
+        log.info("Inside controller smeProductList");
+        return this.productService.smeProductListFilter(smeProductRequestFilter);
+    }
 }

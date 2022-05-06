@@ -3,7 +3,6 @@ package com.toqqa.service;
 import com.toqqa.bo.FileBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.payload.*;
-import com.toqqa.payload.ListResponseWithCount;
 
 public interface ProductService {
 
@@ -16,11 +15,13 @@ public interface ProductService {
 	ListResponseWithCount<ProductBo> fetchProductList(ListProductRequest paginationbo);
 
 	void deleteProduct(String id);
-	
+
 	Boolean deleteAttachment(String id);
 
 	ListResponse<FileBo> updateProductImage(FileUpload file);
 
 	ProductBo updateProductStatus(ToggleStatus toggleStatus);
+
+	ListResponseWithCount smeProductListFilter(SmeProductRequestFilter smeProductRequestFilter);
 
 }
