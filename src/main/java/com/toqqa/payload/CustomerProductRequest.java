@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CustomerProductRequest extends PaginationBo{
 	
-	@NotNull
+//	@NotNull
 	private List<String> productCategoryIds;
 	
 }

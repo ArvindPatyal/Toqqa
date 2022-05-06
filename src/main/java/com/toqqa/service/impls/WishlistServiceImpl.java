@@ -9,11 +9,13 @@ import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistItemRepository;
 import com.toqqa.repository.WishlistRepository;
 import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.CustomerService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.WishlistService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,9 @@ public class WishlistServiceImpl implements WishlistService {
     private ProductService productService;
     @Autowired
     private Helper helper;
+    @Autowired
+    @Lazy
+    private CustomerService customerService;
 
     @Override
 
@@ -78,9 +83,9 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     public ListResponse fetchWishlist(PaginationBo bo) {
         log.info("inside Service fetch wishlist");
-        ListProductRequest request = new ListProductRequest(false);
+        CustomerProductRequest request = new CustomerProductRequest();
         request.setPageNumber(bo.getPageNumber());
-        ListResponseWithCount<ProductBo> list = this.productService.fetchProductList(request);
+        ListResponseWithCount<ProductBo> list = this.customerService.productList(request);
         Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
         List<ProductBo> wishlistProducts =  new ArrayList<>();
         list.getData().forEach(productBo -> {
