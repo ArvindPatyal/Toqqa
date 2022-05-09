@@ -11,10 +11,14 @@ import com.toqqa.repository.CartRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.CartService;
+import com.toqqa.service.CustomerService;
 import com.toqqa.service.ProductService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +32,9 @@ import java.util.List;
 public class CartServiceImpl implements CartService {
 
     @Autowired
-    ProductService productService;
+    private ProductService productService;
     @Autowired
-    Helper helper;
+    private Helper helper;
     @Autowired
     private CartRepository cartRepo;
     @Autowired
@@ -39,6 +43,10 @@ public class CartServiceImpl implements CartService {
     private AuthenticationService authenticationService;
     @Autowired
     private CartItemRepository cartItemRepo;
+    @Autowired
+    private CustomerService customerService;
+    @Value("${pageSize}")
+    private Integer pageSize;
 
     public Response manageCart(CartItemPayload cartItemPayload) {
         log.info("Inside Service Add To cart");
@@ -82,7 +90,7 @@ public class CartServiceImpl implements CartService {
         log.info("Inside fetch cart");
         ListProductRequest listProductRequest = new ListProductRequest(false);
         listProductRequest.setPageNumber(paginationBo.getPageNumber());
-        ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.productService.fetchProductList(listProductRequest);
+        ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.productList(paginationBo);
         Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
         List<ProductBo> productBos = new ArrayList<>();
         productBoListResponseWithCount.getData().forEach(productBo -> {
@@ -102,20 +110,20 @@ public class CartServiceImpl implements CartService {
 
 
     @Override
-    public Response updateCart(CartUpdatePayload cartUpdatePayload) {
+    public Response updateCart(CartItemPayload cartItemPayload) {
 
         Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
         if (cart == null) {
             return new Response(true, "cart not found");
         }
-        CartItem cartItem = cartItemRepo.findByProduct_Id(cartUpdatePayload.getProductId());
-        if (cartUpdatePayload.getQuantity() <= 0) {
-            this.deleteCartItem(cartUpdatePayload.getProductId());
+        CartItem cartItem = cartItemRepo.findByProductIdAndCart(cartItemPayload.getProductId(), cart);
+        if (cartItemPayload.getQuantity() <= 0) {
+            this.deleteCartItem(cartItemPayload.getProductId());
         } else {
-            cartItem.setQuantity(cartUpdatePayload.getQuantity());
+            cartItem.setQuantity(cartItemPayload.getQuantity());
             cartItemRepo.saveAndFlush(cartItem);
         }
-        return new Response(true, "Cart Updated Sucessfully");
+        return new Response(true, "Cart Updated Successfully");
     }
 
     @Override
@@ -128,7 +136,23 @@ public class CartServiceImpl implements CartService {
         if (cart.getCartItems().size() <= 0) {
             cartRepo.delete(cart);
         }
-        return new Response(true, "deleted Sucessfully");
+        return new Response(true, "deleted Successfully");
     }
 
+
+    public ListResponseWithCount productList(PaginationBo paginationBo) {
+        log.info("Inside productList");
+        Page<Product> products = null;
+        products = productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), false);
+        List<ProductBo> productBos = new ArrayList<>();
+        products.forEach(product -> {
+            ProductBo productBo = new ProductBo(product);
+            productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+            productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
+            productBos.add(productBo);
+        });
+        return new ListResponseWithCount(productBos, "", products.getTotalElements(), paginationBo.getPageNumber(),
+                products.getTotalPages());
+
+    }
 }

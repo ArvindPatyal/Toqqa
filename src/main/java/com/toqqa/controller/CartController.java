@@ -2,7 +2,6 @@ package com.toqqa.controller;
 
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.CartItemPayload;
-import com.toqqa.payload.CartUpdatePayload;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.service.CartService;
@@ -42,9 +41,9 @@ public class CartController {
     @ApiOperation(value = "Update Product To Cart")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
     @PutMapping("/updatecart")
-    public Response updateCart(@RequestBody @Valid CartUpdatePayload cartUpdatePayload) {
+    public Response updateCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
         log.info("Inside Controller Add To Cart");
-        return this.cartService.updateCart(cartUpdatePayload);
+        return this.cartService.updateCart(cartItemPayload);
     }
 
     @ApiOperation(value = "remove an item from cart")
