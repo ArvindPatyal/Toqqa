@@ -1,9 +1,9 @@
 package com.toqqa.payload;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -23,5 +23,8 @@ public class DeliveryAddressPayload {
 
 	@NotNull
 	private String country;
+
+	@NotNull
+	private String phoneNumber;
 
 }

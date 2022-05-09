@@ -1,15 +1,10 @@
 package com.toqqa.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-import org.hibernate.annotations.GenericGenerator;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 
 @Entity
 @Getter
@@ -30,6 +25,8 @@ public class DeliveryAddress {
 	private String country;
 
 	private String address;
+
+	private String phoneNumber;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
