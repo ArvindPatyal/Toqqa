@@ -52,6 +52,8 @@ public class ProductBo {
     private Boolean delieveredOutsideSpecifiedRadius;
 
     private Boolean isInWishList=false;
+    
+    private String productUserId;
 
     public ProductBo(Product product) {
         this.id = product.getId();
@@ -76,6 +78,7 @@ public class ProductBo {
         });
         this.deliveredInSpecifiedRadius=product.getDeliveredInSpecifiedRadius();
         this.delieveredOutsideSpecifiedRadius=product.getDelieveredOutsideSpecifiedRadius();
+        this.productUserId=product.getUser().getId();
     }
 
     public ProductBo(Product product, List<FileBo> images) {
@@ -102,6 +105,7 @@ public class ProductBo {
         this.ManufacturingDate = product.getManufacturingDate();
         this.deliveredInSpecifiedRadius=product.getDeliveredInSpecifiedRadius();
         this.delieveredOutsideSpecifiedRadius=product.getDelieveredOutsideSpecifiedRadius();
+        this.productUserId=product.getUser().getId();
     }
 
 }
