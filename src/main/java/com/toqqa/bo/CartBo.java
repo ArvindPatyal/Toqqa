@@ -17,6 +17,8 @@ public class CartBo {
 	private Date createdDate;
 
 	private Date modificationDate;
+	
+	private Double subTotal;
 
 	private List<CartItemBo> items;
 
