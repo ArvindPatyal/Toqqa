@@ -3,6 +3,7 @@ package com.toqqa.service.impls;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.toqqa.payload.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,10 +16,6 @@ import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Cart;
 import com.toqqa.domain.CartItem;
 import com.toqqa.domain.Product;
-import com.toqqa.payload.CartItemPayload;
-import com.toqqa.payload.ListProductRequest;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.Response;
 import com.toqqa.repository.CartItemRepository;
 import com.toqqa.repository.CartRepository;
 import com.toqqa.repository.ProductRepository;
@@ -64,12 +61,11 @@ public class CartServiceImpl implements CartService {
 	@Override
 	public Response fetchCart(PaginationBo paginationBo) {
 		log.info("Inside fetch cart");
-		ListProductRequest listProductRequest = new ListProductRequest(false);
+	    CustomerProductRequest request = new CustomerProductRequest();
+        request.setPageNumber(paginationBo.getPageNumber());
 
-		listProductRequest.setPageNumber(paginationBo.getPageNumber());
-
-		ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.productService
-				.fetchProductList(listProductRequest);
+		ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.customerService
+				.productList(request);
 
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
 
@@ -185,20 +181,4 @@ public class CartServiceImpl implements CartService {
         return new Response(true, "deleted Successfully");
     }
 
-
-    public ListResponseWithCount productList(PaginationBo paginationBo) {
-        log.info("Inside productList");
-        Page<Product> products = null;
-        products = productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), false);
-        List<ProductBo> productBos = new ArrayList<>();
-        products.forEach(product -> {
-            ProductBo productBo = new ProductBo(product);
-            productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-            productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
-            productBos.add(productBo);
-        });
-        return new ListResponseWithCount(productBos, "", products.getTotalElements(), paginationBo.getPageNumber(),
-                products.getTotalPages());
-
-    }
 }
