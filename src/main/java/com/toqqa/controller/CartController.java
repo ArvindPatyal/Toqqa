@@ -33,17 +33,17 @@ public class CartController {
 
     @ApiOperation(value = "manage cart addition or updation")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping("/addtocart")
-    public Response addToCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
-        log.info("Inside Controller Add To Cart");
+    @PostMapping("/managecart")
+    public Response manageCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
+        log.info("Inside Controller manage Cart");
         return this.cartService.manageCart(cartItemPayload);
     }
 
-    @ApiOperation(value = "Fetch Product from Cart")
+    @ApiOperation(value = "Fetch cart details")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
     @GetMapping("/fetchcart")
-    public ListResponse fetchCartItems(@RequestBody @Valid PaginationBo paginationBo) {
-        log.info("Inside Controller fetch cart items");
+    public Response fetchCart(@RequestBody @Valid PaginationBo paginationBo) {
+        log.info("Inside Controller fetch cart ");
         return this.cartService.fetchCart(paginationBo);
     }
 

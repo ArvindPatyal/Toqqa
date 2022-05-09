@@ -16,7 +16,6 @@ import com.toqqa.domain.Cart;
 import com.toqqa.domain.CartItem;
 import com.toqqa.domain.Product;
 import com.toqqa.payload.CartItemPayload;
-import com.toqqa.payload.CartUpdatePayload;
 import com.toqqa.payload.ListProductRequest;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;

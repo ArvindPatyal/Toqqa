@@ -13,7 +13,7 @@ public interface CartService {
 
     Response deleteCartItem(String productId);
 
-    ListResponse fetchCart(PaginationBo paginationBo);
+    Response fetchCart(PaginationBo paginationBo);
 
 
 }
