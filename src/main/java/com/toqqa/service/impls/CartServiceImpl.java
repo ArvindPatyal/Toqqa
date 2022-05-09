@@ -1,11 +1,25 @@
 package com.toqqa.service.impls;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.toqqa.bo.CartBo;
+import com.toqqa.bo.CartItemBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Cart;
 import com.toqqa.domain.CartItem;
 import com.toqqa.domain.Product;
-import com.toqqa.payload.*;
+import com.toqqa.payload.CartItemPayload;
+import com.toqqa.payload.CartUpdatePayload;
+import com.toqqa.payload.ListProductRequest;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.Response;
 import com.toqqa.repository.CartItemRepository;
 import com.toqqa.repository.CartRepository;
 import com.toqqa.repository.ProductRepository;
@@ -23,13 +37,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 @Transactional(propagation = Propagation.REQUIRED)
 public class CartServiceImpl implements CartService {
+
 
     @Autowired
     private ProductService productService;
@@ -47,6 +61,55 @@ public class CartServiceImpl implements CartService {
     private CustomerService customerService;
     @Value("${pageSize}")
     private Integer pageSize;
+  
+	@Override
+	public Response fetchCart(PaginationBo paginationBo) {
+		log.info("Inside fetch cart");
+		ListProductRequest listProductRequest = new ListProductRequest(false);
+
+		listProductRequest.setPageNumber(paginationBo.getPageNumber());
+
+		ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.productService
+				.fetchProductList(listProductRequest);
+
+		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
+
+		List<ProductBo> productBos = new ArrayList<>();
+
+		List<CartItem> cartItem = cart.getCartItems();
+
+		List<CartItemBo> itemBo = new ArrayList<>();
+
+		CartBo cartBo = new CartBo(cart, itemBo);
+
+		Double prc = 0.0;
+
+		for (CartItem p : cartItem) {
+
+			CartItemBo cartItemBo = new CartItemBo(p);
+			cartItemBo.setId(p.getId());
+			cartItemBo.setProduct(new ProductBo(p.getProduct()));
+			cartItemBo.setQuantity(p.getQuantity());
+			itemBo.add(cartItemBo);
+			Product product = p.getProduct();
+			Double price = product.getPricePerUnit() * p.getQuantity()
+					- ((product.getPricePerUnit() * p.getQuantity()) / 100) * product.getDiscount();
+
+			prc = prc + price;
+
+			cartBo.setSubTotal(prc);
+
+		}
+
+		productBoListResponseWithCount.getData().forEach(productBo -> {
+			if (isItemInCart(productBo, cart)) {
+				productBos.add(productBo);
+			}
+		});
+
+		return new Response(cartBo, " ");
+	}
+
 
     public Response manageCart(CartItemPayload cartItemPayload) {
         log.info("Inside Service Add To cart");
@@ -83,22 +146,6 @@ public class CartServiceImpl implements CartService {
         List<CartItem> cartItems = new ArrayList<>();
         cartItems.add(cartItem);
         return cartItems;
-    }
-
-    @Override
-    public ListResponse fetchCart(PaginationBo paginationBo) {
-        log.info("Inside fetch cart");
-        ListProductRequest listProductRequest = new ListProductRequest(false);
-        listProductRequest.setPageNumber(paginationBo.getPageNumber());
-        ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.productList(paginationBo);
-        Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
-        List<ProductBo> productBos = new ArrayList<>();
-        productBoListResponseWithCount.getData().forEach(productBo -> {
-            if (isItemInCart(productBo, cart)) {
-                productBos.add(productBo);
-            }
-        });
-        return new ListResponse(productBos, "fetching cart items");
     }
 
 
