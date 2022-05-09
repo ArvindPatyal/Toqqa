@@ -108,7 +108,7 @@ public class CartServiceImpl implements CartService {
         if (cart == null) {
             return new Response(true, "cart not found");
         }
-        CartItem cartItem = cartItemRepo.findByProduct_Id(cartItemPayload.getProductId());
+        CartItem cartItem = cartItemRepo.findByProductIdAndCart(cartItemPayload.getProductId(), cart);
         if (cartItemPayload.getQuantity() <= 0) {
             this.deleteCartItem(cartItemPayload.getProductId());
         } else {
