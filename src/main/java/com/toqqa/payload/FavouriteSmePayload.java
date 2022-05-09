@@ -16,5 +16,5 @@ public class FavouriteSmePayload {
 
     @NotEmpty
     @NotNull
-    private String smeId;
+    private String productUserId;
 }

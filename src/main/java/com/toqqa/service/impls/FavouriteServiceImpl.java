@@ -51,22 +51,23 @@ public class FavouriteServiceImpl implements FavouriteService {
 
 
     @Override
-    public Response addSme(FavouriteSmePayload favouriteSmePayload) {
+    public Response addFavouriteSme(FavouriteSmePayload favouriteSmePayload) {
         log.info("Inside Service addSme");
         Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
+        Sme sme = this.smeRepository.findByUserId(favouriteSmePayload.getProductUserId());
         if (favourite == null) {
             favourite = new Favourite();
             favourite.setUser(authenticationService.currentUser());
         } else {
-            boolean isExists = favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(favouriteSmePayload.getSmeId()));
+            boolean isExists = favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(sme.getId()));
             if (isExists) {
-                this.removeSme(favouriteSmePayload.getSmeId());
+                this.removeFavoriteSme(favouriteSmePayload.getProductUserId());
                 return new Response(true, "Added to favourites Successfully");
             }
 
         }
         favouriteRepository.saveAndFlush(favourite);
-        favourite.setFavouriteSmes(this.persistSmes(favouriteSmePayload, favourite));
+        favourite.setFavouriteSmes(this.persistSmes(sme, favourite));
         return new Response(true, "Added to favourites Successfully");
     }
 
@@ -81,11 +82,11 @@ public class FavouriteServiceImpl implements FavouriteService {
     }
 
 
-    private List<FavouriteSme> persistSmes(FavouriteSmePayload favouriteSmePayload, Favourite favourite) {
+    private List<FavouriteSme> persistSmes(Sme sme, Favourite favourite) {
         log.info("Inside Service persistSmes");
         FavouriteSme favouriteSme = new FavouriteSme();
-        favouriteSme.setSmeId(favouriteSmePayload.getSmeId());
-        favouriteSme.setSme(smeRepository.getById(favouriteSmePayload.getSmeId()));
+        favouriteSme.setSmeId(sme.getId());
+        favouriteSme.setSme(sme);
         favouriteSme.setFavourite(favourite);
         favouriteSme = favouriteSmeRepository.saveAndFlush(favouriteSme);
         return Arrays.asList(favouriteSme);
@@ -103,10 +104,11 @@ public class FavouriteServiceImpl implements FavouriteService {
 
 
     @Override
-    public Response removeSme(String smeId) {
+    public Response removeFavoriteSme(String productUserId) {
         log.info("Inside Service removeSme");
         String favouriteId = favouriteRepository.findByUser(authenticationService.currentUser()).getId();
-        favouriteSmeRepository.deleteBySmeIdAndFavourite_Id(smeId, favouriteId);
+        Sme sme = this.smeRepository.findByUserId(productUserId);
+        favouriteSmeRepository.deleteBySmeIdAndFavourite_Id(sme.getId(), favouriteId);
         return new Response(true, "removed Successfully");
     }
 }

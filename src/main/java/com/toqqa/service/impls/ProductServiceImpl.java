@@ -1,5 +1,19 @@
 package com.toqqa.service.impls;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.toqqa.bo.FileBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.constants.FileType;
@@ -9,27 +23,26 @@ import com.toqqa.domain.Attachment;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.*;
-import com.toqqa.repository.*;
+import com.toqqa.payload.AddProduct;
+import com.toqqa.payload.FileUpload;
+import com.toqqa.payload.ListProductRequest;
+import com.toqqa.payload.ListResponse;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.ProductRequestFilter;
+import com.toqqa.payload.ToggleStatus;
+import com.toqqa.payload.UpdateProduct;
+import com.toqqa.repository.AdvertisementRepository;
+import com.toqqa.repository.AttachmentRepository;
+import com.toqqa.repository.ProductCategoryRepository;
+import com.toqqa.repository.ProductRepository;
+import com.toqqa.repository.ProductSubCategoryRepository;
 import com.toqqa.service.AttachmentService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -147,7 +160,7 @@ public class ProductServiceImpl implements ProductService {
             product.setProductName(updateProduct.getProductName());
             product.setProductCategories(this.productCategoryRepo.findAllById(updateProduct.getProductCategory()));
             product.setProductSubCategories(this.productSubCategoryRepo.findAllById(updateProduct.getProductSubCategory()));
-            product.setUser(authenticationService.currentUser());
+//          product.setUser(authenticationService.currentUser());
 
             product.setDescription(updateProduct.getDescription());
             // product.setDetails(updateProduct.getDetails());

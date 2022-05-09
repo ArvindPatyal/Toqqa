@@ -29,7 +29,7 @@ public class FavouriteController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
     public Response addFavourite(@RequestBody @Valid FavouriteSmePayload favouriteSmePayload) {
         log.info("Inside controller addFavourite");
-        return favouriteService.addSme(favouriteSmePayload);
+        return favouriteService.addFavouriteSme(favouriteSmePayload);
     }
 
     @ApiOperation(value = "to fetch favourite Sme")
@@ -41,9 +41,9 @@ public class FavouriteController {
     }
 
     @ApiOperation(value = "delete a sme from favourite")
-    @DeleteMapping("delete/{smeId}")
+    @DeleteMapping("delete/{productUserId}")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    public Response deleteFavouriteSme(@PathVariable("smeId") @Valid String smeId) {
-        return favouriteService.removeSme(smeId);
+    public Response deleteFavouriteSme(@PathVariable("productUserId") @Valid String productUserId) {
+        return favouriteService.removeFavoriteSme(productUserId);
     }
 }
