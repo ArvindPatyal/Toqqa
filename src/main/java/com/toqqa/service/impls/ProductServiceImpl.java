@@ -192,80 +192,64 @@ public class ProductServiceImpl implements ProductService {
         throw new BadRequestException("no product found with id= " + id);
     }
 
-//    @Override
-//    public ListResponseWithCount<ProductBo> fetchProductList(ListProductRequest paginationBo) {
-//        log.info("inside fetch products");
-//        User user = this.authenticationService.currentUser();
-//        Page<Product> allProducts = null;
-//
-//        if (this.authenticationService.isAdmin()) {
-//            allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), paginationBo.getIsInActive());
-//        } else {
-//            allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, paginationBo.getIsInActive());
-//        }
-//        List<ProductBo> bos = new ArrayList<ProductBo>();
-//        allProducts.forEach(product -> {
-//            ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-//            bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-//            bos.add(bo);
-//        });
-//        return new ListResponseWithCount<ProductBo>(bos, "", (allProducts.getTotalElements()), (paginationBo.getPageNumber()), (allProducts.getTotalPages()));
-//
-//    }
-
-
     @Override
     public ListResponseWithCount<ProductBo> fetchProductList(ListProductRequest paginationBo) {
         log.info("inside fetch products");
-        Page<Product> allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), paginationBo.getIsInActive());
+        User user = this.authenticationService.currentUser();
+        Page<Product> allProducts = null;
+
+        if (this.authenticationService.isAdmin()) {
+            allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), paginationBo.getIsInActive());
+        } else {
+            allProducts = this.productRepo.findByUserAndIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize), user, paginationBo.getIsInActive());
+        }
         List<ProductBo> bos = new ArrayList<ProductBo>();
         allProducts.forEach(product -> {
             ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
             bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
             bos.add(bo);
         });
-        return new ListResponseWithCount<ProductBo>(bos, "Data retrieved successfully", (allProducts.getTotalElements()), (paginationBo.getPageNumber()), (allProducts.getTotalPages()));
+        return new ListResponseWithCount<ProductBo>(bos, "", (allProducts.getTotalElements()), (paginationBo.getPageNumber()), (allProducts.getTotalPages()));
 
     }
 
+
     @Override
-    public ListResponseWithCount smeProductListFilter(SmeProductRequestFilter smeProductRequestFilter) {
+    public ListResponseWithCount smeProductListFilter(ProductRequestFilter ProductRequestFilter) {
         log.info("Inside get product list");
-        User user = this.authenticationService.currentUser();
-
-
-        if (smeProductRequestFilter.getProductCategoryIds() == null) {
-            return this.fetchProductsWithoutFilter(smeProductRequestFilter, user);
+        if (!this.helper.notNullAndHavingData(ProductRequestFilter.getProductCategoryIds())) {
+            return this.fetchProductList(ProductRequestFilter);
         } else {
-            return this.filterProductListSme(smeProductRequestFilter, user);
+            return this.filterProductListSme(ProductRequestFilter);
         }
 
 
     }
 
-    private ListResponseWithCount fetchProductsWithoutFilter(SmeProductRequestFilter smeProductRequestFilter, User user) {
-        log.info("Inside fetch products without filter");
-        Page<Product> products = this.productRepo.findByUserAndIsDeleted(PageRequest.of(smeProductRequestFilter.getPageNumber(), pageSize), user, smeProductRequestFilter.getIsInActive());
-        List<ProductBo> productBos = new ArrayList<>();
-        products.forEach(product -> {
-            ProductBo productBo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-            productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-            productBos.add(productBo);
-        });
+//    private ListResponseWithCount fetchProductsWithoutFilter(SmeProductRequestFilter smeProductRequestFilter, User user) {
+//        log.info("Inside fetch products without filter");
+//        Page<Product> products = this.productRepo.findByUserAndIsDeleted(PageRequest.of(smeProductRequestFilter.getPageNumber(), pageSize), user, smeProductRequestFilter.getIsInActive());
+//        List<ProductBo> productBos = new ArrayList<>();
+//        products.forEach(product -> {
+//            ProductBo productBo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
+//            productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+//            productBos.add(productBo);
+//        });
+//
+//        return new ListResponseWithCount(productBos, "products fetched", products.getNumberOfElements(), (smeProductRequestFilter.getPageNumber()), (products.getTotalPages()));
+//    }
 
-        return new ListResponseWithCount(productBos, "products fetched", products.getNumberOfElements(), (smeProductRequestFilter.getPageNumber()), (products.getTotalPages()));
-    }
-
-    private ListResponseWithCount filterProductListSme(SmeProductRequestFilter smeProductRequestFilter, User user) {
+    private ListResponseWithCount filterProductListSme(ProductRequestFilter ProductRequestFilter) {
         log.info("Indside fetch product with filter");
-        Page<Product> products = this.productRepo.findByProductCategories_IdInAndIsDeletedAndUser(PageRequest.of(smeProductRequestFilter.getPageNumber(), pageSize), smeProductRequestFilter.getProductCategoryIds(), smeProductRequestFilter.getIsInActive(), (user));
+        User user = this.authenticationService.currentUser();
+        Page<Product> products = this.productRepo.findByProductCategories_IdInAndIsDeletedAndUser(PageRequest.of(ProductRequestFilter.getPageNumber(), pageSize), ProductRequestFilter.getProductCategoryIds(), ProductRequestFilter.getIsInActive(), (user));
         List<ProductBo> productBos = new ArrayList<>();
         products.forEach(product -> {
             ProductBo productBo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
             productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
             productBos.add(productBo);
         });
-        return new ListResponseWithCount(productBos, "products fetched", products.getTotalElements(), (smeProductRequestFilter.getPageNumber()), (products.getTotalPages()));
+        return new ListResponseWithCount(productBos, "products fetched", products.getTotalElements(), (ProductRequestFilter.getPageNumber()), (products.getTotalPages()));
     }
 
     public void deleteProduct(String id) {

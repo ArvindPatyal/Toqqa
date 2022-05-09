@@ -94,8 +94,8 @@ public class ProductController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "sucess"),
             @ApiResponse(code = 400, message = "Bad request")})
     @PostMapping("/smeProductList")
-    public ListResponseWithCount smeProductList(@RequestBody @Valid SmeProductRequestFilter smeProductRequestFilter) {
+    public ListResponseWithCount smeProductList(@RequestBody @Valid ProductRequestFilter ProductRequestFilter) {
         log.info("Inside controller smeProductList");
-        return this.productService.smeProductListFilter(smeProductRequestFilter);
+        return this.productService.smeProductListFilter(ProductRequestFilter);
     }
 }

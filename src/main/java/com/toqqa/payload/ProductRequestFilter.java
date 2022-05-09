@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SmeProductRequestFilter extends ListProductRequest {
+public class ProductRequestFilter extends ListProductRequest {
 
 
     private List<String> productCategoryIds;

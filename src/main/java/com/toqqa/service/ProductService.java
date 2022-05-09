@@ -22,6 +22,6 @@ public interface ProductService {
 
 	ProductBo updateProductStatus(ToggleStatus toggleStatus);
 
-	ListResponseWithCount smeProductListFilter(SmeProductRequestFilter smeProductRequestFilter);
+	ListResponseWithCount smeProductListFilter(ProductRequestFilter ProductRequestFilter);
 
 }
