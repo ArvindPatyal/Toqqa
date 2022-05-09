@@ -41,7 +41,7 @@ public class CartController {
 
     @ApiOperation(value = "Fetch cart details")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping("/fetchcart")
+    @PostMapping("/fetchcart")
     public Response fetchCart(@RequestBody @Valid PaginationBo paginationBo) {
         log.info("Inside Controller fetch cart ");
         return this.cartService.fetchCart(paginationBo);
