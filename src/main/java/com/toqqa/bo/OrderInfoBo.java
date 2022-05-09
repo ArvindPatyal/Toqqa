@@ -22,6 +22,7 @@ public class OrderInfoBo {
 	private String phone;
 	private Double amount;
 	private DeliveryAddressBo address;
+	private String paymentType;
 
 	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo) {
 
@@ -35,6 +36,6 @@ public class OrderInfoBo {
 		this.firstName = orderInfo.getFirstName();
 		this.lastName = orderInfo.getLastName();
 		this.address = new DeliveryAddressBo(orderInfo.getAddress());
-
+		this.paymentType=orderInfo.getPaymentType().name();
 	}
 }

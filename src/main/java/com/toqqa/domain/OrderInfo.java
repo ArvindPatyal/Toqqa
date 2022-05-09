@@ -15,10 +15,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.toqqa.constants.PaymentConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -38,6 +40,7 @@ public class OrderInfo {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
+    @CreationTimestamp
     private Date createdDate;
 
     @OneToMany(cascade = CascadeType.ALL)
@@ -63,5 +66,8 @@ public class OrderInfo {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "deliveryAddress_id")
 	private DeliveryAddress address;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentConstants paymentType;
 
 }

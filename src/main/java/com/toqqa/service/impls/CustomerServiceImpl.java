@@ -23,8 +23,8 @@ import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @Slf4j
+@Service
 public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
@@ -48,13 +48,12 @@ public class CustomerServiceImpl implements CustomerService {
 		log.info("Inside productList");
 		Page<Product> products = null;
 
-		if (bo.getProductCategoryId() != null) {
+		if (helper.notNullAndHavingData(bo.getProductCategoryIds())) {
 			products = this.prRepository.findByProductCategories_IdInAndIsDeleted(
-					PageRequest.of(bo.getPageNumber(), pageSize), bo.getProductCategoryId(), false);
+					PageRequest.of(bo.getPageNumber(), pageSize), bo.getProductCategoryIds(), false);
 		} else {
 			products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize), false);
 		}
-
 		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 
 		List<ProductBo> productBos = new ArrayList<>();
