@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import com.toqqa.repository.*;
+import com.toqqa.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,15 +34,6 @@ import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ProductRequestFilter;
 import com.toqqa.payload.ToggleStatus;
 import com.toqqa.payload.UpdateProduct;
-import com.toqqa.repository.AdvertisementRepository;
-import com.toqqa.repository.AttachmentRepository;
-import com.toqqa.repository.ProductCategoryRepository;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.ProductSubCategoryRepository;
-import com.toqqa.service.AttachmentService;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +68,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private Helper helper;
+
+    @Autowired
+    @Lazy
+    private WishlistService wishlistService;
+
+    @Autowired
+    private WishlistRepository wishlistRepository;
 
     @Override
     public ProductBo addProduct(AddProduct addProduct) {
@@ -200,6 +201,7 @@ public class ProductServiceImpl implements ProductService {
         if (product.isPresent()) {
             ProductBo bo = new ProductBo(product.get(), this.helper.prepareProductAttachments(product.get().getAttachments()));
             bo.setBanner(this.helper.prepareAttachmentResource(product.get().getBanner()));
+            bo.setIsInWishList(this.wishlistService.isWishListItem(bo,this.wishlistRepository.findByUser_Id(this.authenticationService.currentUser().getId())));
             return bo;
         }
         throw new BadRequestException("no product found with id= " + id);
