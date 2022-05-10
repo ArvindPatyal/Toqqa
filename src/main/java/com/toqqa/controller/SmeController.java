@@ -41,7 +41,7 @@ public class SmeController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchSme/{id}")
 	public Response<SmeBo> fetchSme(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetch user");
+		log.info("Inside controller fetchSme");
 		return new Response<SmeBo>(this.smeService.fetchSme(id), "success");
 	}
 }
