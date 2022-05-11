@@ -1,23 +1,14 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
-import com.toqqa.constants.PaymentConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.OrderItemBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.PaymentConstants;
 import com.toqqa.domain.OrderInfo;
 import com.toqqa.domain.OrderItem;
 import com.toqqa.domain.User;
@@ -25,6 +16,7 @@ import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderItemPayload;
 import com.toqqa.payload.OrderPayload;
+import com.toqqa.payload.Response;
 import com.toqqa.repository.DeliveryAddressRepository;
 import com.toqqa.repository.OrderInfoRepository;
 import com.toqqa.repository.OrderItemRepository;
@@ -33,8 +25,22 @@ import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.EmailService;
 import com.toqqa.service.OrderInfoService;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static com.itextpdf.text.pdf.BaseFont.TIMES_ROMAN;
 
 @Service
 @Slf4j
@@ -144,4 +150,54 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				paginationBo.getPageNumber(), allOrders.getTotalPages());
 	}
 
+	@Override
+	public Response orderInvoice(String id) {
+		log.info("Inside generate Invoice");
+
+		OrderInfoBo orderInfo = this.fetchOrderInfo(id);
+		List<OrderItemBo> orderItemBos = orderInfo.getOrderItemBo();
+		String address = orderInfo.getAddress().getCity() + " \n" + orderInfo.getAddress().getState() + "\n" + orderInfo.getAddress().getAddress() + "\n" + orderInfo.getAddress().getCountry() + "\n" + orderInfo.getAddress().getPostCode();
+		Document document = new Document();
+		try {
+			PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream("invoice.pdf"));
+			document.open();
+			Font font = new Font();
+			font.setFamily(TIMES_ROMAN);
+			font.setColor(BaseColor.BLACK);
+			font.setSize(30.0F);
+			font.setStyle(1);
+			Paragraph paragraph = new Paragraph("INVOICE", font);
+			paragraph.setAlignment(1);
+			Font font1 = new Font();
+			font1.setColor(BaseColor.BLACK);
+			font1.setFamily(TIMES_ROMAN);
+			font1.setSize(12.0F);
+			font1.setStyle(-1);
+			document.add(paragraph);
+			document.add(new Paragraph(12, (" Name :" + orderInfo.getFirstName() + orderInfo.getLastName() + "\n orderId : " + orderInfo.getId() +
+					"\n contact number : " + orderInfo.getPhone() + "\n Email : " + orderInfo.getEmail() + "\n Address : \n" + address), font1));
+			PdfPTable pdfPTable = new PdfPTable(3);
+			pdfPTable.setWidthPercentage(100);
+			pdfPTable.setSpacingBefore(10f);
+			pdfPTable.setSpacingAfter(10f);
+			pdfPTable.addCell(new PdfPCell(new Paragraph("Product Name")));
+			pdfPTable.addCell(new PdfPCell(new Paragraph("Quantity")));
+			pdfPTable.addCell(new PdfPCell(new Paragraph("Price Per Unit")));
+			orderItemBos.forEach(orderItemBo -> {
+				pdfPTable.addCell(new PdfPCell(new Paragraph(orderItemBo.getProduct().getProductName())));
+				pdfPTable.addCell(new PdfPCell(new Paragraph(String.valueOf(orderItemBo.getQuantity()))));
+				pdfPTable.addCell(new PdfPCell(new Paragraph(String.valueOf(orderItemBo.getProduct().getPricePerUnit()))));
+			});
+			pdfPTable.addCell(new PdfPCell(new Paragraph("")));
+			pdfPTable.addCell(new PdfPCell(new Paragraph("Gross Amount")));
+			pdfPTable.addCell(new PdfPCell(new Paragraph(String.valueOf(orderInfo.getAmount()))));
+			document.add(pdfPTable);
+			document.close();
+			pdfWriter.close();
+		} catch (FileNotFoundException | DocumentException fileNotFoundException) {
+			return new Response("", "InvoiceGeneration Failed");
+		}
+
+		return new Response("", "Invoice generated");
+	}
 }
