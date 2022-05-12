@@ -2,6 +2,7 @@ package com.toqqa.service;
 
 import com.toqqa.bo.FileBo;
 import com.toqqa.bo.ProductBo;
+import com.toqqa.domain.Product;
 import com.toqqa.payload.*;
 
 public interface ProductService {
@@ -23,5 +24,6 @@ public interface ProductService {
 	ProductBo updateProductStatus(ToggleStatus toggleStatus);
 
 	ListResponseWithCount smeProductListFilter(ProductRequestFilter ProductRequestFilter);
-
+	
+	 ListResponse productList();
 }

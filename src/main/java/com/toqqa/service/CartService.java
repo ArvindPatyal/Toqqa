@@ -13,7 +13,9 @@ public interface CartService {
 
     Response deleteCartItem(String productId);
 
-    Response fetchCart(PaginationBo paginationBo);
+    Response fetchCart();
+    
+  
 
 
 }
