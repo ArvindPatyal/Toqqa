@@ -64,37 +64,24 @@ public class CartServiceImpl implements CartService {
 	    CustomerProductRequest request = new CustomerProductRequest();
         request.setPageNumber(paginationBo.getPageNumber());
 
-		ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.customerService
-				.productList(request);
-
+		ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.customerService.productList(request);
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
-
 		List<ProductBo> productBos = new ArrayList<>();
-
 		List<CartItem> cartItem = cart.getCartItems();
-
 		List<CartItemBo> itemBo = new ArrayList<>();
-
 		CartBo cartBo = new CartBo(cart, itemBo);
-
 		Double prc = 0.0;
-
-		for (CartItem p : cartItem) {
-
-			CartItemBo cartItemBo = new CartItemBo(p);
-			cartItemBo.setId(p.getId());
-			cartItemBo.setProduct(new ProductBo(p.getProduct()));
-			cartItemBo.setQuantity(p.getQuantity());
+		for (CartItem ci : cartItem) {
+            ProductBo prdBo= new ProductBo(ci.getProduct(),this.helper.prepareProductAttachments(ci.getProduct().getAttachments()));
+    		CartItemBo cartItemBo = new CartItemBo(ci,prdBo);
 			itemBo.add(cartItemBo);
-			Product product = p.getProduct();
-			Double price = product.getPricePerUnit() * p.getQuantity()
-					- ((product.getPricePerUnit() * p.getQuantity()) / 100) * product.getDiscount();
+			Product product = ci.getProduct();
+			Double price = product.getPricePerUnit() * ci.getQuantity()
+					- ((product.getPricePerUnit() * ci.getQuantity()) / 100) * product.getDiscount();
 
 			prc = prc + price;
-
-			cartBo.setSubTotal(prc);
-
-		}
+    		cartBo.setSubTotal(prc);
+    	}
 
 		productBoListResponseWithCount.getData().forEach(productBo -> {
 			if (isItemInCart(productBo, cart)) {
@@ -104,7 +91,6 @@ public class CartServiceImpl implements CartService {
 
 		return new Response(cartBo, " ");
 	}
-
 
     public Response manageCart(CartItemPayload cartItemPayload) {
         log.info("Inside Service Add To cart");
@@ -116,7 +102,7 @@ public class CartServiceImpl implements CartService {
             cart.setCartItems(this.persistCartItems(cartItemPayload, cart));
             this.cartRepo.saveAndFlush(cart);
         }
-        if (cart != null) {
+        else{
             Boolean isExist = cart.getCartItems().stream().anyMatch(cartItem -> cartItem.getProduct().getId().equals(cartItemPayload.getProductId()));
             if (isExist) {
                 CartItem cartItem = this.cartItemRepo.findByProductIdAndCart(cartItemPayload.getProductId(), cart);

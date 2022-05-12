@@ -44,6 +44,7 @@ public class FavouriteController {
     @DeleteMapping("delete/{productUserId}")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
     public Response deleteFavouriteSme(@PathVariable("productUserId") @Valid String productUserId) {
-        return favouriteService.removeFavoriteSme(productUserId);
+        favouriteService.removeFavoriteSme(productUserId);
+        return new Response(true, "removed Successfully");
     }
 }

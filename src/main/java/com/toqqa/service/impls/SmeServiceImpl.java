@@ -12,12 +12,15 @@ import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.SmeRegistration;
 import com.toqqa.payload.SmeUpdate;
 import com.toqqa.repository.*;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.FavouriteService;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -56,6 +59,16 @@ public class SmeServiceImpl implements SmeService {
 
     @Value("${pageSize}")
     private Integer pageSize;
+
+    @Autowired
+    @Lazy
+    private FavouriteService favouriteService;
+
+    @Autowired
+    private FavouriteRepository favouriteRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -205,6 +218,7 @@ public class SmeServiceImpl implements SmeService {
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
             bo.setIdProof(this.prepareResource(sme.getIdProof()));
             bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+            bo.setIsFavSme(this.favouriteService.isFavSme(bo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             return bo;
         }
         throw new BadRequestException("no user found with id= " + id);
@@ -217,6 +231,7 @@ public class SmeServiceImpl implements SmeService {
         smes.get().forEach(sme -> {
             SmeBo smeBo = new SmeBo(sme);
             smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+            smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             smeBoList.add(smeBo);
         });
         return new ListResponseWithCount<>(smeBoList,"",smes.getTotalElements(),bo.getPageNumber(),smes.getTotalPages());

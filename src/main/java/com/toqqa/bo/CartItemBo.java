@@ -13,10 +13,9 @@ public class CartItemBo {
 
 	private Integer quantity;
 
-	public CartItemBo(CartItem cartItem) {
+	public CartItemBo(CartItem cartItem,ProductBo product) {
 		this.id = cartItem.getId();
-
-		this.product = new ProductBo(cartItem.getProduct());
+		this.product = product;
 		this.quantity = cartItem.getQuantity();
 	}
 }

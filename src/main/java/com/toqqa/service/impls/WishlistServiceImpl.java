@@ -58,7 +58,7 @@ public class WishlistServiceImpl implements WishlistService {
             Boolean isExists = wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(wishlistItemPayload.getProductId()));
             if (isExists) {
                 this.deleteWishlistItem(wishlistItemPayload.getProductId());
-                return new Response(true, "item added to wishlist");
+                return new Response(true, "item removed successfully");
             }
 
         }
