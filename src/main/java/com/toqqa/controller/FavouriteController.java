@@ -1,7 +1,5 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.FavouriteBo;
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.payload.FavouriteSmePayload;
 import com.toqqa.payload.ListResponse;
@@ -33,11 +31,11 @@ public class FavouriteController {
     }
 
     @ApiOperation(value = "to fetch favourite Sme")
-    @PostMapping("/fetchFavoriteList")
+    @GetMapping("/fetchFavoriteList")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    public ListResponse<SmeBo> fetchFavourite(@RequestBody @Valid PaginationBo bo) {
+    public ListResponse<SmeBo> fetchFavourite() {
         log.info("Inside Controller fetchFavourite");
-        return favouriteService.fetchFavoriteList(bo);
+        return favouriteService.fetchFavoriteList();
     }
 
     @ApiOperation(value = "delete a sme from favourite")
