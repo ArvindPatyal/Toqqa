@@ -2,10 +2,11 @@ package com.toqqa.bo;
 
 import com.toqqa.domain.Agent;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class AgentBo {
 

@@ -1,5 +1,6 @@
 package com.toqqa.domain;
 
+
 import java.util.Date;
 import java.util.List;
 
@@ -14,21 +15,39 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.toqqa.constants.PaymentConstants;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.Data;
+import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "order_info")
 public class OrderInfo {
 
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-	private String id;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    private String id;
 
-	private Date createdDate;
+    @CreationTimestamp
+    private Date createdDate;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "order_id")
+    private List<OrderItem> orderItems;
+
+    private Double amount;
 
 	private String firstName;
 
@@ -38,23 +57,17 @@ public class OrderInfo {
 
 	private String phone;
 
-	private Double amount;
-
 	private String orderStatus;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "order_id")
-	private List<OrderItem> orderItems;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
-
-//	@Column(name = "deliveryAddress_id")
-//	private String deliveryAddressId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "deliveryAddress_id")
 	private DeliveryAddress address;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentConstants paymentType;
 
 }

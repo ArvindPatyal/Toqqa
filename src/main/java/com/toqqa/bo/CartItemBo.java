@@ -1,7 +1,6 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.CartItem;
-
 import lombok.Data;
 
 @Data
@@ -9,16 +8,14 @@ public class CartItemBo {
 
 	private String id;
 
-	private Double amount;
 
 	private ProductBo product;
 
 	private Integer quantity;
 
-	public CartItemBo(CartItem cartItem) {
+	public CartItemBo(CartItem cartItem,ProductBo product) {
 		this.id = cartItem.getId();
-		this.amount = cartItem.getAmount();
-		this.product = new ProductBo(cartItem.getProduct());
+		this.product = product;
 		this.quantity = cartItem.getQuantity();
 	}
 }

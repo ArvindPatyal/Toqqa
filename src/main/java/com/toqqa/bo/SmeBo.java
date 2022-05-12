@@ -37,6 +37,7 @@ public class SmeBo {
 	private String regDoc;
 	private String idProof;
 	private String userId;
+	private Boolean isFavSme=false;
 
 	public SmeBo(Sme sme) {
 		this.id = sme.getId();

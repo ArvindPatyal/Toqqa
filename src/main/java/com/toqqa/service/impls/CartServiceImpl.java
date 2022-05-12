@@ -1,130 +1,170 @@
 package com.toqqa.service.impls;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
+import com.toqqa.payload.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.toqqa.bo.CartBo;
 import com.toqqa.bo.CartItemBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Cart;
 import com.toqqa.domain.CartItem;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.CartItemPayload;
-import com.toqqa.payload.CartPayload;
-import com.toqqa.payload.CartUpdate;
+import com.toqqa.domain.Product;
 import com.toqqa.repository.CartItemRepository;
 import com.toqqa.repository.CartRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.CartService;
+import com.toqqa.service.CustomerService;
+import com.toqqa.service.ProductService;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@Transactional(propagation = Propagation.REQUIRED)
 public class CartServiceImpl implements CartService {
 
-	@Autowired
-	private CartRepository cartRepo;
 
-	@Autowired
-	private ProductRepository productRepo;
-
-	@Autowired
-	private AuthenticationService authenticationService;
-
-	@Autowired
-	private CartItemRepository cartItemRepo;
-
-	public CartBo addToCart(CartPayload cartPayload) {
-		log.info("Inside Add To cart");
-
-		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
-
-		if (cart == null) {
-			cart = new Cart();
-			cart.setCreatedDate(new Date());
-			cart.setUser(authenticationService.currentUser());
-
-		}
-		cart.setModificationDate(new Date());
-		cart = this.cartRepo.saveAndFlush(cart);
-		cart.setCartItems(persistCartItems(cartPayload.getItems(), cart));
-
-		return new CartBo(cart, this.fetchCartItems(cart));
-	}
-
-	private List<CartItem> persistCartItems(List<CartItemPayload> cartItems, Cart cart) {
-		log.info("Inside persist cart items");
-		List<CartItem> cartItem = new ArrayList<CartItem>();
-
-		for (CartItemPayload cartitem : cartItems) {
-			CartItem cItem = new CartItem();
-			cItem.setAmount(cartitem.getAmount());
-			cItem.setProduct(this.productRepo.findById(cartitem.getProductId()).get());
-			cItem.setQuantity(cartitem.getQuantity());
-			cItem.setCart(cart);
-			cItem = this.cartItemRepo.saveAndFlush(cItem);
-			cartItem.add(cItem);
-		}
-		return cartItem;
-	}
-
-	private List<CartItemBo> fetchCartItems(Cart cart) {
-		log.info("Inside fetch cart items");
-		List<CartItem> items = this.cartItemRepo.findByCart(cart);
-		List<CartItemBo> itemBos = new ArrayList<CartItemBo>();
-		items.forEach(item -> {
-
-			itemBos.add(new CartItemBo(item));
-
-		});
-		return itemBos;
-	}
-
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private Helper helper;
+    @Autowired
+    private CartRepository cartRepo;
+    @Autowired
+    private ProductRepository productRepo;
+    @Autowired
+    private AuthenticationService authenticationService;
+    @Autowired
+    private CartItemRepository cartItemRepo;
+    @Autowired
+    private CustomerService customerService;
+    @Value("${pageSize}")
+    private Integer pageSize;
+  
 	@Override
-	public CartBo fetchCart(String id) {
+	public Response fetchCart(PaginationBo paginationBo) {
 		log.info("Inside fetch cart");
-		Optional<Cart> cart = this.cartRepo.findById(id);
-		if (cart.isPresent()) {
-			return new CartBo(cart.get(), this.fetchCartItems(cart.get()));
-		}
-		throw new BadRequestException("no cart found with id= " + id);
-	}
+	    CustomerProductRequest request = new CustomerProductRequest();
+        request.setPageNumber(paginationBo.getPageNumber());
 
-	@Override
-	public CartBo updateCart(CartUpdate cartUpdate) {
+		ListResponseWithCount<ProductBo> productBoListResponseWithCount = this.customerService.productList(request);
+		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
+		List<ProductBo> productBos = new ArrayList<>();
+		List<CartItem> cartItem = cart.getCartItems();
+		List<CartItemBo> itemBo = new ArrayList<>();
+		CartBo cartBo = new CartBo(cart, itemBo);
+		Double prc = 0.0;
+		for (CartItem ci : cartItem) {
+            ProductBo prdBo= new ProductBo(ci.getProduct(),this.helper.prepareProductAttachments(ci.getProduct().getAttachments()));
+    		CartItemBo cartItemBo = new CartItemBo(ci,prdBo);
+			itemBo.add(cartItemBo);
+			Product product = ci.getProduct();
+			Double price = product.getPricePerUnit() * ci.getQuantity()
+					- ((product.getPricePerUnit() * ci.getQuantity()) / 100) * product.getDiscount();
 
-		List<CartItem> cartItems = new ArrayList<CartItem>();
+			prc = prc + price;
+    		cartBo.setSubTotal(prc);
+    	}
 
-		Cart cart = this.cartRepo.findById(cartUpdate.getCartId()).get();
-
-		CartItem cartItem = this.cartItemRepo.findByProduct_Id(cartUpdate.getProductId());
-
-		cartItem.setQuantity(cartUpdate.getQuantity());
-
-		cartItems.add(cartItem);
-
-		this.cartItemRepo.saveAndFlush(cartItem);
-
-		cart.setCartItems(cartItems);
-
-		cart.setModificationDate(new Date());
-
-		this.cartRepo.saveAndFlush(cart);
-
-		List<CartItemBo> item = new ArrayList<>();
-
-		cartItems.forEach(ite -> {
-
-			item.add(new CartItemBo(ite));
+		productBoListResponseWithCount.getData().forEach(productBo -> {
+			if (isItemInCart(productBo, cart)) {
+				productBos.add(productBo);
+			}
 		});
 
-		return new CartBo(cart, item);
-		// To do return list of cart items;
+		return new Response(cartBo, " ");
 	}
+
+    public Response manageCart(CartItemPayload cartItemPayload) {
+        log.info("Inside Service Add To cart");
+
+        Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUser(authenticationService.currentUser());
+            cart.setCartItems(this.persistCartItems(cartItemPayload, cart));
+            this.cartRepo.saveAndFlush(cart);
+        }
+        else{
+            Boolean isExist = cart.getCartItems().stream().anyMatch(cartItem -> cartItem.getProduct().getId().equals(cartItemPayload.getProductId()));
+            if (isExist) {
+                CartItem cartItem = this.cartItemRepo.findByProductIdAndCart(cartItemPayload.getProductId(), cart);
+                cartItem.setQuantity(cartItemPayload.getQuantity());
+                cartItemRepo.saveAndFlush(cartItem);
+            } else {
+                cart.setCartItems(this.persistCartItems(cartItemPayload, cart));
+                this.cartRepo.saveAndFlush(cart);
+            }
+        }
+
+        return new Response(true, "Item added to Cart Successfully");
+    }
+
+    private List<CartItem> persistCartItems(CartItemPayload cartItemPayload, Cart cart) {
+        log.info("Inside persist cart items");
+        CartItem cartItem = new CartItem();
+        cartItem.setCart(cart);
+        cartItem.setProductId(cartItemPayload.getProductId());
+        cartItem.setProduct(this.productRepo.getById(cartItemPayload.getProductId()));
+        cartItem.setQuantity(cartItemPayload.getQuantity());
+        List<CartItem> cartItems = new ArrayList<>();
+        cartItems.add(cartItem);
+        return cartItems;
+    }
+
+
+    private Boolean isItemInCart(ProductBo productBo, Cart cart) {
+        if (cart != null && this.helper.notNullAndHavingData(cart.getCartItems()))
+            return cart.getCartItems().stream().anyMatch(cartItem -> cartItem.getProduct().getId().equals(productBo.getId()));
+        else return false;
+    }
+
+
+    @Override
+    public Response updateCart(CartItemPayload cartItemPayload) {
+
+        Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
+        if (cart == null) {
+            return new Response(true, "cart not found");
+        }
+        CartItem cartItem = cartItemRepo.findByProductIdAndCart(cartItemPayload.getProductId(), cart);
+        if (cartItemPayload.getQuantity() <= 0) {
+            this.deleteCartItem(cartItemPayload.getProductId());
+        } else {
+            cartItem.setQuantity(cartItemPayload.getQuantity());
+            cartItemRepo.saveAndFlush(cartItem);
+        }
+        return new Response(true, "Cart Updated Successfully");
+    }
+
+    @Override
+    public Response deleteCartItem(String productId) {
+        log.info("Inside Service delete cart item");
+        Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
+        Product product = this.productRepo.getById(productId);
+        cart.getCartItems().removeIf(cartItem -> cartItem.getProductId().equals(productId) && cartItem.getCart().equals(cart));
+        cartItemRepo.deleteByCartIdAndProduct(cart.getId(), product);
+        if (cart.getCartItems().size() <= 0) {
+            cartRepo.delete(cart);
+        }
+        return new Response(true, "deleted Successfully");
+    }
+
 }

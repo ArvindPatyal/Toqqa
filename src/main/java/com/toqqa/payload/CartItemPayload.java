@@ -1,27 +1,25 @@
 package com.toqqa.payload;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartItemPayload {
 
-	@NotNull
-	@NotEmpty
-	private Double amount;
 
 	@NotNull
 	@NotEmpty
 	private String productId;
 
 	@NotNull
-	@NotEmpty
 	private Integer quantity;
 
 }

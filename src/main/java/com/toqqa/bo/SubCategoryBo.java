@@ -2,9 +2,12 @@ package com.toqqa.bo;
 
 import com.toqqa.domain.SubCategory;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SubCategoryBo {
 	private String id;
 	private String subCategory;

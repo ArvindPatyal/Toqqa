@@ -119,7 +119,7 @@ public class StorageServiceImpl implements StorageService {
     }
     @Override
     public String generatePresignedUrl(String location) {
-        if (location != null && !location.isEmpty()) {
+        if (location != null && !location.isEmpty() && location.contains("toqqa")) {
             String pathArr[] = location.split("/");
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());

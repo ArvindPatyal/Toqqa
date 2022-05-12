@@ -1,5 +1,6 @@
 package com.toqqa.service.impls;
 
+import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
@@ -7,14 +8,21 @@ import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.SmeRegistration;
 import com.toqqa.payload.SmeUpdate;
 import com.toqqa.repository.*;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.FavouriteService;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +56,19 @@ public class SmeServiceImpl implements SmeService {
 
     @Autowired
     private Helper helper;
+
+    @Value("${pageSize}")
+    private Integer pageSize;
+
+    @Autowired
+    @Lazy
+    private FavouriteService favouriteService;
+
+    @Autowired
+    private FavouriteRepository favouriteRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -197,9 +218,23 @@ public class SmeServiceImpl implements SmeService {
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
             bo.setIdProof(this.prepareResource(sme.getIdProof()));
             bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+            bo.setIsFavSme(this.favouriteService.isFavSme(bo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             return bo;
         }
         throw new BadRequestException("no user found with id= " + id);
+    }
+
+    @Override
+    public ListResponseWithCount<SmeBo> fetchSmeList(PaginationBo bo){
+        Page<Sme> smes = this.smeRepo.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize), false);
+        List<SmeBo> smeBoList= new ArrayList<>();
+        smes.get().forEach(sme -> {
+            SmeBo smeBo = new SmeBo(sme);
+            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+            smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
+            smeBoList.add(smeBo);
+        });
+        return new ListResponseWithCount<>(smeBoList,"",smes.getTotalElements(),bo.getPageNumber(),smes.getTotalPages());
     }
 
 }

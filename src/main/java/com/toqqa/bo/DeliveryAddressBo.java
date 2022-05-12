@@ -1,7 +1,6 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.DeliveryAddress;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +22,8 @@ public class DeliveryAddressBo {
 
 	private String address;
 
+	private String phoneNumber;
+
 	public DeliveryAddressBo(DeliveryAddress address) {
 
 		this.address = address.getAddress();
@@ -30,6 +31,7 @@ public class DeliveryAddressBo {
 		this.postCode = address.getPostCode();
 		this.state = address.getState();
 		this.country = address.getCountry();
+		this.phoneNumber = address.getPhoneNumber();
 	}
 
 }

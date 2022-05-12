@@ -1,13 +1,16 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.Product;
-import lombok.Data;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductBo {
 
     private String id;
@@ -48,6 +51,10 @@ public class ProductBo {
 
     private Boolean delieveredOutsideSpecifiedRadius;
 
+    private Boolean isInWishList=false;
+    
+    private String productUserId;
+
     public ProductBo(Product product) {
         this.id = product.getId();
         this.productName = product.getProductName();
@@ -71,6 +78,7 @@ public class ProductBo {
         });
         this.deliveredInSpecifiedRadius=product.getDeliveredInSpecifiedRadius();
         this.delieveredOutsideSpecifiedRadius=product.getDelieveredOutsideSpecifiedRadius();
+        this.productUserId=product.getUser().getId();
     }
 
     public ProductBo(Product product, List<FileBo> images) {
@@ -97,6 +105,7 @@ public class ProductBo {
         this.ManufacturingDate = product.getManufacturingDate();
         this.deliveredInSpecifiedRadius=product.getDeliveredInSpecifiedRadius();
         this.delieveredOutsideSpecifiedRadius=product.getDelieveredOutsideSpecifiedRadius();
+        this.productUserId=product.getUser().getId();
     }
 
 }

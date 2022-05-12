@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -15,7 +16,7 @@ import com.toqqa.bo.EmailBo;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Configuration
 public class EmailUtility {
 	@Autowired
 	private EmailProps emailProps;

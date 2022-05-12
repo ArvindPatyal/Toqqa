@@ -2,9 +2,12 @@ package com.toqqa.bo;
 
 import com.toqqa.domain.ProductCategory;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductCategoryBo {
 	
 	private String id;

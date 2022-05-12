@@ -1,38 +1,35 @@
 package com.toqqa.domain;
 
-import java.util.List;
-
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
-@Data
-@Table(name = "product_category")
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "product_category")
+
 public class ProductCategory {
 
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 
-	private String id;
+    private String id;
 
-	private String productCategory;
+    private String productCategory;
 
-	@OneToMany(mappedBy = "productCategory")
-	private List<ProductSubCategory> productSubCategories;
+    @OneToMany(mappedBy = "productCategory")
+    private List<ProductSubCategory> productSubCategories;
 
-	@ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
-	private List<Product> products;
+    @ManyToMany(mappedBy = "productCategories", fetch = FetchType.LAZY)
+    private List<Product> products;
 
 }

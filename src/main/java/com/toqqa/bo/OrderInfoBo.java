@@ -5,11 +5,10 @@ import java.util.List;
 
 import com.toqqa.domain.OrderInfo;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderInfoBo {
@@ -23,6 +22,7 @@ public class OrderInfoBo {
 	private String phone;
 	private Double amount;
 	private DeliveryAddressBo address;
+	private String paymentType;
 
 	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo) {
 
@@ -36,6 +36,6 @@ public class OrderInfoBo {
 		this.firstName = orderInfo.getFirstName();
 		this.lastName = orderInfo.getLastName();
 		this.address = new DeliveryAddressBo(orderInfo.getAddress());
-
+		this.paymentType=orderInfo.getPaymentType().name();
 	}
 }

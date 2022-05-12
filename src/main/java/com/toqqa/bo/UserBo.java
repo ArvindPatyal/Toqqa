@@ -2,12 +2,15 @@ package com.toqqa.bo;
 
 import com.toqqa.domain.User;
 
-import lombok.Data;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserBo {
 
 	private String id;
