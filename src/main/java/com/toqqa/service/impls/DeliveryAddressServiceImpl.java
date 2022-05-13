@@ -2,9 +2,11 @@ package com.toqqa.service.impls;
 
 import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.domain.DeliveryAddress;
+import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
+import com.toqqa.payload.Response;
 import com.toqqa.repository.DeliveryAddressRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.DeliveryAddressService;
@@ -81,26 +83,14 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     }
 
     @Override
-    public List<DeliveryAddressBo> fetchAddress(String id) {
+    public DeliveryAddressBo fetchAddress(String id) {
         log.info("Inside fetch Address");
-
-        List<DeliveryAddress> address = this.addressRepo.findByUser_Id(id);
-        List<DeliveryAddressBo> addressBo = new ArrayList<>();
-
-        address.forEach(a -> {
-
-            DeliveryAddressBo dabo = new DeliveryAddressBo(a);
-
-            dabo.setCity(a.getCity());
-            dabo.setCountry(a.getCountry());
-            dabo.setAddress(a.getAddress());
-            dabo.setPostCode(a.getPostCode());
-            dabo.setState(a.getState());
-            dabo.setPhoneNumber(a.getPhoneNumber());
-            addressBo.add(dabo);
-
-        });
-        return addressBo;
+        Optional<DeliveryAddress> address = this.addressRepo.findById(id);
+        if (address.isPresent()) {
+            return new DeliveryAddressBo(address.get());
+        } else {
+            throw new BadRequestException("No address found with  " + id);
+        }
     }
 
     @Override
@@ -115,6 +105,30 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
             this.addressRepo.deleteById(id);
         } else {
             throw new BadRequestException("invalid address id: " + id);
+        }
+    }
+
+    @Override
+    public Response fetchAddressList() {
+        log.info("Inside Service fetchAddress List");
+        User user = this.authenticationService.currentUser();
+        List<DeliveryAddress> deliveryAddresses = this.addressRepo.findByUser_Id(user.getId());
+        if (!(this.helper.notNullAndHavingData(deliveryAddresses))) {
+            return new Response("", "No added addresses found for this user");
+        } else {
+            List<DeliveryAddressBo> deliveryAddressBos = new ArrayList<>();
+
+            deliveryAddresses.forEach(deliveryAddress -> {
+                DeliveryAddressBo deliveryAddressBo = new DeliveryAddressBo(deliveryAddress);
+                deliveryAddressBo.setCity(deliveryAddress.getCity());
+                deliveryAddressBo.setCountry(deliveryAddress.getCountry());
+                deliveryAddressBo.setAddress(deliveryAddress.getAddress());
+                deliveryAddressBo.setPostCode(deliveryAddress.getPostCode());
+                deliveryAddressBo.setState(deliveryAddress.getState());
+                deliveryAddressBo.setPhoneNumber(deliveryAddress.getPhoneNumber());
+                deliveryAddressBos.add(deliveryAddressBo);
+            });
+            return new Response(deliveryAddressBos, "addresses fetched");
         }
     }
 

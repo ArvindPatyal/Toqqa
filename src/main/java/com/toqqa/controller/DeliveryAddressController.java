@@ -1,30 +1,18 @@
 package com.toqqa.controller;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
-import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.service.DeliveryAddressService;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -56,12 +44,12 @@ public class DeliveryAddressController {
 	}
 
 	@ApiOperation(value = "Returns Address data by given id")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
-			@ApiResponse(code = 400, message = "Bad Request") })
+	@ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request")})
 	@GetMapping("/fetchAddress/{id}")
-	public ListResponse<DeliveryAddressBo> fetchAddress(@PathVariable("id") @Valid String id) {
+	public Response<DeliveryAddressBo> fetchAddress(@PathVariable("id") @Valid String id) {
 		log.info("Inside controller fetch user");
-		return new ListResponse<DeliveryAddressBo>(this.deliveryAddressService.fetchAddress(id),"");
+		return new Response<>(this.deliveryAddressService.fetchAddress(id), "");
 	}
 
 	@DeleteMapping("/deleteAddress/{id}")
@@ -69,5 +57,15 @@ public class DeliveryAddressController {
 		log.info("Inside controller delete address");
 		this.deliveryAddressService.deleteAddress(id);
 		return new Response<Boolean>(true, "Address deleted successfully");
+	}
+
+
+	@ApiOperation(value = "fetch complete address list for a specific user")
+	@ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
+	@GetMapping("/fetchAddressList")
+	public Response fetchAddressList() {
+		log.info("Inside Controller Fetch address list");
+
+		return this.deliveryAddressService.fetchAddressList();
 	}
 }
