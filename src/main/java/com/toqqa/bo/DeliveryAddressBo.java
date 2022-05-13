@@ -12,6 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DeliveryAddressBo {
 
+	private String id;
+
 	private String city;
 
 	private String postCode;
@@ -32,6 +34,7 @@ public class DeliveryAddressBo {
 		this.state = address.getState();
 		this.country = address.getCountry();
 		this.phoneNumber = address.getPhoneNumber();
+		this.id = address.getId();
 	}
 
 }

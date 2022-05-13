@@ -1,10 +1,9 @@
 package com.toqqa.service;
 
-import java.util.List;
-
 import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
+import com.toqqa.payload.Response;
 
 public interface DeliveryAddressService {
 
@@ -12,8 +11,10 @@ public interface DeliveryAddressService {
 
 	DeliveryAddressBo updateAddress(DeliveryAddressUpdate addresstUpdate);
 
-	List<DeliveryAddressBo> fetchAddress(String id);
+	DeliveryAddressBo fetchAddress(String id);
 
 	void deleteAddress(String id);
+
+	Response fetchAddressList();
 
 }
