@@ -84,7 +84,7 @@ public class FavouriteServiceImpl implements FavouriteService {
     @Override
     public Boolean isFavSme(SmeBo smeBo, Favourite favourite) {
         log.info("Inside Service isFavSme");
-        if (this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
+        if (favourite!=null&&this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
             return favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(smeBo.getId()));
         } else {
             return false;

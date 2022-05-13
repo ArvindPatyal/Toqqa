@@ -2,7 +2,9 @@ package com.toqqa.service.impls;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,15 +27,7 @@ import com.toqqa.service.CustomerService;
 import com.toqqa.service.ProductService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -158,7 +152,10 @@ public class CartServiceImpl implements CartService {
     public Response deleteCartItem(String productId) {
         log.info("Inside Service delete cart item");
         Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
-        Product product = this.productRepo.getById(productId);
+        Optional<Product> product = this.productRepo.findById(productId);
+        if (!product.isPresent()) {
+            throw new BadRequestException("Invalid Product Id");
+        }
         cart.getCartItems().removeIf(cartItem -> cartItem.getProductId().equals(productId) && cartItem.getCart().equals(cart));
         cartItemRepo.deleteByCartIdAndProduct(cart.getId(), product);
         if (cart.getCartItems().size() <= 0) {

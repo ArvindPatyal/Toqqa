@@ -6,6 +6,8 @@ import com.toqqa.domain.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, String> {
 
@@ -13,7 +15,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, String> {
 //
 //	CartItem findByProduct_Id(String id);
 
-	void deleteByCartIdAndProduct(String cartId, Product product);
+	void deleteByCartIdAndProduct(String cartId, Optional<Product> product);
 
 	CartItem findByProductIdAndCart(String productId, Cart cart);
 
