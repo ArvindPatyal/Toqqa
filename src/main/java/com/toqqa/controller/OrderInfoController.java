@@ -1,26 +1,19 @@
 package com.toqqa.controller;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderPayload;
 import com.toqqa.payload.Response;
 import com.toqqa.service.OrderInfoService;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -52,5 +45,12 @@ public class OrderInfoController {
 	public ListResponseWithCount<OrderInfoBo> fetchOrderList(@RequestBody @Valid PaginationBo paginationbo) {
 		log.info("Inside controller fetch Order List");
 		return this.orderInfoService.fetchOrderList(paginationbo);
+	}
+
+	@PostMapping("/generateInvoice/{orderid}")
+	public Response generateInvoice(@PathVariable @Valid String orderid) {
+		log.info("Inside controller generate Invoice");
+		return this.orderInfoService.orderInvoice(orderid);
+
 	}
 }

@@ -1,10 +1,11 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
-import com.toqqa.payload.*;
+import com.toqqa.payload.ListResponse;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.WishlistItemPayload;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistItemRepository;
 import com.toqqa.repository.WishlistRepository;
@@ -23,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -81,20 +81,23 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
-    public ListResponse fetchWishlist(PaginationBo bo) {
+    public ListResponse fetchWishlist() {
         log.info("inside Service fetch wishlist");
-        CustomerProductRequest request = new CustomerProductRequest();
-        request.setPageNumber(bo.getPageNumber());
-        ListResponseWithCount<ProductBo> list = this.customerService.productList(request);
         Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
-        List<ProductBo> wishlistProducts =  new ArrayList<>();
+        if (wishlist == null) {
+            return new ListResponse(null, "Wishlist Not Found");
+        }
+
+        ListResponse<ProductBo> list = this.productService.productList();
+
+        List<ProductBo> wishlistProducts = new ArrayList<>();
         list.getData().forEach(productBo -> {
-            if(this.isWishListItem(productBo,wishlist)){
+            if (this.isWishListItem(productBo, wishlist)) {
                 productBo.setIsInWishList(true);
                 wishlistProducts.add(productBo);
             }
         });
-        return new ListResponse(wishlistProducts, "");
+        return new ListResponse(wishlistProducts, "Wishlist fectched successfully ");
     }
 
     @Override

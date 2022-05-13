@@ -1,6 +1,5 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.WishlistItemPayload;
@@ -32,11 +31,11 @@ public class WishlistController {
     }
 
     @ApiOperation(value = " view wishlist")
-    @PostMapping("/fetchList")
+    @GetMapping("/fetchList")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    public ListResponse fetchWishlist(@RequestBody @Valid PaginationBo bo) {
+    public ListResponse fetchWishlist() {
         log.info("Inside Controller view Wishlist");
-        return wishlistService.fetchWishlist(bo);
+        return wishlistService.fetchWishlist();
 
     }
 

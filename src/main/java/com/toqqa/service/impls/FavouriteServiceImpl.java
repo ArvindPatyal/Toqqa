@@ -1,14 +1,12 @@
 package com.toqqa.service.impls;
 
 import com.toqqa.bo.FavouriteSmeBo;
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Favourite;
 import com.toqqa.domain.FavouriteSme;
 import com.toqqa.domain.Sme;
 import com.toqqa.payload.FavouriteSmePayload;
 import com.toqqa.payload.ListResponse;
-import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.FavouriteRepository;
 import com.toqqa.repository.FavouriteSmeRepository;
@@ -68,17 +66,21 @@ public class FavouriteServiceImpl implements FavouriteService {
     }
 
     @Override
-    public ListResponse<SmeBo> fetchFavoriteList(PaginationBo bo) {
+    public ListResponse<SmeBo> fetchFavoriteList() {
         log.info("Inside Service fetchFavoriteList");
-        ListResponseWithCount<SmeBo> smeList = this.smeService.fetchSmeList(bo);
         Favourite favourite = this.favouriteRepository.findByUser(this.authenticationService.currentUser());
+        if (favourite == null) {
+            return new ListResponse<>(null, "favourites not found");
+        }
+        ListResponse<SmeBo> smeList = this.smeService.fetchSmeListWithoutPagination();
+
         List<SmeBo> favoriteSmes = new ArrayList<>();
         smeList.getData().stream().forEach(smeBo -> {
-           if(this.isFavSme(smeBo, favourite)) {
-               favoriteSmes.add(smeBo);
-           }
+            if (this.isFavSme(smeBo, favourite)) {
+                favoriteSmes.add(smeBo);
+            }
         });
-        return new ListResponse<>(favoriteSmes, "");
+        return new ListResponse<>(favoriteSmes, "favourite smes fetched");
     }
 
     @Override

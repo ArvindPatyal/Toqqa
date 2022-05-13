@@ -1,6 +1,5 @@
 package com.toqqa.service;
 
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Favourite;
 import com.toqqa.payload.FavouriteSmePayload;
@@ -11,7 +10,7 @@ public interface FavouriteService {
 
     Response addFavouriteSme(FavouriteSmePayload favouriteSmePayload);
 
-    ListResponse<SmeBo> fetchFavoriteList(PaginationBo bo);
+    ListResponse<SmeBo> fetchFavoriteList();
 
     Boolean isFavSme(SmeBo bo, Favourite favourite);
 

@@ -1,6 +1,5 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
@@ -8,7 +7,7 @@ import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.SmeRegistration;
 import com.toqqa.payload.SmeUpdate;
 import com.toqqa.repository.*;
@@ -21,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -214,27 +211,40 @@ public class SmeServiceImpl implements SmeService {
         log.info("Inside fetch sme");
         Sme sme = this.smeRepo.findByUserId(id);
         if (sme != null) {
-            SmeBo bo =new SmeBo(sme);
+            SmeBo bo = new SmeBo(sme);
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
             bo.setIdProof(this.prepareResource(sme.getIdProof()));
             bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-            bo.setIsFavSme(this.favouriteService.isFavSme(bo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
+            bo.setIsFavSme(this.favouriteService.isFavSme(bo, this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             return bo;
         }
         throw new BadRequestException("no user found with id= " + id);
     }
 
+//    @Override
+//    public ListResponseWithCount<SmeBo> fetchSmeList(PaginationBo bo){
+//        Page<Sme> smes = this.smeRepo.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize), false);
+//        List<SmeBo> smeBoList= new ArrayList<>();
+//        smes.get().forEach(sme -> {
+//            SmeBo smeBo = new SmeBo(sme);
+//            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+//            smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
+//            smeBoList.add(smeBo);
+//        });
+//        return new ListResponseWithCount<>(smeBoList,"",smes.getTotalElements(),bo.getPageNumber(),smes.getTotalPages());
+//    }
+
     @Override
-    public ListResponseWithCount<SmeBo> fetchSmeList(PaginationBo bo){
-        Page<Sme> smes = this.smeRepo.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize), false);
-        List<SmeBo> smeBoList= new ArrayList<>();
-        smes.get().forEach(sme -> {
+    public ListResponse<SmeBo> fetchSmeListWithoutPagination() {
+        List<Sme> smes = this.smeRepo.findByIsDeleted(false);
+        List<SmeBo> smeBoList = new ArrayList<>();
+        smes.forEach(sme -> {
             SmeBo smeBo = new SmeBo(sme);
             smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
-            smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
+            smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo, this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             smeBoList.add(smeBo);
         });
-        return new ListResponseWithCount<>(smeBoList,"",smes.getTotalElements(),bo.getPageNumber(),smes.getTotalPages());
+        return new ListResponse<>(smeBoList, "");
     }
 
 }
