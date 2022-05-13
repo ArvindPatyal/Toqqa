@@ -55,6 +55,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         deliveryAddress = this.addressRepo.saveAndFlush(deliveryAddress);
         return new DeliveryAddressBo(deliveryAddress);
 
+
     }
 
     @Override
@@ -81,7 +82,6 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public List<DeliveryAddressBo> fetchAddress(String id) {
-
         log.info("Inside fetch Address");
 
         List<DeliveryAddress> address = this.addressRepo.findByUser_Id(id);

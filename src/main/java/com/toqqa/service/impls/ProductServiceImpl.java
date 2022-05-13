@@ -25,6 +25,7 @@ import com.toqqa.domain.Advertisement;
 import com.toqqa.domain.Attachment;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
+import com.toqqa.domain.Wishlist;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.AddProduct;
 import com.toqqa.payload.FileUpload;
@@ -32,6 +33,7 @@ import com.toqqa.payload.ListProductRequest;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ProductRequestFilter;
+import com.toqqa.payload.Response;
 import com.toqqa.payload.ToggleStatus;
 import com.toqqa.payload.UpdateProduct;
 import com.toqqa.util.Helper;
@@ -330,4 +332,22 @@ public class ProductServiceImpl implements ProductService {
         throw new BadRequestException("invalid product id " + toggleStatus.getId());
     }
 
+	@Override
+	public ListResponse productList() {
+		log.info("Inside productList");
+		List<Product> products = null;
+
+			products = this.productRepo.findAll();
+		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+
+		List<ProductBo> productBos = new ArrayList<>();
+		products.forEach(product -> {
+			ProductBo productBo = new ProductBo(product);
+			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
+			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
+			productBos.add(productBo);
+		});
+		return new ListResponse(productBos, null);
+	}
 }

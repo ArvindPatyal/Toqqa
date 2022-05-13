@@ -25,6 +25,7 @@ public class DeliveryAddressUpdate {
 	private String country;
 
 	@NotNull
+
 	private String phoneNumber;
 
 	@NotNull
