@@ -13,4 +13,11 @@ import lombok.Setter;
 public class PaginationBo {
 	@NotNull
 	private Integer pageNumber = 0;
+	
+	private String searchText;
+	
+	private String sortKey;
+	
+	private String sortOrder;
+	
 }

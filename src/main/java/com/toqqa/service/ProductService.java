@@ -1,6 +1,11 @@
 package com.toqqa.service;
 
+import java.util.List;
+
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+
 import com.toqqa.bo.FileBo;
+import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Product;
 import com.toqqa.payload.*;
@@ -24,6 +29,10 @@ public interface ProductService {
 	ProductBo updateProductStatus(ToggleStatus toggleStatus);
 
 	ListResponseWithCount smeProductListFilter(ProductRequestFilter ProductRequestFilter);
-	
-	 ListResponse productList();
+
+	ListResponse productList();
+
+	ListResponseWithCount<ProductBo> fetchProducts(PaginationBo paginationbo);
+
+	//List<ProductBo> searchProducts(String query);
 }
