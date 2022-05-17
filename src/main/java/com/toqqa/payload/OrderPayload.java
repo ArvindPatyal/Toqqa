@@ -1,12 +1,11 @@
 package com.toqqa.payload;
 
-import java.util.List;
+import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import lombok.Data;
+import java.util.List;
 
 @Data
 public class OrderPayload {
@@ -32,5 +31,8 @@ public class OrderPayload {
 	@NotNull
 	@NotBlank
 	private String addressId;
+
+	@NotNull
+	private Double shippingFee;
 
 }

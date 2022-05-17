@@ -16,11 +16,7 @@ import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderItemPayload;
 import com.toqqa.payload.OrderPayload;
-import com.toqqa.payload.Response;
-import com.toqqa.repository.DeliveryAddressRepository;
-import com.toqqa.repository.OrderInfoRepository;
-import com.toqqa.repository.OrderItemRepository;
-import com.toqqa.repository.ProductRepository;
+import com.toqqa.repository.*;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.EmailService;
 import com.toqqa.service.OrderInfoService;
@@ -71,9 +67,13 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	@Autowired
 	private EmailService emailService;
 
+	@Autowired
+	private CartRepository cartRepository;
+
 	@Override
 	public OrderInfoBo placeOrder(OrderPayload orderPayload) {
 		log.info("Inside Add OrderInfo");
+		User user = this.authenticationService.currentUser();
 		OrderInfo orderInfo = new OrderInfo();
 		orderInfo.setAmount(orderPayload.getAmount());
 		orderInfo.setEmail(orderPayload.getEmail());
@@ -87,6 +87,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 		orderInfo.setOrderItems(this.persistOrderItems(orderPayload.getItems(), orderInfo));
 		OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo));
+
+		this.cartRepository.deleteByUser(user);
+
 		if (orderInfo.getEmail() != null) {
 			this.emailService.sendOrderEmail(orderInfo);
 		} else {
@@ -151,7 +154,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	}
 
 	@Override
-	public Response orderInvoice(String id) {
+	public void orderInvoice(String id) {
 		log.info("Inside generate Invoice");
 
 		OrderInfoBo orderInfo = this.fetchOrderInfo(id);
@@ -161,6 +164,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		try {
 			PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream("invoice.pdf"));
 			document.open();
+
 			Font font = new Font();
 			font.setFamily(TIMES_ROMAN);
 			font.setColor(BaseColor.BLACK);
@@ -195,9 +199,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			document.close();
 			pdfWriter.close();
 		} catch (FileNotFoundException | DocumentException fileNotFoundException) {
-			return new Response("", "InvoiceGeneration Failed");
+			throw new BadRequestException("Invoice generation failed");
 		}
-
-		return new Response("", "Invoice generated");
 	}
 }

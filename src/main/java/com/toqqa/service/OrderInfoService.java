@@ -4,7 +4,6 @@ import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderPayload;
-import com.toqqa.payload.Response;
 
 public interface OrderInfoService {
 
@@ -14,6 +13,6 @@ public interface OrderInfoService {
 
 	ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationbo);
 
-	Response orderInvoice(String id);
+	void orderInvoice(String id);
 
 }
