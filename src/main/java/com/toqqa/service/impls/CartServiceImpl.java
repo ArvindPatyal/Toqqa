@@ -175,6 +175,9 @@ public class CartServiceImpl implements CartService {
 	public Response deleteCartItem(String productId) {
 		log.info("Inside Service delete cart item");
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
+		if (cart == null) {
+			throw new BadRequestException("cart not found");
+		}
 		boolean isItemInCart = cart.getCartItems().stream().anyMatch(cartItem -> cartItem.getProductId().equals(productId));
 		if (!isItemInCart) {
 			throw new BadRequestException("Enter a valid product Id which is already in cart");
