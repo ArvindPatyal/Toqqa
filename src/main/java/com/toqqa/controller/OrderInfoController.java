@@ -47,10 +47,27 @@ public class OrderInfoController {
 		return this.orderInfoService.fetchOrderList(paginationbo);
 	}
 
-	@PostMapping("/generateInvoice/{orderid}")
-	public Response generateInvoice(@PathVariable @Valid String orderid) {
-		log.info("Inside controller generate Invoice");
-		return this.orderInfoService.orderInvoice(orderid);
+//	@PostMapping(value = "/generateInvoice/{orderid}",produces = MediaType.APPLICATION_PDF_VALUE)
+//	public byte[] generateInvoice(@PathVariable @Valid String orderid) {
+//		log.info("Inside controller generate Invoice");
+//		this.orderInfoService.orderInvoice(orderid);
+//		try
+//		{
+//			FileInputStream fileInputStream= new FileInputStream("invoice.pdf");
+//			byte[] byteArray = new byte[fileInputStream.available()];
+//			fileInputStream.read(byteArray);
+//			return byteArray;
+//
+//		} catch (IOException e) {
+//
+//		}
+//		return null;
+//	}
+@GetMapping(value = "/generateInvoice/{orderId}")
+public Response fetchInvoice(@PathVariable @Valid String orderId) {
+	log.info("Inside Controller fetch Invoice");
+	return new Response(this.orderInfoService.orderInvoice(orderId), "Invoice Generated");
+}
 
-	}
+
 }

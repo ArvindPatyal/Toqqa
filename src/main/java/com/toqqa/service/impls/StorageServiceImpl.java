@@ -1,8 +1,11 @@
 package com.toqqa.service.impls;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
+import com.toqqa.constants.FolderConstants;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,19 +42,24 @@ public class StorageServiceImpl implements StorageService {
         String folderName = bucketName + "/" + userId + "/" + dir;
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(folderName, fileName, fileObj));
-        fileObj.delete();
+        try {
+            s3Client.putObject(new PutObjectRequest(folderName, fileName, fileObj));
+        } finally {
+            fileObj.delete();
+        }
         return new AsyncResult<String>(folderName + "/" + fileName);
     }
 
     @Async
-    public String uploadFile(MultipartFile file, String userId, String dir) {
+    public Future<String> uploadFile(File file, String userId, String dir) {
         log.info("Inside file upload");
-        File fileObj = convertMultiPartFileToFile(file);
-        String fileName = System.currentTimeMillis() + " " + file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, fileObj));
-        fileObj.delete();
-        return fileName;
+        String fileName = file.getName();
+        try {
+            s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, file));
+        } finally {
+            file.delete();
+        }
+        return new AsyncResult<String>(fileName);
     }
 
 
@@ -124,10 +132,20 @@ public class StorageServiceImpl implements StorageService {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             calendar.add(Calendar.MINUTE, 30);
-            return s3Client.generatePresignedUrl(bucketName+"/"+pathArr[1]+"/"+pathArr[2],pathArr[3],calendar.getTime()).toString();
+            return s3Client.generatePresignedUrl(bucketName + "/" + pathArr[1] + "/" + pathArr[2], pathArr[3], calendar.getTime()).toString();
         }
         return "";
     }
 
 
+    @Override
+    public String generatePresignedInvoiceUrl(String location, String userId) {
+        if (location != null && !location.isEmpty()) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.add(Calendar.MINUTE, 30);
+            return s3Client.generatePresignedUrl(bucketName + "/" + userId + "/" + FolderConstants.INVOICE.getValue(), location, calendar.getTime()).toString();
+        }
+        return "";
+    }
 }
