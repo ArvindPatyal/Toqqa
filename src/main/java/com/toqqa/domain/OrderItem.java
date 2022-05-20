@@ -21,6 +21,7 @@ public class OrderItem {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     private Integer quantity;
+    
     private Double price;
 
     @ManyToOne
@@ -31,5 +32,6 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    private double shippingFee;
 
 }

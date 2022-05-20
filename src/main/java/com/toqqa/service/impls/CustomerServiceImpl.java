@@ -18,6 +18,7 @@ import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.CustomerService;
+import com.toqqa.service.ProductService;
 import com.toqqa.service.WishlistService;
 import com.toqqa.util.Helper;
 
@@ -42,6 +43,8 @@ public class CustomerServiceImpl implements CustomerService {
 	private AuthenticationService authenticationService;
 	@Autowired
 	private ProductRepository prRepository;
+	@Autowired
+	private ProductService productService;
 
 	@Override
 	public ListResponseWithCount productList(CustomerProductRequest bo) {
@@ -58,11 +61,11 @@ public class CustomerServiceImpl implements CustomerService {
 
 		List<ProductBo> productBos = new ArrayList<>();
 		products.forEach(product -> {
-			ProductBo productBo = new ProductBo(product);
-			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
-			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
-			productBos.add(productBo);
+//			ProductBo productBo = new ProductBo(product);
+//			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
+//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+//			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
+			productBos.add(this.productService.toProductBo(product));
 		});
 		return new ListResponseWithCount(productBos, "", products.getTotalElements(), bo.getPageNumber(),
 				products.getTotalPages());

@@ -20,4 +20,6 @@ public class PaginationBo {
 	
 	private String sortOrder;
 	
+	private String categoryId;
+	
 }

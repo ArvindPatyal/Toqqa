@@ -15,4 +15,6 @@ public class ProductRequestFilter extends ListProductRequest {
 
 
     private List<String> productCategoryIds;
+    
+    private String userId; 
 }
