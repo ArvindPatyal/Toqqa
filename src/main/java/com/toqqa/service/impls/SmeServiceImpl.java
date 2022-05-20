@@ -1,25 +1,24 @@
 package com.toqqa.service.impls;
 
+import com.toqqa.bo.ProductBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.Product;
 import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.ListResponse;
-import com.toqqa.payload.SmeRegistration;
-import com.toqqa.payload.SmeUpdate;
+import com.toqqa.payload.*;
 import com.toqqa.repository.*;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.FavouriteService;
-import com.toqqa.service.SmeService;
-import com.toqqa.service.StorageService;
+import com.toqqa.service.*;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +65,11 @@ public class SmeServiceImpl implements SmeService {
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    ProductService productService;
+    @Autowired
+    private ProductRepository productRepository;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -247,4 +251,34 @@ public class SmeServiceImpl implements SmeService {
         return new ListResponse<>(smeBoList, "");
     }
 
+    @Override
+    public ListResponseWithCount fetchProductsList(ProductRequestFilter productRequestFilter) {
+        String userId = this.authenticationService.currentUser().getId();
+        productRequestFilter.setUserId(userId);
+        return this.fetchProducts(productRequestFilter);
+    }
+
+    @Override
+    public ListResponseWithCount fetchProducts(ProductRequestFilter productRequestFilter) {
+        log.info("Inside get product list");
+        Page<Product> products = null;
+//        productRequestFilter.setUserId(this.authenticationService.currentUser().getId());
+        if (!this.helper.notNullAndHavingData(productRequestFilter.getProductCategoryIds())) {
+            products = this.productRepository.findByUser_IdAndIsDeleted(PageRequest.of(productRequestFilter.getPageNumber(), pageSize), productRequestFilter.getUserId(), productRequestFilter.getIsInActive());
+            List<ProductBo> productList = new ArrayList<>();
+            products.forEach(product -> productList.add(this.productService.toProductBo(product)));
+            return new ListResponseWithCount(productList, "", products.getTotalElements(), productRequestFilter.getPageNumber(), products.getTotalPages());
+        } else {
+            products = this.productRepository.findByProductCategories_IdInAndIsDeletedAndUser_Id(
+                    PageRequest.of(productRequestFilter.getPageNumber(), pageSize),
+                    productRequestFilter.getProductCategoryIds(), productRequestFilter.getIsInActive(), productRequestFilter.getUserId());
+            List<ProductBo> productBos = new ArrayList<>();
+            products.forEach(product -> {
+                productBos.add(this.productService.toProductBo(product));
+            });
+            return new ListResponseWithCount(productBos, "", products.getTotalElements(),
+                    (productRequestFilter.getPageNumber()), (products.getTotalPages()));
+        }
+
+    }
 }
