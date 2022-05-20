@@ -2,16 +2,16 @@ package com.toqqa.constants;
 
 public enum FolderConstants {
 
-	DOCUMENTS("documents"), LOGO("logo"), PRODUCTS("products"), BANNER("banner");
+    DOCUMENTS("documents"), LOGO("logo"), PRODUCTS("products"), BANNER("banner"), INVOICE("invoice");
 
-	private final String value;
+    private final String value;
 
-	FolderConstants(String value) {
-		this.value = value;
-	}
+    FolderConstants(String value) {
+        this.value = value;
+    }
 
-	public String getValue() {
-		return value;
+    public String getValue() {
+        return value;
 
 	}
 }

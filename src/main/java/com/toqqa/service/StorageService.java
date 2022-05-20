@@ -1,16 +1,15 @@
 package com.toqqa.service;
 
-import java.io.ByteArrayOutputStream;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
 
-import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
-
 public interface StorageService {
 
-	String uploadFile(MultipartFile file,String userId,String dir);
+	Future<String> uploadFile(File file, String userId, String dir);
 	
 	Future <String> uploadFileAsync(MultipartFile file,String userId,String dir);
 
@@ -27,4 +26,6 @@ public interface StorageService {
 	String buildResourceString(String filePath);
 
 	String generatePresignedUrl(String location);
+
+	String generatePresignedInvoiceUrl(String location, String UserId);
 }

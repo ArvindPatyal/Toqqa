@@ -13,6 +13,6 @@ public interface OrderInfoService {
 
 	ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationbo);
 
-	void orderInvoice(String id);
+	String orderInvoice(String id);
 
 }
