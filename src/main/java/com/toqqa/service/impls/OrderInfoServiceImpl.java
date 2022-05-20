@@ -37,7 +37,7 @@ import java.util.Optional;
 public class OrderInfoServiceImpl implements OrderInfoService {
 
     @Autowired
-    InvoiceService invoiceService;
+    private InvoiceService invoiceService;
     @Autowired
     private OrderItemRepository orderItemRepo;
     @Autowired

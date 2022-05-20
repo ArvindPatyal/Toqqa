@@ -56,9 +56,13 @@ public class InvoiceServiceImpl implements InvoiceService {
             detailsTable.setSpacingBefore(10f);
             detailsTable.setSpacingAfter(10f);
 
+            /*BLANK CEL DECLARATION*/
+            PdfPCell blankCell = new PdfPCell();
+            blankCell.setBorder(Rectangle.NO_BORDER);
+
 
             /*TOQQA LOGO */
-            Image logo = Image.getInstance("TOQQALOGO.PNG");
+            Image logo = Image.getInstance("src/main/resources/Images/TOQQALOGO.png");
             logo.setAbsolutePosition(35, 750);
             logo.scaleAbsolute(150, 90);
 //            PdfPCell logoCell = new PdfPCell(logo);
@@ -105,14 +109,14 @@ public class InvoiceServiceImpl implements InvoiceService {
             billingCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             detailsTable.addCell(billingCell);
 
-            /*PAN*/
+            /*PAN WITH BLANK CELL*/
             Paragraph pan = new Paragraph();
             pan.add(new Chunk("PAN : ", fontBold));
             pan.add(new Chunk("NA", fontLite));
             pan.setAlignment(Element.ALIGN_LEFT);
             PdfPCell panCell = new PdfPCell(pan);
             panCell.setBorder(Rectangle.NO_BORDER);
-            detailsTable.addCell(panCell);
+            detailsTable.addCell(blankCell);
 
             /*SHIPPING ADDRESS*/
             Paragraph shippingAddress = new Paragraph();
@@ -124,18 +128,16 @@ public class InvoiceServiceImpl implements InvoiceService {
             shippingCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             detailsTable.addCell(shippingCell);
 
-            /*REG NO*/
+            /*REG NO WITH BLANK CELL*/
             Paragraph regNo = new Paragraph();
             regNo.add(new Chunk("REG number", fontBold));
             regNo.add(new Chunk("\nNA", fontLite));
             regNo.setAlignment(Element.ALIGN_LEFT);
             PdfPCell regCell = new PdfPCell(regNo);
             regCell.setBorder(Rectangle.NO_BORDER);
-            detailsTable.addCell(regCell);
+            detailsTable.addCell(blankCell);
 
             /*BLANK CELL FOR SHIFTING ORDER NUMBER TO LEFT*/
-            PdfPCell blankCell = new PdfPCell();
-            blankCell.setBorder(Rectangle.NO_BORDER);
             detailsTable.addCell(blankCell);
 
             /*ORDER NUMBER*/
@@ -153,7 +155,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
             Date date = orderInfoBo.getCreatedDate();
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MMMM-yyyy hh:mm");
             String strDate = formatter.format(date);
 
 
@@ -178,17 +180,17 @@ public class InvoiceServiceImpl implements InvoiceService {
             /*CELLS FOR PRODUCT NAME,QUANTITY,PRICE PER UNIT*/
             PdfPCell productName = new PdfPCell(new Paragraph("Product Name", fontBold));
             productName.setHorizontalAlignment(Element.ALIGN_CENTER);
-            productName.setBackgroundColor(BaseColor.GRAY);
+            productName.setBackgroundColor(new BaseColor(219, 219, 219));
             productDetailsTable.addCell(productName);
 
             PdfPCell quantity = new PdfPCell(new Paragraph("Quantity", fontBold));
             quantity.setHorizontalAlignment(Element.ALIGN_CENTER);
-            quantity.setBackgroundColor(BaseColor.GRAY);
+            quantity.setBackgroundColor(new BaseColor(219, 219, 219));
             productDetailsTable.addCell(quantity);
 
             PdfPCell pricePerUnit = new PdfPCell(new Paragraph("Price Per Unit"));
             pricePerUnit.setHorizontalAlignment(Element.ALIGN_CENTER);
-            pricePerUnit.setBackgroundColor(BaseColor.GRAY);
+            pricePerUnit.setBackgroundColor(new BaseColor(219, 219, 219));
             productDetailsTable.addCell(pricePerUnit);
 
 
@@ -211,6 +213,20 @@ public class InvoiceServiceImpl implements InvoiceService {
                 productDetailsTable.addCell(cell3);
 
             });
+            /*SHIPPING FEE*/
+            productDetailsTable.addCell(blankCell);
+
+            PdfPCell shippingFeeCell = new PdfPCell(new Paragraph("Shipping Fee"));
+            shippingFeeCell.setBorder(Rectangle.NO_BORDER);
+            shippingFeeCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            productDetailsTable.addCell(shippingFeeCell);
+
+            PdfPCell shippingFeeValue = new PdfPCell(new Paragraph(String.valueOf(orderInfoBo.getAmount())));
+            shippingFeeValue.setBorder(Rectangle.NO_BORDER);
+            shippingFeeValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+            productDetailsTable.addCell(shippingFeeValue);
+
+
             /*GROSS AMOUNT*/
             productDetailsTable.addCell(blankCell);
 
@@ -243,6 +259,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             document.close();
             pdfWriter.close();
             File file = new File(orderInfoBo.getId().concat(".pdf"));
+
+            /*STORING INVOICE ON AMAZON S3 CLOUD STORAGE*/
             this.storageService.uploadFile(file, user.getId(), FolderConstants.INVOICE.getValue());
 
         } catch (DocumentException | IOException e) {
@@ -255,6 +273,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         return this.storageService.generatePresignedInvoiceUrl(orderId.concat(".pdf"), userId);
     }
+
+
+
+
+
+
+
+
 
    /* private void uploadInvoice(OrderInfoBo orderInfoBo ,Document document) {
         try {
