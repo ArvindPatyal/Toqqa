@@ -118,8 +118,8 @@ public class ProductController {
 	}
 
 	@PostMapping("/search")
-	public ListResponseWithCount<ProductBo> fetchProducts(@RequestBody PaginationBo bo) {
-		return this.productService.fetchProducts(bo);
+	public ListResponseWithCount<ProductBo> searchProducts(@RequestBody PaginationBo bo) {
+		return this.productService.searchProducts(bo);
 	}
 
 //	@GetMapping("/search")

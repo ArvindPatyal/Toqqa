@@ -32,7 +32,6 @@ public class OrderPayload {
 	@NotBlank
 	private String addressId;
 
-	@NotNull
 	private Double shippingFee;
 
 }

@@ -19,12 +19,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.toqqa.bo.FileBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
+import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FileType;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.OrderBy;
 import com.toqqa.domain.Advertisement;
 import com.toqqa.domain.Attachment;
 import com.toqqa.domain.Product;
+import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.exception.BadRequestException;
@@ -41,6 +43,7 @@ import com.toqqa.repository.AttachmentRepository;
 import com.toqqa.repository.ProductCategoryRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.ProductSubCategoryRepository;
+import com.toqqa.repository.SmeRepository;
 import com.toqqa.repository.WishlistRepository;
 import com.toqqa.service.AttachmentService;
 import com.toqqa.service.AuthenticationService;
@@ -88,6 +91,9 @@ public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	private WishlistRepository wishlistRepository;
+
+	@Autowired
+	private SmeRepository smeRepo;
 
 	@Override
 	public ProductBo addProduct(AddProduct addProduct) {
@@ -219,12 +225,13 @@ public class ProductServiceImpl implements ProductService {
 		log.info("Inside fetch product");
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
-			ProductBo bo = new ProductBo(product.get(),
-					this.helper.prepareProductAttachments(product.get().getAttachments()));
-			bo.setBanner(this.helper.prepareAttachmentResource(product.get().getBanner()));
-			bo.setIsInWishList(this.wishlistService.isWishListItem(bo,
-					this.wishlistRepository.findByUser_Id(this.authenticationService.currentUser().getId())));
-			return bo;
+			return this.toProductBo(product.get());
+//			ProductBo bo = new ProductBo(product.get(),
+//					this.helper.prepareProductAttachments(product.get().getAttachments()));
+//			bo.setBanner(this.helper.prepareAttachmentResource(product.get().getBanner()));
+//			bo.setIsInWishList(this.wishlistService.isWishListItem(bo,
+//					this.wishlistRepository.findByUser_Id(this.authenticationService.currentUser().getId())));
+//			return bo;
 		}
 		throw new BadRequestException("no product found with id= " + id);
 	}
@@ -244,9 +251,9 @@ public class ProductServiceImpl implements ProductService {
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> {
-			ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-			bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-			bos.add(bo);
+//			ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
+//			bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+			bos.add(this.toProductBo(product));
 		});
 		return new ListResponseWithCount<ProductBo>(bos, "", (allProducts.getTotalElements()),
 				(paginationBo.getPageNumber()), (allProducts.getTotalPages()));
@@ -279,16 +286,16 @@ public class ProductServiceImpl implements ProductService {
 
 	private ListResponseWithCount filterProductListSme(ProductRequestFilter ProductRequestFilter) {
 		log.info("Indside fetch product with filter");
-		User user = this.authenticationService.currentUser();
-		Page<Product> products = this.productRepo.findByProductCategories_IdInAndIsDeletedAndUser(
+		User user = new User();
+		Page<Product> products = this.productRepo.findByProductCategories_IdInAndIsDeletedAndUser_Id(
 				PageRequest.of(ProductRequestFilter.getPageNumber(), pageSize),
 				ProductRequestFilter.getProductCategoryIds(), ProductRequestFilter.getIsInActive(), (user));
 		List<ProductBo> productBos = new ArrayList<>();
 		products.forEach(product -> {
-			ProductBo productBo = new ProductBo(product,
-					this.helper.prepareProductAttachments(product.getAttachments()));
-			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-			productBos.add(productBo);
+//			ProductBo productBo = new ProductBo(product,
+//					this.helper.prepareProductAttachments(product.getAttachments()));
+//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+			productBos.add(this.toProductBo(product));
 		});
 		return new ListResponseWithCount(productBos, "products fetched", products.getTotalElements(),
 				(ProductRequestFilter.getPageNumber()), (products.getTotalPages()));
@@ -370,17 +377,17 @@ public class ProductServiceImpl implements ProductService {
 
 		List<ProductBo> productBos = new ArrayList<>();
 		products.forEach(product -> {
-			ProductBo productBo = new ProductBo(product);
-			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
-			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
-			productBos.add(productBo);
+//			ProductBo productBo = new ProductBo(product);
+//			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
+//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+//			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
+			productBos.add(this.toProductBo(product));
 		});
 		return new ListResponse(productBos, null);
 	}
 
 	@Override
-	public ListResponseWithCount<ProductBo> fetchProducts(PaginationBo bo) {
+	public ListResponseWithCount<ProductBo> searchProducts(PaginationBo bo) {
 		Page<Product> page = null;
 		Sort sort = this.sortBy(bo);
 		String param = " ";
@@ -390,13 +397,13 @@ public class ProductServiceImpl implements ProductService {
 		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 
 		page.get().forEach(product -> {
-			ProductBo productBo = new ProductBo(product);
-			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
-			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
-			bos.add(productBo);
+//			ProductBo productBo = new ProductBo(product);
+//			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
+//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+//			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
+			bos.add(this.toProductBo(product));
 		});
-		return new ListResponseWithCount(bos,"", page.getTotalElements(), bo.getPageNumber(),page.getTotalPages());
+		return new ListResponseWithCount(bos, "", page.getTotalElements(), bo.getPageNumber(), page.getTotalPages());
 	}
 
 	private Sort sortBy(PaginationBo bo) {
@@ -408,15 +415,22 @@ public class ProductServiceImpl implements ProductService {
 				return Sort.by(bo.getSortKey()).ascending();
 			}
 		}
-		return Sort.by("price_per_unit").descending();
+		return Sort.by("createdAt").descending();
 	}
 
-//	@Override
-//	public List<ProductBo> searchProducts(String query) {
-//		List<Product> products = productRepo.searchProducts(query);
-//		List<ProductBo> bos = new ArrayList();
-//		products.forEach(p -> bos.add(new ProductBo(p)));
-//		return bos;
-//	}
+	@Override
+	public ProductBo toProductBo(Product product) {
+		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+		Sme sme = this.smeRepo.findByUserId(product.getUser().getId());
+		ProductBo productBo = new ProductBo(product);
+		if (sme != null) {
+			SmeBo smeBo = new SmeBo(sme);
+			productBo.setSellerDetails(smeBo);
+		}
+		productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
+		productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+		productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
 
+		return productBo;
+	}
 }
