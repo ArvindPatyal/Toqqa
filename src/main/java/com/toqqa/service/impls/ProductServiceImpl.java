@@ -35,7 +35,6 @@ import com.toqqa.payload.FileUpload;
 import com.toqqa.payload.ListProductRequest;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.ProductRequestFilter;
 import com.toqqa.payload.ToggleStatus;
 import com.toqqa.payload.UpdateProduct;
 import com.toqqa.repository.AdvertisementRepository;
@@ -234,38 +233,13 @@ public class ProductServiceImpl implements ProductService {
 			allProducts = this.productRepo.findByUserAndIsDeleted(
 					PageRequest.of(paginationBo.getPageNumber(), pageSize), user, paginationBo.getIsInActive());
 		}
-		List<ProductBo> bos = new ArrayList<ProductBo>();
+		List<ProductBo> bos = new ArrayList<>();
 		allProducts.forEach(product -> {
 			bos.add(this.toProductBo(product));
 		});
 		return new ListResponseWithCount<ProductBo>(bos, "", (allProducts.getTotalElements()),
 				(paginationBo.getPageNumber()), (allProducts.getTotalPages()));
 
-	}
-
-	@Override
-	public ListResponseWithCount smeProductListFilter(ProductRequestFilter productRequestFilter) {
-		log.info("Inside get product list");
-		if (!this.helper.notNullAndHavingData(productRequestFilter.getProductCategoryIds())) {
-			return this.fetchProductList(productRequestFilter);
-		} else {
-			return this.filterProductListSme(productRequestFilter);
-		}
-
-	}
-
-	private ListResponseWithCount filterProductListSme(ProductRequestFilter productRequestFilter) {
-		log.info("Inside fetch product with filter");
-		User user = new User();
-		Page<Product> products = this.productRepo.findByProductCategories_IdInAndIsDeletedAndUser_Id(
-				PageRequest.of(productRequestFilter.getPageNumber(), pageSize),
-				productRequestFilter.getProductCategoryIds(), productRequestFilter.getIsInActive(), productRequestFilter.getUserId());
-		List<ProductBo> productBos = new ArrayList<>();
-		products.forEach(product -> {
-			productBos.add(this.toProductBo(product));
-		});
-		return new ListResponseWithCount(productBos, "products fetched", products.getTotalElements(),
-				(productRequestFilter.getPageNumber()), (products.getTotalPages()));
 	}
 
 	public void deleteProduct(String id) {
@@ -335,7 +309,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public ListResponse productList() {
+	public ListResponse<ProductBo> productList() {
 		log.info("Inside productList");
 		List<Product> products = null;
 
@@ -345,23 +319,36 @@ public class ProductServiceImpl implements ProductService {
 		products.forEach(product -> {
 			productBos.add(this.toProductBo(product));
 		});
-		return new ListResponse(productBos, "");
+		return new ListResponse<ProductBo>(productBos, "");
 	}
 
 	@Override
 	public ListResponseWithCount<ProductBo> searchProducts(PaginationBo bo) {
 		Page<Product> page = null;
+	
 		Sort sort = this.sortBy(bo);
-		String param = " ";
-		param = bo.getSearchText().trim();
-		page = this.productRepo.fetchProducts(PageRequest.of(bo.getPageNumber(), pageSize, sort), param);
-		List<ProductBo> bos = new ArrayList();
-		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+		if (this.helper.notNullAndBlank(bo.getSearchText()) && this.helper.notNullAndBlank(bo.getCategoryId())) {
+			page = this.productRepo.findByProductCategories_IdAndIsDeletedAndProductNameContainsOrDescriptionContains(
+					PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getCategoryId(), false,
+					bo.getSearchText().trim(), bo.getSearchText().trim());
 
+		} else if (this.helper.notNullAndBlank(bo.getSearchText())) {
+			page = this.productRepo.findByIsDeletedAndProductNameContainsOrDescriptionContains(
+					PageRequest.of(bo.getPageNumber(), pageSize, sort), false, bo.getSearchText().trim(),
+					bo.getSearchText().trim());
+		} else if (this.helper.notNullAndBlank(bo.getCategoryId())) {
+			page = this.productRepo.findByProductCategories_IdAndIsDeleted(
+					PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getCategoryId(), false);
+		} else {
+			page = this.productRepo.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize, sort), false);
+		}
+		List<ProductBo> productBos = new ArrayList<>();
+		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 		page.get().forEach(product -> {
-			bos.add(this.toProductBo(product));
+			productBos.add(this.toProductBo(product));
 		});
-		return new ListResponseWithCount(bos, "", page.getTotalElements(), bo.getPageNumber(), page.getTotalPages());
+		return new ListResponseWithCount<ProductBo>(productBos, "", page.getTotalElements(), bo.getPageNumber(),
+				page.getTotalPages());
 	}
 
 	private Sort sortBy(PaginationBo bo) {
