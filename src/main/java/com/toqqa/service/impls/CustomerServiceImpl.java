@@ -1,28 +1,24 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.toqqa.bo.ProductBo;
+import com.toqqa.domain.Product;
+import com.toqqa.domain.Wishlist;
+import com.toqqa.payload.CustomerProductRequest;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.ProductRequestFilter;
+import com.toqqa.repository.ProductRepository;
+import com.toqqa.repository.WishlistRepository;
+import com.toqqa.service.*;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.toqqa.bo.ProductBo;
-import com.toqqa.domain.Product;
-import com.toqqa.domain.Wishlist;
-import com.toqqa.payload.CustomerProductRequest;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.WishlistRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.CustomerService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.WishlistService;
-import com.toqqa.util.Helper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -45,6 +41,8 @@ public class CustomerServiceImpl implements CustomerService {
 	private ProductRepository prRepository;
 	@Autowired
 	private ProductService productService;
+	@Autowired
+	private SmeService smeService;
 
 	@Override
 	public ListResponseWithCount productList(CustomerProductRequest bo) {
@@ -61,13 +59,15 @@ public class CustomerServiceImpl implements CustomerService {
 
 		List<ProductBo> productBos = new ArrayList<>();
 		products.forEach(product -> {
-//			ProductBo productBo = new ProductBo(product);
-//			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
-//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-//			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
 			productBos.add(this.productService.toProductBo(product));
 		});
 		return new ListResponseWithCount(productBos, "", products.getTotalElements(), bo.getPageNumber(),
 				products.getTotalPages());
+	}
+
+	@Override
+	public ListResponseWithCount smeProductList(ProductRequestFilter productRequestFilter) {
+		log.info("Inside Service smeProductList");
+		return this.smeService.fetchProducts(productRequestFilter);
 	}
 }
