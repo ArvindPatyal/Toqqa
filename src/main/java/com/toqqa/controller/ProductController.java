@@ -21,7 +21,6 @@ import com.toqqa.payload.FileUpload;
 import com.toqqa.payload.ListProductRequest;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.ProductRequestFilter;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.ToggleStatus;
 import com.toqqa.payload.UpdateProduct;
@@ -108,15 +107,8 @@ public class ProductController {
 		return this.productService.updateProductImage(file);
 	}
 
-	@ApiOperation(value = "filtered productList for sme")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
-			@ApiResponse(code = 400, message = "Bad request") })
-	@PostMapping("/smeProductList")
-	public ListResponseWithCount smeProductList(@RequestBody @Valid ProductRequestFilter ProductRequestFilter) {
-		log.info("Inside controller smeProductList");
-		return this.productService.smeProductListFilter(ProductRequestFilter);
-	}
-
+	@ApiOperation(value = "Search for product")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad request") })
 	@PostMapping("/search")
 	public ListResponseWithCount<ProductBo> searchProducts(@RequestBody PaginationBo bo) {
 		return this.productService.searchProducts(bo);

@@ -1,7 +1,5 @@
 package com.toqqa.service;
 
-import java.util.List;
-
 import com.toqqa.bo.FileBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
@@ -11,7 +9,6 @@ import com.toqqa.payload.FileUpload;
 import com.toqqa.payload.ListProductRequest;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.ProductRequestFilter;
 import com.toqqa.payload.ToggleStatus;
 import com.toqqa.payload.UpdateProduct;
 
@@ -32,8 +29,6 @@ public interface ProductService {
 	ListResponse<FileBo> updateProductImage(FileUpload file);
 
 	ProductBo updateProductStatus(ToggleStatus toggleStatus);
-
-	ListResponseWithCount smeProductListFilter(ProductRequestFilter ProductRequestFilter);
 
 	ListResponse productList();
 
