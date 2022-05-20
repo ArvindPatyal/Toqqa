@@ -24,7 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 			Boolean isDeleted);
 
 	Page<Product> findByProductCategories_IdInAndIsDeletedAndUser_Id(Pageable pageRequest, List<String> categoryId,
-			Boolean isDeleted, User user);
+			Boolean isDeleted, String user_Id);
 
 	@Query(value = "SELECT * FROM Product p WHERE " + "p.Product_name LIKE %:param%"
 			+ " Or p.description LIKE %:param%", nativeQuery = true)

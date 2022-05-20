@@ -146,15 +146,6 @@ public class ProductServiceImpl implements ProductService {
 		}
 
 		product.setAttachments(attachments);
-
-		/*
-		 * try { if (addProduct.getBanner() != null &&
-		 * !addProduct.getBanner().isEmpty()) {
-		 * product.setBanner(this.storageService.uploadFileAsync(addProduct.getBanner(),
-		 * product.getUser().getId(), FolderConstants.BANNER.getValue()).get()); } }
-		 * catch (InterruptedException | ExecutionException e) { e.printStackTrace(); }
-		 */
-
 		product.setAttachments(attachments);
 		product = this.productRepo.saveAndFlush(product);
 
@@ -226,12 +217,6 @@ public class ProductServiceImpl implements ProductService {
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
 			return this.toProductBo(product.get());
-//			ProductBo bo = new ProductBo(product.get(),
-//					this.helper.prepareProductAttachments(product.get().getAttachments()));
-//			bo.setBanner(this.helper.prepareAttachmentResource(product.get().getBanner()));
-//			bo.setIsInWishList(this.wishlistService.isWishListItem(bo,
-//					this.wishlistRepository.findByUser_Id(this.authenticationService.currentUser().getId())));
-//			return bo;
 		}
 		throw new BadRequestException("no product found with id= " + id);
 	}
@@ -251,8 +236,6 @@ public class ProductServiceImpl implements ProductService {
 		}
 		List<ProductBo> bos = new ArrayList<ProductBo>();
 		allProducts.forEach(product -> {
-//			ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-//			bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
 			bos.add(this.toProductBo(product));
 		});
 		return new ListResponseWithCount<ProductBo>(bos, "", (allProducts.getTotalElements()),
@@ -261,44 +244,28 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public ListResponseWithCount smeProductListFilter(ProductRequestFilter ProductRequestFilter) {
+	public ListResponseWithCount smeProductListFilter(ProductRequestFilter productRequestFilter) {
 		log.info("Inside get product list");
-		if (!this.helper.notNullAndHavingData(ProductRequestFilter.getProductCategoryIds())) {
-			return this.fetchProductList(ProductRequestFilter);
+		if (!this.helper.notNullAndHavingData(productRequestFilter.getProductCategoryIds())) {
+			return this.fetchProductList(productRequestFilter);
 		} else {
-			return this.filterProductListSme(ProductRequestFilter);
+			return this.filterProductListSme(productRequestFilter);
 		}
 
 	}
 
-//    private ListResponseWithCount fetchProductsWithoutFilter(SmeProductRequestFilter smeProductRequestFilter, User user) {
-//        log.info("Inside fetch products without filter");
-//        Page<Product> products = this.productRepo.findByUserAndIsDeleted(PageRequest.of(smeProductRequestFilter.getPageNumber(), pageSize), user, smeProductRequestFilter.getIsInActive());
-//        List<ProductBo> productBos = new ArrayList<>();
-//        products.forEach(product -> {
-//            ProductBo productBo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
-//            productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-//            productBos.add(productBo);
-//        });
-//
-//        return new ListResponseWithCount(productBos, "products fetched", products.getNumberOfElements(), (smeProductRequestFilter.getPageNumber()), (products.getTotalPages()));
-//    }
-
-	private ListResponseWithCount filterProductListSme(ProductRequestFilter ProductRequestFilter) {
-		log.info("Indside fetch product with filter");
+	private ListResponseWithCount filterProductListSme(ProductRequestFilter productRequestFilter) {
+		log.info("Inside fetch product with filter");
 		User user = new User();
 		Page<Product> products = this.productRepo.findByProductCategories_IdInAndIsDeletedAndUser_Id(
-				PageRequest.of(ProductRequestFilter.getPageNumber(), pageSize),
-				ProductRequestFilter.getProductCategoryIds(), ProductRequestFilter.getIsInActive(), (user));
+				PageRequest.of(productRequestFilter.getPageNumber(), pageSize),
+				productRequestFilter.getProductCategoryIds(), productRequestFilter.getIsInActive(), productRequestFilter.getUserId());
 		List<ProductBo> productBos = new ArrayList<>();
 		products.forEach(product -> {
-//			ProductBo productBo = new ProductBo(product,
-//					this.helper.prepareProductAttachments(product.getAttachments()));
-//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
 			productBos.add(this.toProductBo(product));
 		});
 		return new ListResponseWithCount(productBos, "products fetched", products.getTotalElements(),
-				(ProductRequestFilter.getPageNumber()), (products.getTotalPages()));
+				(productRequestFilter.getPageNumber()), (products.getTotalPages()));
 	}
 
 	public void deleteProduct(String id) {
@@ -374,16 +341,11 @@ public class ProductServiceImpl implements ProductService {
 
 		products = this.productRepo.findAll();
 		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
-
 		List<ProductBo> productBos = new ArrayList<>();
 		products.forEach(product -> {
-//			ProductBo productBo = new ProductBo(product);
-//			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
-//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-//			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
 			productBos.add(this.toProductBo(product));
 		});
-		return new ListResponse(productBos, null);
+		return new ListResponse(productBos, "");
 	}
 
 	@Override
@@ -397,10 +359,6 @@ public class ProductServiceImpl implements ProductService {
 		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 
 		page.get().forEach(product -> {
-//			ProductBo productBo = new ProductBo(product);
-//			productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));
-//			productBo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-//			productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
 			bos.add(this.toProductBo(product));
 		});
 		return new ListResponseWithCount(bos, "", page.getTotalElements(), bo.getPageNumber(), page.getTotalPages());

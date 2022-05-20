@@ -109,7 +109,7 @@ public class ProductController {
 	}
 
 	@ApiOperation(value = "filtered productList for sme")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "sucess"),
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad request") })
 	@PostMapping("/smeProductList")
 	public ListResponseWithCount smeProductList(@RequestBody @Valid ProductRequestFilter ProductRequestFilter) {
@@ -122,8 +122,4 @@ public class ProductController {
 		return this.productService.searchProducts(bo);
 	}
 
-//	@GetMapping("/search")
-//	public ResponseEntity<List<ProductBo>> searchProducts(@RequestParam("query") String query) {
-//		return ResponseEntity.ok(productService.searchProducts(query));
-//	}
 }
