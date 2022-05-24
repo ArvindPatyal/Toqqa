@@ -53,8 +53,8 @@ public class JWTConfig {
 
 	private String createToken(Map<String, Object> claims, String subject) {
 		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + 86400000))
-				.signWith(SignatureAlgorithm.HS512, secret).compact();
+				.setExpiration(new Date(System.currentTimeMillis() + 172800000000L)).signWith(SignatureAlgorithm.HS512, secret)
+				.compact();
 	}
 
 	public Boolean validateToken(String token, UserDetails userDetails) {
@@ -92,5 +92,17 @@ public class JWTConfig {
 		}
 		return false;
 	}
+	// TODO generate refresh token
+//	public String getRefreshToken(String token, UserDetails userDetails) {
+//		validateToken(token, userDetails);
+//		Claims claims = extractAllClaims(token);
+//		return generateRefreshToken(claims, claims.getSubject());
+//	}
+//
+//	public String generateRefreshToken(Map<String, Object> claims, String subject) {
+//		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+//				.setExpiration(new Date(System.currentTimeMillis() + 86400000))
+//				.signWith(SignatureAlgorithm.HS256, secret).compact();
+//	}
 
 }

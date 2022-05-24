@@ -30,14 +30,13 @@ public class RegistrationServiceImpl implements RegistrationService {
 	private AgentService agentService;
 	@Autowired
 	private SmeService smeService;
-	
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Response<?> registerAgent(AgentRegistrationPayload payload) {
 		log.info("Inside register agent");
 		if (userService.isUserExists(payload.getUserSignUp().getEmail(), payload.getUserSignUp().getPhone())) {
-			throw new UserAlreadyExists("user already exists");
+			throw new UserAlreadyExists("user with email/number already exists");
 		}
 		UserBo user = this.userService.addUser(payload.getUserSignUp());
 		AgentBo agentBo = this.agentService.agentRegistration(payload.getAgentRegistration(), user.getId());
@@ -51,7 +50,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 	public Response<?> registerSme(SmeRegistrationPayload payload) {
 		log.info("Inside register sme");
 		if (userService.isUserExists(payload.getUserSignUp().getEmail(), payload.getUserSignUp().getPhone())) {
-			throw new UserAlreadyExists("user already exists");
+			throw new UserAlreadyExists("user with email/number already exists");
 		}
 		UserBo user = this.userService.addUser(payload.getUserSignUp());
 		SmeBo sme = this.smeService.smeRegistration(payload.getSmeRegistration(), user.getId());

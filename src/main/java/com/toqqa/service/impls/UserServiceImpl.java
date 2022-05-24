@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
 	public UserBo addUser(UserSignUp userSignUp) {
 		log.info("Inside add user");
 		if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
-			throw new UserAlreadyExists("user already exists");
+			throw new UserAlreadyExists("user with email/number already exists");
 		}
 		User user = new User();
 		user.setCity(userSignUp.getCity());

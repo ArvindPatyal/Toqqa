@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.toqqa.config.JWTConfig;
 import com.toqqa.payload.LoginRequest;
 import com.toqqa.payload.LoginResponse;
 import com.toqqa.payload.Response;
@@ -17,7 +18,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Slf4j
 @RestController
@@ -26,6 +26,8 @@ public class AuthController {
 
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private JWTConfig jwtConfig;
 
 	@ApiOperation(value = "Authenticate user and signin")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
@@ -35,5 +37,24 @@ public class AuthController {
 		log.info("Inside Controller Signin");
 		return new Response<LoginResponse>(this.userService.signIn(request), "success");
 	}
+
+	// TODO generate refresh token
+
+//	@RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
+//	public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+//
+//		String token = "";
+//
+//		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//		String existingToken = getJwtToken(request);
+//		token = jwtConfig.getRefreshToken(existingToken, userDetails);
+//
+//		return ResponseEntity.ok(new JwtAuthenticationResponse(token));
+//	}
+//
+//	private String getJwtToken(HttpServletRequest request) {
+//		String autherizationHeader = request.getHeader("Authorization");
+//		return autherizationHeader.substring(7);
+//	}
 
 }
