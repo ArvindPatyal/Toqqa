@@ -22,5 +22,7 @@ public class OrderItemPayload {
 	@NotNull
 	private String sellerUserId;
 
+	@NotNull
+	private Double shippingFee;
 
 }

@@ -97,10 +97,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         sellerIds.forEach(s -> {
             List<OrderItemPayload> orderItems = orderPayload.getItems().stream().filter(orderItemPayload -> orderItemPayload.getSellerUserId().equals(s)).collect(Collectors.toList());
             AtomicReference<Double> orderAmount = new AtomicReference<>(0.0);
-//          AtomicReference<Double> shippingFee = new AtomicReference<>( 0.0);
+            AtomicReference<Double> shippingFee = new AtomicReference<>(0.0);
             orderItems.forEach(orderItemPayload -> {
                 orderAmount.set(orderAmount.get() + (orderItemPayload.getPrice() * orderItemPayload.getQuantity()));
-//               shippingFee.set(orderItemPayload.getShippingFee());
+                shippingFee.set(orderItemPayload.getShippingFee());
             });
             Sme sme = this.smeRepository.findByUserId(s);
             OrderInfo orderInfo = new OrderInfo();
@@ -110,7 +110,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             orderInfo.setPhone(orderPayload.getPhone());
             orderInfo.setFirstName(orderPayload.getFirstName());
             orderInfo.setLastName(orderPayload.getLastName());
-            orderInfo.setShippingFee(sme.getDeliveryCharges());
+            orderInfo.setShippingFee(shippingFee.get());
             orderInfo.setAddress(address);
             orderInfo.setUser(user);
             orderInfo.setOrderStatus(OrderConstants.ORDER_PLACED.getValue());

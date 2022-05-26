@@ -27,4 +27,10 @@ public class DeliveryAddressPayload {
 	@NotNull
 	private String phoneNumber;
 
+	@NotNull
+	private String latitude;
+
+	@NotNull
+	private String longitude;
+
 }

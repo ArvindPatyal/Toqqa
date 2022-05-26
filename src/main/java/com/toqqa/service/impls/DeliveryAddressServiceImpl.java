@@ -46,6 +46,8 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         deliveryAddress.setPostCode(addressPayload.getPostCode());
         deliveryAddress.setState(addressPayload.getState());
         deliveryAddress.setCountry(addressPayload.getCountry());
+        deliveryAddress.setLatitude(addressPayload.getLatitude());
+        deliveryAddress.setLongitude(addressPayload.getLongitude());
 
         if (this.helper.notNullAndBlank(addressPayload.getPhoneNumber())) {
             if (this.helper.isValidNumber(addressPayload.getPhoneNumber())) {
@@ -71,6 +73,8 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         deliveryAddress.setPostCode(addresstUpdate.getPostCode());
         deliveryAddress.setState(addresstUpdate.getState());
         deliveryAddress.setCountry(addresstUpdate.getCountry());
+        deliveryAddress.setLongitude(addresstUpdate.getLongitude());
+        deliveryAddress.setLatitude(addresstUpdate.getLatitude());
         if (this.helper.notNullAndBlank(addresstUpdate.getPhoneNumber())) {
             if (this.helper.isValidNumber(addresstUpdate.getPhoneNumber())) {
                 deliveryAddress.setPhoneNumber(addresstUpdate.getPhoneNumber());
@@ -120,12 +124,6 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
             deliveryAddresses.forEach(deliveryAddress -> {
                 DeliveryAddressBo deliveryAddressBo = new DeliveryAddressBo(deliveryAddress);
-                deliveryAddressBo.setCity(deliveryAddress.getCity());
-                deliveryAddressBo.setCountry(deliveryAddress.getCountry());
-                deliveryAddressBo.setAddress(deliveryAddress.getAddress());
-                deliveryAddressBo.setPostCode(deliveryAddress.getPostCode());
-                deliveryAddressBo.setState(deliveryAddress.getState());
-                deliveryAddressBo.setPhoneNumber(deliveryAddress.getPhoneNumber());
                 deliveryAddressBos.add(deliveryAddressBo);
             });
             return new Response(deliveryAddressBos, "addresses fetched");
