@@ -78,11 +78,11 @@ public class CartServiceImpl implements CartService {
 		Double prc = 0.0;
 		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 		for (CartItem ci : cartItem) {
-			ProductBo prdBo = new ProductBo(ci.getProduct(),
+			/*ProductBo prdBo = new ProductBo(ci.getProduct(),
 					this.helper.prepareProductAttachments(ci.getProduct().getAttachments()));
 			prdBo.setBanner(this.helper.prepareAttachmentResource(ci.getProduct().getBanner()));
-			prdBo.setIsInWishList(this.wishlistService.isWishListItem(prdBo, wishlist));
-
+			prdBo.setIsInWishList(this.wishlistService.isWishListItem(prdBo, wishlist));*/
+			ProductBo prdBo = this.productService.toProductBo(ci.getProduct());
 			CartItemBo cartItemBo = new CartItemBo(ci, prdBo);
 			itemBo.add(cartItemBo);
 			Product product = ci.getProduct();
