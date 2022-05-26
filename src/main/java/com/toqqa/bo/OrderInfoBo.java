@@ -1,14 +1,13 @@
 package com.toqqa.bo;
 
-import java.util.Date;
-import java.util.List;
-
 import com.toqqa.domain.OrderInfo;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,7 +27,11 @@ public class OrderInfoBo {
 	private String paymentType;
 	private double shippingFee;
 
-	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo) {
+	private String invoiceUrl;
+
+	private SmeBo smeBo;
+
+	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo, SmeBo smeBo) {
 
 		this.id = orderInfo.getId();
 		this.createdDate = orderInfo.getCreatedDate();
@@ -42,5 +45,6 @@ public class OrderInfoBo {
 		this.address = new DeliveryAddressBo(orderInfo.getAddress());
 		this.paymentType = orderInfo.getPaymentType().name();
 		this.shippingFee = orderInfo.getShippingFee();
+		this.smeBo = smeBo;
 	}
 }

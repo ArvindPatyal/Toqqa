@@ -4,10 +4,11 @@ import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderPayload;
+import com.toqqa.payload.Response;
 
 public interface OrderInfoService {
 
-	OrderInfoBo placeOrder(OrderPayload orderPayload);
+	Response placeOrder(OrderPayload orderPayload);
 
 	OrderInfoBo fetchOrderInfo(String id);
 

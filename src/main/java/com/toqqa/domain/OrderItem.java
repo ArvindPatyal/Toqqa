@@ -32,6 +32,4 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private double shippingFee;
-
 }

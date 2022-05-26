@@ -1,27 +1,6 @@
 package com.toqqa.service.impls;
 
-import static com.itextpdf.text.pdf.BaseFont.COURIER;
-import static com.itextpdf.text.pdf.BaseFont.COURIER_BOLD;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -33,8 +12,21 @@ import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.service.InvoiceService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static com.itextpdf.text.pdf.BaseFont.COURIER;
+import static com.itextpdf.text.pdf.BaseFont.COURIER_BOLD;
 
 @Service
 @Slf4j
@@ -46,6 +38,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 	private Helper helper;
 
 	@Override
+	@Async
 	public void generateInvoice(OrderInfoBo orderInfoBo, User user) {
 		log.info("Inside generate Invoice");
 		Document document = new Document();
@@ -100,9 +93,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 			document.add(invoiceText);
 
 			/* SOLD BY */
+			String sellerdetails = orderInfoBo.getSmeBo().getNameOfBusiness() + "\n" + orderInfoBo.getSmeBo().getBusinessAddress();
 			Paragraph seller = new Paragraph();
 			seller.add(new Chunk("Sold By :", fontBold));
-			seller.add(new Chunk("\nTOQQA", fontLite));
+			seller.add(new Chunk("\n" + sellerdetails, fontLite));
 			seller.setAlignment(Element.ALIGN_LEFT);
 			PdfPCell soldByCell = new PdfPCell(seller);
 			soldByCell.setBorder(Rectangle.NO_BORDER);
@@ -179,12 +173,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 			document.add(detailsTable);
 
 			/* TABLE FOR PRODUCT DETAILS */
-			PdfPTable productDetailsTable = new PdfPTable(3);
+			PdfPTable productDetailsTable = new PdfPTable(5);
 			productDetailsTable.setWidthPercentage(100);
 			productDetailsTable.setSpacingBefore(10f);
 			productDetailsTable.setSpacingAfter(10f);
 
-			/* CELLS FOR PRODUCT NAME,QUANTITY,PRICE PER UNIT */
+			/* CELLS FOR PRODUCT NAME,QUANTITY,PRICE PER UNIT,DISCOUNT, AMOUNT */
 			PdfPCell productName = new PdfPCell(new Paragraph("Product Name", fontBold));
 			productName.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productName.setBackgroundColor(new BaseColor(219, 219, 219));
@@ -200,6 +194,18 @@ public class InvoiceServiceImpl implements InvoiceService {
 			pricePerUnit.setBackgroundColor(new BaseColor(219, 219, 219));
 			productDetailsTable.addCell(pricePerUnit);
 
+			PdfPCell discountCell = new PdfPCell(new Paragraph("Discount"));
+			discountCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			discountCell.setBackgroundColor(new BaseColor(219, 219, 219));
+			productDetailsTable.addCell(discountCell);
+
+
+			PdfPCell productAmount = new PdfPCell(new Paragraph("Amount"));
+			productAmount.setHorizontalAlignment(Element.ALIGN_CENTER);
+			productAmount.setBackgroundColor(new BaseColor(219, 219, 219));
+			productDetailsTable.addCell(productAmount);
+
+			AtomicReference<Double> totalDiscount = new AtomicReference<>(0.00);
 			/* LOOP FOR ADDING PRODUCT DETAILS TO TABLE */
 			orderItemBos.forEach(orderItemBo -> {
 
@@ -219,8 +225,26 @@ public class InvoiceServiceImpl implements InvoiceService {
 				cell3.setBackgroundColor(BaseColor.WHITE);
 				productDetailsTable.addCell(cell3);
 
+				Double discount = (orderItemBo.getProduct().getDiscount() * orderItemBo.getProduct().getPricePerUnit()) / 100;
+				totalDiscount.set(totalDiscount.get() + (discount * orderItemBo.getQuantity()));
+				PdfPCell cell4 = new PdfPCell(
+						new Paragraph(String.valueOf(discount)));
+				cell4.setHorizontalAlignment(Element.ALIGN_CENTER);
+				cell4.setBackgroundColor(BaseColor.WHITE);
+				productDetailsTable.addCell(cell4);
+
+
+				double productAmt = (orderItemBo.getProduct().getPricePerUnit() * orderItemBo.getQuantity()) - (discount * orderItemBo.getQuantity());
+				PdfPCell cell5 = new PdfPCell(
+						new Paragraph(String.valueOf(productAmt)));
+				cell5.setHorizontalAlignment(Element.ALIGN_CENTER);
+				cell5.setBackgroundColor(BaseColor.WHITE);
+				productDetailsTable.addCell(cell5);
+
 			});
 			/* SHIPPING FEE */
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
 			productDetailsTable.addCell(blankCell);
 
 			PdfPCell shippingFeeCell = new PdfPCell(new Paragraph("Shipping Fee"));
@@ -233,7 +257,24 @@ public class InvoiceServiceImpl implements InvoiceService {
 			shippingFeeValue.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(shippingFeeValue);
 
+			/*  TOTAL DISCOUNT*/
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
+
+			PdfPCell discountFeeCell = new PdfPCell(new Paragraph("Total discount"));
+			discountFeeCell.setBorder(Rectangle.NO_BORDER);
+			discountFeeCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			productDetailsTable.addCell(discountFeeCell);
+
+			PdfPCell discountFeeValue = new PdfPCell(new Paragraph(String.valueOf(totalDiscount)));
+			discountFeeValue.setBorder(Rectangle.NO_BORDER);
+			discountFeeValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+			productDetailsTable.addCell(discountFeeValue);
+
 			/* GROSS AMOUNT */
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
 			productDetailsTable.addCell(blankCell);
 
 			PdfPCell grossAmount = new PdfPCell(new Paragraph("Gross Amount"));

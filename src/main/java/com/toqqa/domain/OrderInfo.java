@@ -58,4 +58,8 @@ public class OrderInfo {
     @Enumerated(EnumType.STRING)
     private PaymentConstants paymentType;
 
+    @ManyToOne
+    @JoinColumn(updatable = false)
+    private Sme sme;
+
 }

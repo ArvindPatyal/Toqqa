@@ -1,7 +1,6 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.OrderItem;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +16,7 @@ public class OrderItemBo {
 	private Integer quantity;
 	private Double price;
 	private ProductBo product;
+	//	private Double discount;
 
 	public OrderItemBo(OrderItem orderItem) {
 
@@ -24,6 +24,7 @@ public class OrderItemBo {
 		this.quantity = orderItem.getQuantity();
 		this.price = orderItem.getPrice();
 		this.product = new ProductBo(orderItem.getProduct());
+//		this.discount=orderItem.getDiscount();
 
 	}
 
