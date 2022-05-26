@@ -157,7 +157,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			orderDate.add(new Chunk("Order Date :", fontBold));
 
 			Date date = orderInfoBo.getCreatedDate();
-			SimpleDateFormat formatter = new SimpleDateFormat("dd-MMMM-yyyy hh:mm");
+			SimpleDateFormat formatter = new SimpleDateFormat("dd-MMMM-yyyy hh:mm a");
 			String strDate = formatter.format(date);
 
 //            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-mm-yyyy hh:mm");
@@ -173,7 +173,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			document.add(detailsTable);
 
 			/* TABLE FOR PRODUCT DETAILS */
-			PdfPTable productDetailsTable = new PdfPTable(5);
+			PdfPTable productDetailsTable = new PdfPTable(4);
 			productDetailsTable.setWidthPercentage(100);
 			productDetailsTable.setSpacingBefore(10f);
 			productDetailsTable.setSpacingAfter(10f);
@@ -194,10 +194,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 			pricePerUnit.setBackgroundColor(new BaseColor(219, 219, 219));
 			productDetailsTable.addCell(pricePerUnit);
 
-			PdfPCell discountCell = new PdfPCell(new Paragraph("Discount"));
+			/*PdfPCell discountCell = new PdfPCell(new Paragraph("Discount"));
 			discountCell.setHorizontalAlignment(Element.ALIGN_CENTER);
 			discountCell.setBackgroundColor(new BaseColor(219, 219, 219));
-			productDetailsTable.addCell(discountCell);
+			productDetailsTable.addCell(discountCell);*/
 
 
 			PdfPCell productAmount = new PdfPCell(new Paragraph("Amount"));
@@ -206,6 +206,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			productDetailsTable.addCell(productAmount);
 
 			AtomicReference<Double> totalDiscount = new AtomicReference<>(0.00);
+			AtomicReference<Double> totalAmount = new AtomicReference<>(0.00);
 			/* LOOP FOR ADDING PRODUCT DETAILS TO TABLE */
 			orderItemBos.forEach(orderItemBo -> {
 
@@ -219,40 +220,47 @@ public class InvoiceServiceImpl implements InvoiceService {
 				cell2.setBackgroundColor(BaseColor.WHITE);
 				productDetailsTable.addCell(cell2);
 
+
 				PdfPCell cell3 = new PdfPCell(
-						new Paragraph(String.valueOf(orderItemBo.getProduct().getPricePerUnit())));
+						new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(orderItemBo.getProduct().getPricePerUnit()))));
 				cell3.setHorizontalAlignment(Element.ALIGN_CENTER);
 				cell3.setBackgroundColor(BaseColor.WHITE);
 				productDetailsTable.addCell(cell3);
 
 				Double discount = (orderItemBo.getProduct().getDiscount() * orderItemBo.getProduct().getPricePerUnit()) / 100;
 				totalDiscount.set(totalDiscount.get() + (discount * orderItemBo.getQuantity()));
-				PdfPCell cell4 = new PdfPCell(
+				/*PdfPCell cell4 = new PdfPCell(
 						new Paragraph(String.valueOf(discount)));
 				cell4.setHorizontalAlignment(Element.ALIGN_CENTER);
 				cell4.setBackgroundColor(BaseColor.WHITE);
-				productDetailsTable.addCell(cell4);
+				productDetailsTable.addCell(cell4);*/
 
 
 				double productAmt = (orderItemBo.getProduct().getPricePerUnit() * orderItemBo.getQuantity()) - (discount * orderItemBo.getQuantity());
+				totalAmount.set(totalAmount.get() + productAmt);
 				PdfPCell cell5 = new PdfPCell(
-						new Paragraph(String.valueOf(productAmt)));
+						new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(productAmt))));
 				cell5.setHorizontalAlignment(Element.ALIGN_CENTER);
 				cell5.setBackgroundColor(BaseColor.WHITE);
 				productDetailsTable.addCell(cell5);
 
+
 			});
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
 			/* SHIPPING FEE */
 			productDetailsTable.addCell(blankCell);
 			productDetailsTable.addCell(blankCell);
-			productDetailsTable.addCell(blankCell);
+			/*productDetailsTable.addCell(blankCell);*/
 
 			PdfPCell shippingFeeCell = new PdfPCell(new Paragraph("Shipping Fee"));
 			shippingFeeCell.setBorder(Rectangle.NO_BORDER);
 			shippingFeeCell.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(shippingFeeCell);
 
-			PdfPCell shippingFeeValue = new PdfPCell(new Paragraph(String.valueOf(orderInfoBo.getShippingFee())));
+			PdfPCell shippingFeeValue = new PdfPCell(new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(orderInfoBo.getShippingFee()))));
 			shippingFeeValue.setBorder(Rectangle.NO_BORDER);
 			shippingFeeValue.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(shippingFeeValue);
@@ -260,32 +268,48 @@ public class InvoiceServiceImpl implements InvoiceService {
 			/*  TOTAL DISCOUNT*/
 			productDetailsTable.addCell(blankCell);
 			productDetailsTable.addCell(blankCell);
-			productDetailsTable.addCell(blankCell);
+			/*productDetailsTable.addCell(blankCell);*/
 
 			PdfPCell discountFeeCell = new PdfPCell(new Paragraph("Total discount"));
 			discountFeeCell.setBorder(Rectangle.NO_BORDER);
 			discountFeeCell.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(discountFeeCell);
 
-			PdfPCell discountFeeValue = new PdfPCell(new Paragraph(String.valueOf(totalDiscount)));
+			PdfPCell discountFeeValue = new PdfPCell(new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(totalDiscount.get()))));
 			discountFeeValue.setBorder(Rectangle.NO_BORDER);
 			discountFeeValue.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(discountFeeValue);
 
-			/* GROSS AMOUNT */
+			/* GROSS AMOUNT WITHOUT DISCOUNT */
 			productDetailsTable.addCell(blankCell);
 			productDetailsTable.addCell(blankCell);
-			productDetailsTable.addCell(blankCell);
+			/*productDetailsTable.addCell(blankCell);*/
 
-			PdfPCell grossAmount = new PdfPCell(new Paragraph("Gross Amount"));
+			PdfPCell grossAmount = new PdfPCell(new Paragraph("Total Amount"));
 			grossAmount.setBorder(Rectangle.NO_BORDER);
 			grossAmount.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(grossAmount);
 
-			PdfPCell grossAmountValue = new PdfPCell(new Paragraph(String.valueOf(orderInfoBo.getAmount())));
+			PdfPCell grossAmountValue = new PdfPCell(new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(totalAmount.get() + orderInfoBo.getSmeBo().getDeliveryCharges() + totalDiscount.get()))));
 			grossAmountValue.setBorder(Rectangle.NO_BORDER);
 			grossAmountValue.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(grossAmountValue);
+
+
+			/* GROSS AMOUNT WITH DISCOUNT */
+			productDetailsTable.addCell(blankCell);
+			productDetailsTable.addCell(blankCell);
+			/*productDetailsTable.addCell(blankCell);*/
+
+			PdfPCell payableAmount = new PdfPCell(new Paragraph("Payable Amount"));
+			payableAmount.setBorder(Rectangle.NO_BORDER);
+			payableAmount.setHorizontalAlignment(Element.ALIGN_CENTER);
+			productDetailsTable.addCell(payableAmount);
+
+			PdfPCell payableAmountValue = new PdfPCell(new Paragraph("Rs. " + (this.helper.roundOff(totalAmount.get() + orderInfoBo.getSmeBo().getDeliveryCharges()))));
+			payableAmountValue.setBorder(Rectangle.NO_BORDER);
+			payableAmountValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+			productDetailsTable.addCell(payableAmountValue);
 
 			document.add(productDetailsTable);
 

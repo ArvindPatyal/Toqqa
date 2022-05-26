@@ -26,6 +26,11 @@ public class DeliveryAddressBo {
 
 	private String phoneNumber;
 
+	private String latitude;
+
+	private String longitude;
+
+
 	public DeliveryAddressBo(DeliveryAddress address) {
 
 		this.address = address.getAddress();
@@ -35,6 +40,8 @@ public class DeliveryAddressBo {
 		this.country = address.getCountry();
 		this.phoneNumber = address.getPhoneNumber();
 		this.id = address.getId();
+		this.latitude = address.getLatitude();
+		this.longitude = address.getLongitude();
 	}
 
 }

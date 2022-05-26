@@ -30,4 +30,10 @@ public class DeliveryAddressUpdate {
 
 	@NotNull
 	private String deliveryAddressId;
+
+	@NotNull
+	private String latitude;
+
+	@NotNull
+	private String longitude;
 }

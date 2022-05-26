@@ -28,6 +28,10 @@ public class DeliveryAddress {
 
 	private String phoneNumber;
 
+	private String latitude;
+
+	private String longitude;
+
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
