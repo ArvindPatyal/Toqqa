@@ -37,6 +37,8 @@ public class SmeBo {
 	private String regDoc;
 	private String idProof;
 	private String userId;
+	private String latitude;
+    private String longitude;
 	private Boolean isFavSme=false;
 
 	public SmeBo(Sme sme) {
@@ -59,6 +61,8 @@ public class SmeBo {
 		this.idProof = sme.getIdProof();
 		this.businessAddress = sme.getBusinessAddress();
 		this.userId = sme.getUserId();
+		this.latitude=sme.getLatitude();
+		this.longitude=sme.getLongitude();
 		sme.getBusinessCatagory().forEach(category -> businessCatagories.add(new CategoryBo(category)));
 		sme.getBusinessSubCatagory().forEach(subCategory -> businessSubCatagories.add(new SubCategoryBo(subCategory)));
 	}

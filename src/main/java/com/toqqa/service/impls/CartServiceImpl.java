@@ -1,5 +1,6 @@
 package com.toqqa.service.impls;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,13 +76,8 @@ public class CartServiceImpl implements CartService {
 		List<CartItem> cartItem = cart.getCartItems();
 		List<CartItemBo> itemBo = new ArrayList<>();
 		CartBo cartBo = new CartBo(cart, itemBo);
-		Double prc = 0.0;
-		Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+		Double prc = 0.0d;
 		for (CartItem ci : cartItem) {
-			/*ProductBo prdBo = new ProductBo(ci.getProduct(),
-					this.helper.prepareProductAttachments(ci.getProduct().getAttachments()));
-			prdBo.setBanner(this.helper.prepareAttachmentResource(ci.getProduct().getBanner()));
-			prdBo.setIsInWishList(this.wishlistService.isWishListItem(prdBo, wishlist));*/
 			ProductBo prdBo = this.productService.toProductBo(ci.getProduct());
 			CartItemBo cartItemBo = new CartItemBo(ci, prdBo);
 			itemBo.add(cartItemBo);
@@ -89,8 +85,8 @@ public class CartServiceImpl implements CartService {
 			Double price = product.getPricePerUnit() * ci.getQuantity()
 					- ((product.getPricePerUnit() * ci.getQuantity()) / 100) * product.getDiscount();
 
-			prc = prc + price;
-			cartBo.setSubTotal(prc);
+			prc =  prc + price;
+			cartBo.setSubTotal(this.helper.roundOff(prc));
 		}
 
 		bo.getData().forEach(productBo -> {
