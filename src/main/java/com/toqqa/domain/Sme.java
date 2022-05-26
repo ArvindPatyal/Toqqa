@@ -51,5 +51,7 @@ public class Sme {
     private String regDoc;
     private String idProof;
     private String userId;
+    private String latitude;
+    private String longitude;
 
 }

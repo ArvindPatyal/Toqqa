@@ -21,9 +21,6 @@ public class SmeRegistration {
 	private String businessAddress;
 
 	@NotNull
-	private String street;
-
-	@NotNull
 	private String city;
 
 	@NotNull
@@ -66,5 +63,11 @@ public class SmeRegistration {
 
 	@NotNull
 	private MultipartFile idProof;
+
+	@NotNull
+	private String latitude;
+
+	@NotNull
+	private String longitude;
 
 }
