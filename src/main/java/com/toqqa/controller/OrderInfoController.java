@@ -27,9 +27,9 @@ public class OrderInfoController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = ""),
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/placeOrder")
-    public Response<OrderInfoBo> placeOrder(@RequestBody @Valid OrderPayload orderPayload) {
+    public Response placeOrder(@RequestBody @Valid OrderPayload orderPayload) {
         log.info("Inside controller add order");
-        return new Response<OrderInfoBo>(this.orderInfoService.placeOrder(orderPayload), "success");
+        return this.orderInfoService.placeOrder(orderPayload);
     }
 
     @ApiOperation(value = "Returns Product data by given id")
