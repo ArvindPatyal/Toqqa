@@ -59,7 +59,7 @@ public class OrderInfo {
     private PaymentConstants paymentType;
 
     @ManyToOne
-    @JoinColumn(updatable = false)
+    @JoinColumn(name = "sme_id")
     private Sme sme;
 
 }

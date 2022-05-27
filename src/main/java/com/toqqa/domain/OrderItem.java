@@ -21,8 +21,13 @@ public class OrderItem {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     private Integer quantity;
-    
+
+    private Double pricePerUnit;
+
+    private Double discount;
+
     private Double price;
+
 
     @ManyToOne
     @JoinColumn(name = "order_id")

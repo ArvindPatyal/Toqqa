@@ -1,9 +1,6 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.OrderInfoBo;
-import com.toqqa.bo.OrderItemBo;
-import com.toqqa.bo.PaginationBo;
-import com.toqqa.bo.SmeBo;
+import com.toqqa.bo.*;
 import com.toqqa.constants.OrderConstants;
 import com.toqqa.constants.PaymentConstants;
 import com.toqqa.domain.*;
@@ -13,10 +10,7 @@ import com.toqqa.payload.OrderItemPayload;
 import com.toqqa.payload.OrderPayload;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.*;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.EmailService;
-import com.toqqa.service.InvoiceService;
-import com.toqqa.service.OrderInfoService;
+import com.toqqa.service.*;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,38 +52,13 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     private CartRepository cartRepository;
     @Autowired
     private SmeRepository smeRepository;
+    @Autowired
+    private ProductService productService;
 
-//    @Override
-//    public OrderInfoBo placeOrder(OrderPayload orderPayload) {
-//        log.info("Inside Add OrderInfo");
-//        User user = this.authenticationService.currentUser();
-//        OrderInfo orderInfo = new OrderInfo();
-//        orderInfo.setAmount(orderPayload.getAmount());
-//        orderInfo.setEmail(orderPayload.getEmail());
-//        orderInfo.setPhone(orderPayload.getPhone());
-//        orderInfo.setFirstName(orderPayload.getFirstName());
-//        orderInfo.setLastName(orderPayload.getLastName());
-//        orderInfo.setAddress(this.addressRepo.findById(orderPayload.getAddressId()).get());
-//        orderInfo.setUser(user);
-//        orderInfo.setOrderStatus(OrderConstants.ORDER_PLACED.getValue());
-//        orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
-//        orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
-//        orderInfo.setOrderItems(this.persistOrderItems(orderPayload.getItems(), orderInfo));
-//        OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo));
-//
-//        this.cartRepository.deleteByUser(user);
-//        this.invoiceService.generateInvoice(bo, user);
-//        if (orderInfo.getEmail() != null) {
-//            this.emailService.sendOrderEmail(orderInfo);
-//        } else {
-//            // TODO handle else case in future
-//        }
-//        return bo;
-//    }
-//
 
     @Override
     public Response placeOrder(OrderPayload orderPayload) {
+        log.info("Inside Service placeOrder");
         User user = this.authenticationService.currentUser();
         Set<String> sellerIds = new HashSet<>();
         orderPayload.getItems().forEach(orderItemPayload -> sellerIds.add(orderItemPayload.getSellerUserId()));
@@ -99,13 +68,11 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             AtomicReference<Double> orderAmount = new AtomicReference<>(0.0);
             AtomicReference<Double> shippingFee = new AtomicReference<>(0.0);
             orderItems.forEach(orderItemPayload -> {
-                orderAmount.set(orderAmount.get() + (orderItemPayload.getPrice() * orderItemPayload.getQuantity()));
                 shippingFee.set(orderItemPayload.getShippingFee());
             });
             Sme sme = this.smeRepository.findByUserId(s);
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setSme(sme);
-            orderInfo.setAmount(orderAmount.get());
             orderInfo.setEmail(orderPayload.getEmail());
             orderInfo.setPhone(orderPayload.getPhone());
             orderInfo.setFirstName(orderPayload.getFirstName());
@@ -116,14 +83,18 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             orderInfo.setOrderStatus(OrderConstants.ORDER_PLACED.getValue());
             orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
             orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
-            orderInfo.setOrderItems(this.persistOrderItems(orderItems, orderInfo));
+
+            List<OrderItem> orderItemList = this.persistOrderItems(orderItems, orderInfo);
+            orderInfo.setOrderItems(orderItemList);
+            orderItemList.forEach(orderItem -> orderAmount.set(orderAmount.get() + orderItem.getPrice()));
+            orderInfo.setAmount(orderAmount.get());
+            this.orderInfoRepo.saveAndFlush(orderInfo);
             SmeBo smeBo = new SmeBo(sme);
             OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
-
-//            bo.setSmeBo(smeBo);
-
-
             this.invoiceService.generateInvoice(bo, user);
+          /*  if (orderInfo.getEmail() != null) {
+                this.emailService.sendOrderEmail(orderInfo);
+            }*/
         });
         this.cartRepository.deleteByUser(user);
         return new Response<>("true", "order placed successfully");
@@ -131,33 +102,38 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
     private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
         log.info("persist OrderItems");
-        List<OrderItem> oItems = new ArrayList<OrderItem>();
+        List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
         for (OrderItemPayload item : orderItems) {
-            OrderItem parent = new OrderItem();
-
-            parent.setPrice(item.getPrice());
-            if (!this.helper.notNullAndBlank(item.getProductId())) {
+            OrderItem orderItem = new OrderItem();
+            Product product = this.productRepo.findById(item.getProductId()).get();
+            if (product == null) {
                 throw new BadRequestException("invalid product id " + item.getProductId());
             }
-            Product product = this.productRepo.findById(item.getProductId()).get();
-//            parent.setDiscount(product.getDiscount());
-            parent.setProduct(product);
-            parent.setQuantity(item.getQuantity());
-            parent.setOrderInfo(order);
-            parent = this.orderItemRepo.saveAndFlush(parent);
-            oItems.add(parent);
+            orderItem.setDiscount(product.getDiscount());
+            orderItem.setPricePerUnit(product.getPricePerUnit());
+            orderItem.setProduct(product);
+            orderItem.setQuantity(item.getQuantity());
+            orderItem.setOrderInfo(order);
+            orderItem.setPrice((product.getPricePerUnit() * item.getQuantity()) - (product.getPricePerUnit() * product.getDiscount() * orderItem.getQuantity()) / 100);
+            orderItem = this.orderItemRepo.saveAndFlush(orderItem);
+            orderItemsList.add(orderItem);
         }
-        return oItems;
+        return orderItemsList;
     }
 
     private List<OrderItemBo> fetchOrderItems(OrderInfo orderInfo) {
         log.info("fetch OrderItems");
-        List<OrderItem> items = this.orderItemRepo.findByOrderInfo(orderInfo);
-        List<OrderItemBo> itemBos = new ArrayList<OrderItemBo>();
-        items.forEach(item -> {
-            itemBos.add(new OrderItemBo(item));
+
+        List<OrderItem> orderItems = this.orderItemRepo.findByOrderInfo(orderInfo);
+        List<OrderItemBo> orderItemBos = new ArrayList<OrderItemBo>();
+        orderItems.forEach(orderItem -> {
+            ProductBo productBo = this.productService.toProductBo(orderItem.getProduct());
+            productBo.setPricePerUnit(orderItem.getPricePerUnit());
+            productBo.setDiscount(orderItem.getDiscount());
+            OrderItemBo orderItemBo = new OrderItemBo(orderItem, productBo);
+            orderItemBos.add(orderItemBo);
         });
-        return itemBos;
+        return orderItemBos;
     }
 
     @Override
@@ -185,16 +161,14 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
         }
         List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
-        allOrders.forEach(orderInfo ->
-        {
+        allOrders.forEach(orderInfo -> {
             Sme sme = orderInfo.getSme();
             SmeBo smeBo = new SmeBo(sme);
             OrderInfoBo orderInfoBo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
             orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderInfo.getId(), user.getId()));
             bos.add(orderInfoBo);
         });
-        return new ListResponseWithCount<OrderInfoBo>(bos, "", allOrders.getTotalElements(),
-                paginationBo.getPageNumber(), allOrders.getTotalPages());
+        return new ListResponseWithCount<OrderInfoBo>(bos, "", allOrders.getTotalElements(), paginationBo.getPageNumber(), allOrders.getTotalPages());
     }
 
     @Override

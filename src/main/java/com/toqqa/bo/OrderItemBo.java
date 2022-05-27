@@ -12,20 +12,24 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OrderItemBo {
 
-	private String id;
-	private Integer quantity;
-	private Double price;
-	private ProductBo product;
-	//	private Double discount;
+    private String id;
+    private Integer quantity;
+    private Double pricePerUnit;
+    private Double discount;
+    private ProductBo product;
 
-	public OrderItemBo(OrderItem orderItem) {
+    private Double price;
 
-		this.id = orderItem.getId();
-		this.quantity = orderItem.getQuantity();
-		this.price = orderItem.getPrice();
-		this.product = new ProductBo(orderItem.getProduct());
-//		this.discount=orderItem.getDiscount();
+    public OrderItemBo(OrderItem orderItem, ProductBo productBo) {
 
-	}
+        this.id = orderItem.getId();
+        this.quantity = orderItem.getQuantity();
+        this.pricePerUnit = orderItem.getPricePerUnit();
+        this.product = productBo;
+        this.discount = orderItem.getDiscount();
+        this.price = orderItem.getPrice();
+
+
+    }
 
 }
