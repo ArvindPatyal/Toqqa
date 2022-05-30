@@ -222,12 +222,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 
 				PdfPCell cell3 = new PdfPCell(
-						new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(orderItemBo.getProduct().getPricePerUnit()))));
+						new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(orderItemBo.getPricePerUnit()))));
 				cell3.setHorizontalAlignment(Element.ALIGN_CENTER);
 				cell3.setBackgroundColor(BaseColor.WHITE);
 				productDetailsTable.addCell(cell3);
 
-				Double discount = (orderItemBo.getProduct().getDiscount() * orderItemBo.getProduct().getPricePerUnit()) / 100;
+				Double discount = (orderItemBo.getProduct().getDiscount() * orderItemBo.getPricePerUnit()) / 100;
 				totalDiscount.set(totalDiscount.get() + (discount * orderItemBo.getQuantity()));
 				/*PdfPCell cell4 = new PdfPCell(
 						new Paragraph(String.valueOf(discount)));
@@ -236,7 +236,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 				productDetailsTable.addCell(cell4);*/
 
 
-				double productAmt = (orderItemBo.getProduct().getPricePerUnit() * orderItemBo.getQuantity()) - (discount * orderItemBo.getQuantity());
+				double productAmt = (orderItemBo.getPricePerUnit() * orderItemBo.getQuantity()) - (discount * orderItemBo.getQuantity());
 				totalAmount.set(totalAmount.get() + productAmt);
 				PdfPCell cell5 = new PdfPCell(
 						new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(productAmt))));
@@ -290,7 +290,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			grossAmount.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(grossAmount);
 
-			PdfPCell grossAmountValue = new PdfPCell(new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(totalAmount.get() + orderInfoBo.getSmeBo().getDeliveryCharges() + totalDiscount.get()))));
+			PdfPCell grossAmountValue = new PdfPCell(new Paragraph("Rs. " + String.valueOf(this.helper.roundOff(totalAmount.get() + orderInfoBo.getShippingFee() + totalDiscount.get()))));
 			grossAmountValue.setBorder(Rectangle.NO_BORDER);
 			grossAmountValue.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(grossAmountValue);
@@ -306,7 +306,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			payableAmount.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(payableAmount);
 
-			PdfPCell payableAmountValue = new PdfPCell(new Paragraph("Rs. " + (this.helper.roundOff(totalAmount.get() + orderInfoBo.getSmeBo().getDeliveryCharges()))));
+			PdfPCell payableAmountValue = new PdfPCell(new Paragraph("Rs. " + (this.helper.roundOff(totalAmount.get() + orderInfoBo.getShippingFee()))));
 			payableAmountValue.setBorder(Rectangle.NO_BORDER);
 			payableAmountValue.setHorizontalAlignment(Element.ALIGN_CENTER);
 			productDetailsTable.addCell(payableAmountValue);
