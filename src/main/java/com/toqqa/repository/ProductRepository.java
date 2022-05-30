@@ -18,7 +18,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 	Page<Product> findByUserAndIsDeleted(Pageable pageRequest, User user, Boolean isDeleted);
 
 	Page<Product> findByIsDeleted(Pageable pageRequest, Boolean isDeleted);
-	
+
 	Page<Product> findByUser_IdAndIsDeleted(Pageable pageRequest, String userId, Boolean isDeleted);
 
 	Page<Product> findByProductCategories_IdInAndIsDeletedAndUser_Id(Pageable pageRequest, List<String> categoryId,
@@ -41,4 +41,11 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 			String nameParam, String descParam);
 
 	Page<Product> findByProductCategories_IdAndIsDeleted(Pageable pageRequest, String categoryId, Boolean isDeleted);
+
+	Page<Product> findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
+			List<String> categoryId, Boolean isDeleted, Pageable pageRequest, Integer minimumUnitsInOneOrder);
+
+	Page<Product> findByIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(Boolean isDeleted, Pageable pageRequest,
+			Integer minimumUnitsInOneOrder);
+
 }

@@ -20,4 +20,6 @@ public class CustomerProductRequest extends PaginationBo{
 //	@NotNull
 	private List<String> productCategoryIds;
 	
+	private Boolean showBulkProducts=true;
+	
 }
