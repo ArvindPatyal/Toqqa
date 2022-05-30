@@ -45,7 +45,7 @@ public class RegistrationController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/sme")
-	public Response<?> smeRegistration(@ModelAttribute @Valid SmeRegistrationPayload smeRegistration) {
+	public Response<?> smeRegistration(@Valid @ModelAttribute SmeRegistrationPayload smeRegistration) {
 		log.info("Inside controller sme registration");
 		return this.registrationService.registerSme(smeRegistration);
 	}

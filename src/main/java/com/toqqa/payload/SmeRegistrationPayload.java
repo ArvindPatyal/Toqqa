@@ -1,10 +1,11 @@
 package com.toqqa.payload;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -13,7 +14,8 @@ public class SmeRegistrationPayload {
 
 	@NotNull
 	private UserSignUp userSignUp;
-	@NotNull
+	@Valid
 	private SmeRegistration smeRegistration;
+	
 
 }
