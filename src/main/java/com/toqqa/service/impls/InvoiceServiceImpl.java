@@ -63,7 +63,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			blankCell.setBorder(Rectangle.NO_BORDER);
 
 			/* TOQQA LOGO */
-			Image logo = Image.getInstance("src/main/resources/Images/TOQQALOGO.png");
+			Image logo = Image.getInstance("classpath:images/TOQQALOGO.png");
 			logo.setAbsolutePosition(35, 750);
 			logo.scaleAbsolute(150, 90);
 //            PdfPCell logoCell = new PdfPCell(logo);

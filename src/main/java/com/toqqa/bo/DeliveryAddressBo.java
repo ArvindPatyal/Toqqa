@@ -26,9 +26,9 @@ public class DeliveryAddressBo {
 
 	private String phoneNumber;
 
-	private String latitude;
+	private Double latitude;
 
-	private String longitude;
+	private Double longitude;
 
 
 	public DeliveryAddressBo(DeliveryAddress address) {

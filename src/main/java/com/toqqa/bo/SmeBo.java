@@ -37,8 +37,8 @@ public class SmeBo {
 	private String regDoc;
 	private String idProof;
 	private String userId;
-	private String latitude;
-    private String longitude;
+	private Double latitude;
+    private Double longitude;
 	private Boolean isFavSme=false;
 
 	public SmeBo(Sme sme) {

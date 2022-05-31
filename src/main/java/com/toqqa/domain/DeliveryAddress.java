@@ -28,9 +28,9 @@ public class DeliveryAddress {
 
 	private String phoneNumber;
 
-	private String latitude;
+	private Double latitude;
 
-	private String longitude;
+	private Double longitude;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")

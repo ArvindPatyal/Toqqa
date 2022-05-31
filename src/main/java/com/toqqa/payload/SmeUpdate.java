@@ -65,8 +65,8 @@ public class SmeUpdate {
 	private MultipartFile idProof;
 
 	@NotNull
-	private String latitude;
+	private Double latitude;
 
 	@NotNull
-	private String longitude;
+	private Double longitude;
 }

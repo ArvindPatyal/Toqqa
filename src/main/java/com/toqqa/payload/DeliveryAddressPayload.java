@@ -28,9 +28,9 @@ public class DeliveryAddressPayload {
 	private String phoneNumber;
 
 	@NotNull
-	private String latitude;
+	private Double latitude;
 
 	@NotNull
-	private String longitude;
+	private Double longitude;
 
 }
