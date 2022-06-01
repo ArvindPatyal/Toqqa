@@ -35,7 +35,7 @@ public class OrderInfoBo {
 
 		this.id = orderInfo.getId();
 		this.createdDate = orderInfo.getCreatedDate();
-		this.orderStatus = orderInfo.getOrderStatus();
+		this.orderStatus = orderInfo.getOrderStatus()!=null?orderInfo.getOrderStatus().name():"";
 		this.amount = orderInfo.getAmount();
 		this.orderItemBo = orderItemBo;
 		this.email = orderInfo.getEmail();

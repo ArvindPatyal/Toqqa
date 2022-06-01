@@ -1,6 +1,7 @@
 package com.toqqa.domain;
 
 
+import com.toqqa.constants.OrderConstants;
 import com.toqqa.constants.PaymentConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,7 +44,8 @@ public class OrderInfo {
 
     private String phone;
 
-    private String orderStatus;
+    @Enumerated(EnumType.STRING)
+    private OrderConstants orderStatus;
 
     private double shippingFee;
 
