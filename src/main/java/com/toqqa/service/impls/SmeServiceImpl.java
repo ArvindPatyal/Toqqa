@@ -37,6 +37,8 @@ import com.toqqa.repository.SubcategoryRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.FavouriteService;
+import com.toqqa.service.InvoiceService;
+import com.toqqa.service.OrderInfoService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
@@ -65,6 +67,13 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	private StorageService storageService;
+
+	@Autowired
+	private OrderInfoService orderService;
+
+	@Autowired
+
+	private InvoiceService invoiceService;
 
 	@Autowired
 	private Helper helper;
