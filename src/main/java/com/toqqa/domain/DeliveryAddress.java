@@ -32,6 +32,8 @@ public class DeliveryAddress {
 
 	private Double longitude;
 
+	private Boolean isCurrentAddress;
+
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
