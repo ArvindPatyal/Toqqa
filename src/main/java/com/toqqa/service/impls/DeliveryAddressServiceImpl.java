@@ -4,6 +4,7 @@ import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.domain.DeliveryAddress;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
 import com.toqqa.payload.Response;
@@ -29,7 +30,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Autowired
     private Helper helper;
     @Autowired
-    private DeliveryAddressRepository addressRepo;
+    private DeliveryAddressRepository deliveryAddressRepository;
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -37,10 +38,15 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     public DeliveryAddressBo createAddress(DeliveryAddressPayload addressPayload) {
 
         log.info("Inside Add address");
-
+        User user = this.authenticationService.currentUser();
+        List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(user.getId());
         DeliveryAddress deliveryAddress = new DeliveryAddress();
-
-        deliveryAddress.setUser(this.authenticationService.currentUser());
+        if (deliveryAddresses.isEmpty()) {
+            deliveryAddress.setIsCurrentAddress(true);
+        } else {
+            deliveryAddress.setIsCurrentAddress(false);
+        }
+        deliveryAddress.setUser(user);
         deliveryAddress.setCity(addressPayload.getCity());
         deliveryAddress.setAddress(addressPayload.getAddress());
         deliveryAddress.setPostCode(addressPayload.getPostCode());
@@ -56,40 +62,40 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
                 throw new BadRequestException("Enter a valid phone number");
             }
         } else throw new BadRequestException("Enter a valid phone number");
-        deliveryAddress = this.addressRepo.saveAndFlush(deliveryAddress);
+        deliveryAddress = this.deliveryAddressRepository.saveAndFlush(deliveryAddress);
         return new DeliveryAddressBo(deliveryAddress);
 
 
     }
 
     @Override
-    public DeliveryAddressBo updateAddress(DeliveryAddressUpdate addresstUpdate) {
+    public DeliveryAddressBo updateAddress(DeliveryAddressUpdate addressUpdate) {
 
         log.info("inside update address");
 
-        DeliveryAddress deliveryAddress = this.addressRepo.findById(addresstUpdate.getDeliveryAddressId()).get();
-        deliveryAddress.setCity(addresstUpdate.getCity());
-        deliveryAddress.setAddress(addresstUpdate.getAddress());
-        deliveryAddress.setPostCode(addresstUpdate.getPostCode());
-        deliveryAddress.setState(addresstUpdate.getState());
-        deliveryAddress.setCountry(addresstUpdate.getCountry());
-        deliveryAddress.setLongitude(addresstUpdate.getLongitude());
-        deliveryAddress.setLatitude(addresstUpdate.getLatitude());
-        if (this.helper.notNullAndBlank(addresstUpdate.getPhoneNumber())) {
-            if (this.helper.isValidNumber(addresstUpdate.getPhoneNumber())) {
-                deliveryAddress.setPhoneNumber(addresstUpdate.getPhoneNumber());
+        DeliveryAddress deliveryAddress = this.deliveryAddressRepository.findById(addressUpdate.getDeliveryAddressId()).get();
+        deliveryAddress.setCity(addressUpdate.getCity());
+        deliveryAddress.setAddress(addressUpdate.getAddress());
+        deliveryAddress.setPostCode(addressUpdate.getPostCode());
+        deliveryAddress.setState(addressUpdate.getState());
+        deliveryAddress.setCountry(addressUpdate.getCountry());
+        deliveryAddress.setLongitude(addressUpdate.getLongitude());
+        deliveryAddress.setLatitude(addressUpdate.getLatitude());
+        if (this.helper.notNullAndBlank(addressUpdate.getPhoneNumber())) {
+            if (this.helper.isValidNumber(addressUpdate.getPhoneNumber())) {
+                deliveryAddress.setPhoneNumber(addressUpdate.getPhoneNumber());
             } else {
                 throw new BadRequestException("Enter a valid phone number");
             }
         } else throw new BadRequestException("Enter a valid phone number");
-        deliveryAddress = this.addressRepo.saveAndFlush(deliveryAddress);
+        deliveryAddress = this.deliveryAddressRepository.saveAndFlush(deliveryAddress);
         return new DeliveryAddressBo(deliveryAddress);
     }
 
     @Override
     public DeliveryAddressBo fetchAddress(String id) {
         log.info("Inside fetch Address");
-        Optional<DeliveryAddress> address = this.addressRepo.findById(id);
+        Optional<DeliveryAddress> address = this.deliveryAddressRepository.findById(id);
         if (address.isPresent()) {
             return new DeliveryAddressBo(address.get());
         } else {
@@ -102,11 +108,11 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
         log.info("inside delete address");
 
-        Optional<DeliveryAddress> da = this.addressRepo.findById(id);
+        Optional<DeliveryAddress> da = this.deliveryAddressRepository.findById(id);
 
         if (da.isPresent()) {
 
-            this.addressRepo.deleteById(id);
+            this.deliveryAddressRepository.deleteById(id);
         } else {
             throw new BadRequestException("invalid address id: " + id);
         }
@@ -116,7 +122,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     public Response fetchAddressList() {
         log.info("Inside Service fetchAddress List");
         User user = this.authenticationService.currentUser();
-        List<DeliveryAddress> deliveryAddresses = this.addressRepo.findByUser_Id(user.getId());
+        List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(user.getId());
         if (!(this.helper.notNullAndHavingData(deliveryAddresses))) {
             return new Response("", "No added addresses found for this user");
         } else {
@@ -128,6 +134,29 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
             });
             return new Response(deliveryAddressBos, "addresses fetched");
         }
+    }
+
+    @Override
+    public Response currentOrder(String addressId) {
+        log.info("");
+        String userId = this.authenticationService.currentUser().getId();
+        List<DeliveryAddress> addressList = new ArrayList<>();
+        List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(userId);
+        Boolean isExists = deliveryAddresses.stream().anyMatch(deliveryAddress -> deliveryAddress.getId().equals(addressId));
+        if (!isExists) {
+            throw new ResourceNotFoundException("Address Not found with id " + addressId);
+        }
+        deliveryAddresses.forEach(deliveryAddress -> {
+
+            if (deliveryAddress.getId().equals(addressId)) {
+                deliveryAddress.setIsCurrentAddress(true);
+            } else {
+                deliveryAddress.setIsCurrentAddress(false);
+            }
+            addressList.add(deliveryAddress);
+        });
+        this.deliveryAddressRepository.saveAllAndFlush(addressList);
+        return new Response(true, "current Address updated");
     }
 
 }

@@ -30,6 +30,8 @@ public class DeliveryAddressBo {
 
 	private Double longitude;
 
+	private Boolean isCurrentAddress;
+
 
 	public DeliveryAddressBo(DeliveryAddress address) {
 
@@ -40,6 +42,7 @@ public class DeliveryAddressBo {
 		this.country = address.getCountry();
 		this.phoneNumber = address.getPhoneNumber();
 		this.id = address.getId();
+		this.isCurrentAddress = address.getIsCurrentAddress();
 		this.latitude = address.getLatitude();
 		this.longitude = address.getLongitude();
 	}

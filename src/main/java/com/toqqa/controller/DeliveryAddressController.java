@@ -68,4 +68,14 @@ public class DeliveryAddressController {
 
 		return this.deliveryAddressService.fetchAddressList();
 	}
+
+	@ApiOperation(value = "update Current Address ")
+	@ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
+	@PutMapping("/current/{addressId}")
+	public Response currentAddress(@PathVariable @Valid String addressId) {
+		log.info("Inside Controller current address update");
+		return this.deliveryAddressService.currentOrder(addressId);
+	}
+
+
 }

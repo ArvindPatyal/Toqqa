@@ -9,7 +9,7 @@ public interface DeliveryAddressService {
 
 	DeliveryAddressBo createAddress(DeliveryAddressPayload addressPayload);
 
-	DeliveryAddressBo updateAddress(DeliveryAddressUpdate addresstUpdate);
+	DeliveryAddressBo updateAddress(DeliveryAddressUpdate addressUpdate);
 
 	DeliveryAddressBo fetchAddress(String id);
 
@@ -17,4 +17,5 @@ public interface DeliveryAddressService {
 
 	Response fetchAddressList();
 
+	Response currentOrder(String addressId);
 }
