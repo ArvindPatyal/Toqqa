@@ -1,7 +1,16 @@
 package com.toqqa.service;
 
+import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.SmeBo;
-import com.toqqa.payload.*;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.payload.ListResponse;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.OrderStatusUpdatePayload;
+import com.toqqa.payload.ProductRequestFilter;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.SmeRegistration;
+import com.toqqa.payload.SmeUpdate;
+import com.toqqa.payload.ToggleOrdersStatus;
 
 public interface SmeService {
 	SmeBo smeRegistration(SmeRegistration smeRegistration, String userId);
@@ -10,10 +19,11 @@ public interface SmeService {
 
 	SmeBo fetchSme(String id);
 
-	//    ListResponseWithCount<SmeBo> fetchSmeList(PaginationBo bo);
+	// ListResponseWithCount<SmeBo> fetchSmeList(PaginationBo bo);
 	ListResponse<SmeBo> fetchSmeListWithoutPagination();
 
 	ListResponseWithCount fetchProductsList(ProductRequestFilter productRequestFilter);
 
 	ListResponseWithCount fetchProducts(ProductRequestFilter productRequestFilter);
+
 }
