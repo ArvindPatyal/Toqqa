@@ -2,6 +2,7 @@ package com.toqqa.controller;
 
 import com.toqqa.bo.AdvertisementBo;
 import com.toqqa.dto.CustomResponseDto;
+import com.toqqa.dto.NearbySmeRespDto;
 import com.toqqa.payload.CustomerProductRequest;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
@@ -83,7 +84,7 @@ public class CustomerController extends BaseController{
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@GetMapping("/nearby-sme")
-	public CustomResponseDto getNearbySme() {
+	public ListResponse<NearbySmeRespDto> getNearbySme() {
 		log.info("Invoked :: CustomerController :: getNearbySme()");
 		return doSuccessResponse(smeService.getNearbySme(),Constants.MSG_DATA_PROCESSED);
 	}

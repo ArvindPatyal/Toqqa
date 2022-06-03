@@ -1,22 +1,18 @@
 package com.toqqa.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
 import com.toqqa.dto.CustomResponseDto;
+import com.toqqa.payload.ListResponse;
 
 @Component
 public class BaseController {
 	
-	public CustomResponseDto doSuccessResponse(Object object, String message) {
-		CustomResponseDto response = new CustomResponseDto();
-		response.setStatus(HttpStatus.OK);
-		response.setData(object);
-		response.setMessage(message);
-		return response;
-	}
-
-	public CustomResponseDto doSuccessResponse(Object object) {
-		CustomResponseDto response = doSuccessResponse(object, null);
+	public <T> ListResponse<T> doSuccessResponse(List<T> object, String message) {
+		ListResponse<T> response = new ListResponse<>(object,message);
 		return response;
 	}
 
@@ -28,9 +24,5 @@ public class BaseController {
 		return response;
 	}
 
-	public CustomResponseDto doSuccessResponse(String message) {
-		CustomResponseDto response = doSuccessResponse(null, message);
-		return response;
-	}
 
 }

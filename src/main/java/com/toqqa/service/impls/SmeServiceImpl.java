@@ -339,7 +339,8 @@ public class SmeServiceImpl implements SmeService {
 							deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
 
 					if (distance <= Constants.MIN_DISTANCE) {
-						dtoList.add(bindResult(smeObj));
+						dtoList.add(new NearbySmeRespDto(smeObj.getId(), smeObj.getNameOfBusiness(), 
+								smeObj.getBusinessAddress(),smeObj.getLatitude(),smeObj.getLongitude()));
 					}
 				}
 			}
@@ -362,16 +363,6 @@ public class SmeServiceImpl implements SmeService {
 		distance = distance * 60 * 1.1515;
 		distance = distance * 1.609344;
 		return (int) distance;
-	}
-
-	private NearbySmeRespDto bindResult(Sme smeObj) {
-		log.info("Invoked :: SmeServiceImpl :: computeDistance()");
-
-		NearbySmeRespDto dtoObj = new NearbySmeRespDto();
-		dtoObj.setId(smeObj.getId());
-		dtoObj.setNameOfBusiness(smeObj.getNameOfBusiness());
-		dtoObj.setBusinessAddress(smeObj.getBusinessAddress());
-		return dtoObj;
 	}
 
 }
