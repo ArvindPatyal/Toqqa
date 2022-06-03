@@ -254,7 +254,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			orderBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderBo.getId(), userid));
 			list.add(orderBo);
 		});
-		return new ListResponseWithCount<OrderInfoBo>(list, "", orderInfo.getTotalElements(),
+		return new ListResponseWithCount<OrderInfoBo>(list, " ", orderInfo.getTotalElements(),
 				toggleOrdersStatus.getPageNumber(), orderInfo.getTotalPages());
 
 	}

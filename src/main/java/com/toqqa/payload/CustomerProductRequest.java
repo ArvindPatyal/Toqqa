@@ -2,8 +2,6 @@ package com.toqqa.payload;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import com.toqqa.bo.PaginationBo;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +18,6 @@ public class CustomerProductRequest extends PaginationBo{
 //	@NotNull
 	private List<String> productCategoryIds;
 	
-	private Boolean showBulkProducts=true;
+	private Boolean showBulkProducts=false;
 	
 }

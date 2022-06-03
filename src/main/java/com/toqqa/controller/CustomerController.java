@@ -29,7 +29,7 @@ public class CustomerController {
 	@ApiOperation(value = "fetch product list for customer")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
-	@PostMapping("/productList")
+	@PostMapping("/ptroductLis")
 	public ListResponseWithCount productList(@RequestBody @Valid CustomerProductRequest bo) {
 		log.info("Inside Controller customer productList");
 		return customerService.productList(bo);
