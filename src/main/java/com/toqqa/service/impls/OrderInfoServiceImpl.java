@@ -1,13 +1,18 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
+import com.toqqa.bo.*;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.PaymentConstants;
+import com.toqqa.domain.*;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.*;
+import com.toqqa.repository.*;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.InvoiceService;
+import com.toqqa.service.OrderInfoService;
+import com.toqqa.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -16,39 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.OrderInfoBo;
-import com.toqqa.bo.OrderItemBo;
-import com.toqqa.bo.PaginationBo;
-import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.constants.OrderConstants;
-import com.toqqa.constants.PaymentConstants;
-import com.toqqa.domain.DeliveryAddress;
-import com.toqqa.domain.OrderInfo;
-import com.toqqa.domain.OrderItem;
-import com.toqqa.domain.Product;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.OrderItemPayload;
-import com.toqqa.payload.OrderPayload;
-import com.toqqa.payload.OrderStatusUpdatePayload;
-import com.toqqa.payload.OrderUpdatePayload;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.ToggleOrdersStatus;
-import com.toqqa.repository.CartRepository;
-import com.toqqa.repository.DeliveryAddressRepository;
-import com.toqqa.repository.OrderInfoRepository;
-import com.toqqa.repository.OrderItemRepository;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.SmeRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.InvoiceService;
-import com.toqqa.service.OrderInfoService;
-import com.toqqa.service.ProductService;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -129,23 +104,20 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	}
 
 	@Override
-	public Response<?> updateOrder(OrderUpdatePayload orderUpdatePayload) {
+	public Response updateOrder(String orderId) {
 		log.info("Inside Service UpdateOrder");
-		User user = this.authenticationService.currentUser();
-		OrderInfo orderInfo = this.orderInfoRepo.findByIdAndUser(orderUpdatePayload.getOrderId(), user);
-		if (orderInfo != null) {
-			if (orderUpdatePayload.getIsCancelled() == true) {
-				orderInfo.setOrderStatus(OrderConstants.CANCELED);
-				orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
-
-				return new Response<>(true, "Order cancelled successfully ");
-			} else {
-				return new Response<>(false, "Order status not updated ");
+		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderId);
+		if (optionalOrderInfo.isPresent()) {
+			OrderInfo orderInfo = optionalOrderInfo.get();
+			if (orderInfo.getOrderStatus().ordinal() >= OrderConstants.OUT_FOR_DELIVERY.ordinal()) {
+				throw new BadRequestException("Order cannot be cancelled");
 			}
+			orderInfo.setOrderStatus(OrderConstants.CANCELLED);
+			orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 
+			return new Response<>(true, "Order cancelled successfully ");
 		} else {
-
-			throw new ResourceNotFoundException("Enter valid orderId for this user");
+			throw new ResourceNotFoundException("Order not found with id" + orderId + " Enter a valid orderId");
 		}
 	}
 
@@ -225,11 +197,11 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				paginationBo.getPageNumber(), allOrders.getTotalPages());
 	}
 
-	@Override
+/*	@Override
 	public String orderInvoice(String id) {
 		String userId = this.authenticationService.currentUser().getId();
 		return this.invoiceService.fetchInvoice(id, userId);
-	}
+	}*/
 
 	@Override
 	public ListResponseWithCount<OrderInfoBo> list(ToggleOrdersStatus toggleOrdersStatus) {

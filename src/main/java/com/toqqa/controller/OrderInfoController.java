@@ -2,12 +2,7 @@ package com.toqqa.controller;
 
 import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.PaginationBo;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.OrderPayload;
-import com.toqqa.payload.OrderStatusUpdatePayload;
-import com.toqqa.payload.OrderUpdatePayload;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.ToggleOrdersStatus;
+import com.toqqa.payload.*;
 import com.toqqa.service.OrderInfoService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -35,13 +30,13 @@ public class OrderInfoController {
 		return this.orderInfoService.placeOrder(orderPayload);
 	}
 
-	@ApiOperation(value = "Update Order")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
-			@ApiResponse(code = 400, message = "Bad Request!") })
-	@PostMapping("/updateOrder")
-	public Response<?> updateOrder(@RequestBody @Valid OrderUpdatePayload orderUpdatePayload) {
-		log.info("Inside controller add order");
-		return this.orderInfoService.updateOrder(orderUpdatePayload);
+	@ApiOperation(value = "cancel order")
+	@ApiResponses(value = {@ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!")})
+	@PutMapping("/cancel/{orderId}")
+	public Response<?> updateOrder(@PathVariable @Valid String orderId) {
+		log.info("Inside controller cancel order");
+		return this.orderInfoService.updateOrder(orderId);
 	}
 
 	@ApiOperation(value = "Returns Product data by given id")
@@ -59,11 +54,11 @@ public class OrderInfoController {
 		return this.orderInfoService.fetchOrderList(paginationbo);
 	}
 
-	@GetMapping(value = "/fetchInvoice/{orderId}")
+/*	@GetMapping(value = "/fetchInvoice/{orderId}")
 	public Response fetchInvoice(@PathVariable @Valid String orderId) {
 		log.info("Inside Controller fetch Invoice");
 		return new Response(this.orderInfoService.orderInvoice(orderId), "Invoice Generated");
-	}
+	}*/
 
 	@ApiOperation(value = "Orders list of Customer (Live & Cancelled)")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
@@ -82,10 +77,10 @@ public class OrderInfoController {
 	}
 
 	@ApiOperation(value = "update order status")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
-	@PostMapping("/orderstatus")
+	@ApiResponses(value = {@ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request")})
+	@PostMapping("/updateStatus")
 	public Response orderStatus(@RequestBody @Valid OrderStatusUpdatePayload orderStatusUpdatePayload) {
-		log.info("Inside Controller Sme order items");
+		log.info("Inside Controller update order status");
 		return this.orderInfoService.updateOrderStatus(orderStatusUpdatePayload);
 	}
 }
