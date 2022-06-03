@@ -176,4 +176,11 @@ public class Helper {
 		});
 		return atts;
 	}
+	
+	public double deg2rad(double deg) {
+		return (deg * Math.PI / 180.0);
+	}
+	public double rad2deg(double rad) {
+		return (rad * 180.0 / Math.PI);
+	}
 }

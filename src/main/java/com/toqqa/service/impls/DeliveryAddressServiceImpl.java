@@ -158,5 +158,10 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         this.deliveryAddressRepository.saveAllAndFlush(addressList);
         return new Response(true, "current Address updated");
     }
+    
+    @Override
+    public Optional<DeliveryAddress> getCurrentDelAddress(User user) {
+    	return deliveryAddressRepository.findCurrentDelAddress(user);
+    }
 
 }

@@ -3,6 +3,7 @@ package com.toqqa.service.impls;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,14 @@ import com.toqqa.bo.ProductBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.DeliveryAddress;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
+import com.toqqa.dto.NearbySmeRespDto;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ProductRequestFilter;
@@ -45,6 +49,7 @@ import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
+import com.toqqa.util.Constants;
 
 @Service
 @Slf4j
@@ -69,13 +74,6 @@ public class SmeServiceImpl implements SmeService {
 	private StorageService storageService;
 
 	@Autowired
-	private OrderInfoService orderService;
-
-	@Autowired
-
-	private InvoiceService invoiceService;
-
-	@Autowired
 	private Helper helper;
 
 	@Value("${pageSize}")
@@ -93,8 +91,12 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	ProductService productService;
+
 	@Autowired
 	private ProductRepository productRepository;
+
+	@Autowired
+	private DeliveryAddressServiceImpl deliveryAddressService;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -266,9 +268,9 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public ListResponse<SmeBo> fetchSmeListWithoutPagination() {
-		List<Sme> smes = this.smeRepo.findByIsDeleted(false);
+		List<Sme> smeObjList = getAllSme(Boolean.FALSE);
 		List<SmeBo> smeBoList = new ArrayList<>();
-		smes.forEach(sme -> {
+		smeObjList.forEach(sme -> {
 			SmeBo smeBo = new SmeBo(sme);
 			smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
 			smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,
@@ -313,4 +315,63 @@ public class SmeServiceImpl implements SmeService {
 		}
 
 	}
+
+	@Override
+	public List<Sme> getAllSme(Boolean isDeleted) {
+		return this.smeRepo.findAll(isDeleted);
+	}
+
+	@Override
+	public List<NearbySmeRespDto> getNearbySme() {
+		log.info("Invoked :: SmeServiceImpl :: getNearbySme()");
+	
+		Optional<DeliveryAddress> deliveryAddObj = deliveryAddressService
+				.getCurrentDelAddress(authenticationService.currentUser());
+		
+		List<NearbySmeRespDto> dtoList = new ArrayList<NearbySmeRespDto>(0);
+
+		if (deliveryAddObj.isPresent()) {
+			for (Sme smeObj : getAllSme(Boolean.FALSE)) {
+				if (deliveryAddObj.get().getLatitude() != null && deliveryAddObj.get().getLongitude() != null
+						&& smeObj.getLatitude() != null && smeObj.getLongitude() != null) {
+
+					int distance = computeDistance(deliveryAddObj.get().getLatitude(),
+							deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
+
+					if (distance <= Constants.MIN_DISTANCE) {
+						dtoList.add(bindResult(smeObj));
+					}
+				}
+			}
+		}else {
+			throw new ResourceNotFoundException(Constants.ERR_NO_CURRENT_ADDRESS);
+		}
+
+		return dtoList;
+	}
+
+	private int computeDistance(Double userLat, Double userLong, Double smeLat, Double smeLong) {
+		log.info("Invoked :: SmeServiceImpl :: computeDistance()");
+
+		double theta = userLong - smeLong;
+		double distance = Math.sin(helper.deg2rad(userLat)) * Math.sin(helper.deg2rad(smeLat))
+				+ Math.cos(helper.deg2rad(userLat)) * Math.cos(helper.deg2rad(smeLat))
+						* Math.cos(helper.deg2rad(theta));
+		distance = Math.acos(distance);
+		distance = helper.rad2deg(distance);
+		distance = distance * 60 * 1.1515;
+		distance = distance * 1.609344;
+		return (int) distance;
+	}
+
+	private NearbySmeRespDto bindResult(Sme smeObj) {
+		log.info("Invoked :: SmeServiceImpl :: computeDistance()");
+
+		NearbySmeRespDto dtoObj = new NearbySmeRespDto();
+		dtoObj.setId(smeObj.getId());
+		dtoObj.setNameOfBusiness(smeObj.getNameOfBusiness());
+		dtoObj.setBusinessAddress(smeObj.getBusinessAddress());
+		return dtoObj;
+	}
+
 }
