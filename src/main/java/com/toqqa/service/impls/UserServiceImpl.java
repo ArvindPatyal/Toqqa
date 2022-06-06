@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.toqqa.service.DeliveryAddressService;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -59,6 +60,10 @@ public class UserServiceImpl implements UserService {
 	@Lazy
 	private AuthenticationManager manager;
 
+	@Autowired
+	@Lazy
+	private DeliveryAddressService deliveryAddressService;
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public UserBo addUser(UserSignUp userSignUp) {
@@ -89,9 +94,12 @@ public class UserServiceImpl implements UserService {
 		user.setPostCode(userSignUp.getPostCode());
 		user.setState(userSignUp.getState());
 		user.setAddress(userSignUp.getAddress());
+		user.setLatitude(userSignUp.getLatitude());
+		user.setLongitude(userSignUp.getLongitude());
 		user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
 		user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
 		user = this.userRepository.saveAndFlush(user);
+		this.deliveryAddressService.create(user);
 		return new UserBo(user);
 
 	}

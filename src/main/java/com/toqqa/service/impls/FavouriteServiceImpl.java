@@ -5,6 +5,7 @@ import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Favourite;
 import com.toqqa.domain.FavouriteSme;
 import com.toqqa.domain.Sme;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.FavouriteSmePayload;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
@@ -47,22 +48,27 @@ public class FavouriteServiceImpl implements FavouriteService {
     @Override
     public Response addFavouriteSme(FavouriteSmePayload favouriteSmePayload) {
         log.info("Inside Service addFavouriteSme");
-        Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
         Sme sme = this.smeRepository.findByUserId(favouriteSmePayload.getProductUserId());
-        if (favourite == null) {
-            favourite = new Favourite();
-            favourite.setUser(authenticationService.currentUser());
-        } else {
-            boolean isExists = favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(sme.getId()));
-            if (isExists) {
-                this.removeFavoriteSme(favouriteSmePayload.getProductUserId());
-                return new Response(true, "removed from favourites Successfully");
-            }
+        if (sme != null) {
+            Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
 
+            if (favourite == null) {
+                favourite = new Favourite();
+                favourite.setUser(authenticationService.currentUser());
+            } else {
+                boolean isExists = favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(sme.getId()));
+                if (isExists) {
+                    this.removeFavoriteSme(favouriteSmePayload.getProductUserId());
+                    return new Response(true, "removed from favourites Successfully");
+                }
+
+            }
+            favouriteRepository.saveAndFlush(favourite);
+            favourite.setFavouriteSmes(this.persistSmes(sme, favourite));
+            return new Response(true, "Added to favourites Successfully");
+        } else {
+            throw new ResourceNotFoundException("Sme not found with id " + favouriteSmePayload.getProductUserId());
         }
-        favouriteRepository.saveAndFlush(favourite);
-        favourite.setFavouriteSmes(this.persistSmes(sme, favourite));
-        return new Response(true, "Added to favourites Successfully");
     }
 
     @Override
@@ -77,6 +83,7 @@ public class FavouriteServiceImpl implements FavouriteService {
         List<SmeBo> favoriteSmes = new ArrayList<>();
         smeList.getData().stream().forEach(smeBo -> {
             if (this.isFavSme(smeBo, favourite)) {
+                smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
                 favoriteSmes.add(smeBo);
             }
         });
@@ -86,7 +93,7 @@ public class FavouriteServiceImpl implements FavouriteService {
     @Override
     public Boolean isFavSme(SmeBo smeBo, Favourite favourite) {
         log.info("Inside Service isFavSme");
-        if (favourite!=null&&this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
+        if (favourite != null && this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
             return favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(smeBo.getId()));
         } else {
             return false;
@@ -118,10 +125,10 @@ public class FavouriteServiceImpl implements FavouriteService {
         log.info("Inside Service removeFavoriteSme");
         Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
         Sme sme = this.smeRepository.findByUserId(productUserId);
-        if(favourite!=null&&this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
+        if (favourite != null && this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
             favouriteSmeRepository.deleteBySmeIdAndFavourite(sme.getId(), favourite);
             favourite.getFavouriteSmes().removeIf(favouriteSme -> favouriteSme.getSmeId().equals(sme.getId()));
-            if(favourite.getFavouriteSmes().size()<=0){
+            if (favourite.getFavouriteSmes().size() <= 0) {
                 this.favouriteRepository.delete(favourite);
             }
         }

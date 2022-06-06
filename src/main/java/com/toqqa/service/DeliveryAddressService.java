@@ -1,7 +1,5 @@
 package com.toqqa.service;
 
-import java.util.Optional;
-
 import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.domain.DeliveryAddress;
 import com.toqqa.domain.User;
@@ -9,19 +7,24 @@ import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
 import com.toqqa.payload.Response;
 
+import java.util.Optional;
+
 public interface DeliveryAddressService {
 
-	DeliveryAddressBo createAddress(DeliveryAddressPayload addressPayload);
+    DeliveryAddressBo createAddress(DeliveryAddressPayload addressPayload);
 
-	DeliveryAddressBo updateAddress(DeliveryAddressUpdate addressUpdate);
+    void create(User user);
 
-	DeliveryAddressBo fetchAddress(String id);
+    DeliveryAddressBo updateAddress(DeliveryAddressUpdate addressUpdate);
 
-	void deleteAddress(String id);
+    DeliveryAddressBo fetchAddress(String id);
 
-	Response fetchAddressList();
+    void deleteAddress(String id);
 
-	Response currentOrder(String addressId);
-	
-	Optional<DeliveryAddress> getCurrentDelAddress(User user);
+    Response fetchAddressList();
+
+
+    Response currentAddress(String addressId);
+
+    Optional<DeliveryAddress> getCurrentDelAddress(User user);
 }

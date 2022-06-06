@@ -48,4 +48,10 @@ public class UserSignUp {
 	@NotNull
 	@NotBlank
 	private String password;
+
+	@NotNull
+	private double latitude;
+
+	@NotNull
+	private double longitude;
 }

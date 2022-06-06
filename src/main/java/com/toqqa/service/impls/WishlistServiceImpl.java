@@ -1,8 +1,10 @@
 package com.toqqa.service.impls;
 
 import com.toqqa.bo.ProductBo;
+import com.toqqa.domain.Product;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.WishlistItemPayload;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -49,26 +52,33 @@ public class WishlistServiceImpl implements WishlistService {
 
     public Response toggleWishlist(WishlistItemPayload wishlistItemPayload) {
         log.info("Inside Service create wishlist");
-        Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
 
-        if (wishlist == null) {
-            wishlist = new Wishlist();
-            wishlist.setUser(authenticationService.currentUser());
-        } else {
-            Boolean isExists = wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(wishlistItemPayload.getProductId()));
-            if (isExists) {
-                this.deleteWishlistItem(wishlistItemPayload.getProductId());
-                return new Response(true, "item removed successfully");
+        Optional<Product> optionalProduct = this.productRepository.findById(wishlistItemPayload.getProductId());
+        if (optionalProduct.isPresent()) {
+            Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
+
+            if (wishlist == null) {
+                wishlist = new Wishlist();
+                wishlist.setUser(authenticationService.currentUser());
+            } else {
+                Boolean isExists = wishlist.getWishlistItems().stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(wishlistItemPayload.getProductId()));
+                if (isExists) {
+                    this.deleteWishlistItem(wishlistItemPayload.getProductId());
+                    return new Response(true, "item removed successfully");
+                }
+
             }
-
+            wishlist = this.wishlistRepository.saveAndFlush(wishlist);
+            Product product = optionalProduct.get();
+            wishlist.setWishlistItems(persistWishlistItems(wishlistItemPayload, wishlist,product));
+            return new Response(true, "item added to wishlist");
+        } else {
+            throw new ResourceNotFoundException("product not found with id " + wishlistItemPayload.getProductId());
         }
-        wishlist = this.wishlistRepository.saveAndFlush(wishlist);
-        wishlist.setWishlistItems(persistWishlistItems(wishlistItemPayload, wishlist));
-        return new Response(true, "item added to wishlist");
     }
 
 
-    private List<WishlistItem> persistWishlistItems(WishlistItemPayload wishlistItemsPayload, Wishlist wishlist) {
+    private List<WishlistItem> persistWishlistItems(WishlistItemPayload wishlistItemsPayload, Wishlist wishlist,Product product) {
         log.info("Inside persist wishlist items");
 
         WishlistItem wishlistItem = new WishlistItem();
@@ -101,10 +111,10 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
-    public Boolean isWishListItem(ProductBo productBo, Wishlist wishlist){
-        if(wishlist!=null && helper.notNullAndHavingData(wishlist.getWishlistItems()))
+    public Boolean isWishListItem(ProductBo productBo, Wishlist wishlist) {
+        if (wishlist != null && helper.notNullAndHavingData(wishlist.getWishlistItems()))
             return wishlist.getWishlistItems()
-                .stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(productBo.getId()));
+                    .stream().anyMatch(wishlistItem -> wishlistItem.getProductId().equals(productBo.getId()));
         else
             return false;
     }
@@ -113,7 +123,7 @@ public class WishlistServiceImpl implements WishlistService {
     public void deleteWishlistItem(String productId) {
         log.info("Inside Service delete wishlist");
         Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
-        if(wishlist!=null&&this.helper.notNullAndHavingData(wishlist.getWishlistItems())) {
+        if (wishlist != null && this.helper.notNullAndHavingData(wishlist.getWishlistItems())) {
             wishlistItemRepository.deleteByProductIdAndWishlist(productId, wishlist);
             wishlist.getWishlistItems().removeIf(wishlistItem -> wishlistItem.getProductId().equals(productId) && wishlistItem.getWishlist().equals(wishlist));
             if (wishlist.getWishlistItems().size() <= 0) {

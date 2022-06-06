@@ -74,7 +74,7 @@ public class DeliveryAddressController {
 	@PutMapping("/current/{addressId}")
 	public Response currentAddress(@PathVariable @Valid String addressId) {
 		log.info("Inside Controller current address update");
-		return this.deliveryAddressService.currentOrder(addressId);
+		return this.deliveryAddressService.currentAddress(addressId);
 	}
 
 

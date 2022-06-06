@@ -69,6 +69,24 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     }
 
     @Override
+    public void create(User user) {
+
+        log.info("Inside Add address");
+        DeliveryAddress deliveryAddress = new DeliveryAddress();
+        deliveryAddress.setUser(user);
+        deliveryAddress.setIsCurrentAddress(true);
+        deliveryAddress.setCity(user.getCity());
+        deliveryAddress.setAddress(user.getAddress());
+        deliveryAddress.setPostCode(user.getPostCode());
+        deliveryAddress.setState(user.getState());
+        deliveryAddress.setCountry(user.getCountry());
+        deliveryAddress.setLatitude(user.getLatitude());
+        deliveryAddress.setLongitude(user.getLongitude());
+        deliveryAddress.setPhoneNumber(user.getPhone());
+        this.deliveryAddressRepository.saveAndFlush(deliveryAddress);
+    }
+
+    @Override
     public DeliveryAddressBo updateAddress(DeliveryAddressUpdate addressUpdate) {
 
         log.info("inside update address");
@@ -137,7 +155,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     }
 
     @Override
-    public Response currentOrder(String addressId) {
+    public Response currentAddress(String addressId) {
         log.info("");
         String userId = this.authenticationService.currentUser().getId();
         List<DeliveryAddress> addressList = new ArrayList<>();
