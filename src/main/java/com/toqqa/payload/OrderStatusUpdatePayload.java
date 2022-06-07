@@ -20,5 +20,6 @@ public class OrderStatusUpdatePayload {
 	@NotBlank
 	private String orderId;
 	@NotNull
-	private OrderConstants orderConstant;
+	@NotBlank
+	private String orderConstant;
 }

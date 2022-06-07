@@ -370,6 +370,7 @@ public class ProductServiceImpl implements ProductService {
 		ProductBo productBo = new ProductBo(product);
 		if (sme != null) {
 			SmeBo smeBo = new SmeBo(sme);
+			smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
 			productBo.setSellerDetails(smeBo);
 		}
 		productBo.setIsInWishList(this.wishlistService.isWishListItem(productBo, wishlist));

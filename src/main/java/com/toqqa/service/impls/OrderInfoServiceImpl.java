@@ -257,7 +257,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		log.info("Inside sme Service updateOrderStatus");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
 		try {
-			orderStatusUpdatePayload.getOrderConstant();
+			OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant());
 		} catch (Exception e) {
 			throw new ResourceNotFoundException(
 					"invalid order constant " + orderStatusUpdatePayload.getOrderConstant());
@@ -265,11 +265,11 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 		if (optionalOrderInfo.isPresent()) {
 			OrderInfo orderInfo = optionalOrderInfo.get();
-			if ((orderStatusUpdatePayload.getOrderConstant()).ordinal() <= orderInfo.getOrderStatus().ordinal()) {
+			if ((OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()).ordinal() <= orderInfo.getOrderStatus().ordinal())){
 				throw new ResourceNotFoundException("Cannot reverse orderStatus");
 
 			} else {
-				orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderConstant()));
+				orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
 				this.orderInfoRepo.saveAndFlush(orderInfo);
 				return new Response("", "ORDER STATUS UPDATED SUCCESSFULLY");
 			}
