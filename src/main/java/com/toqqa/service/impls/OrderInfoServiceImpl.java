@@ -109,7 +109,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderId);
 		if (optionalOrderInfo.isPresent()) {
 			OrderInfo orderInfo = optionalOrderInfo.get();
-			if (orderInfo.getOrderStatus().ordinal() >= OrderConstants.OUT_FOR_DELIVERY.ordinal()) {
+			if (orderInfo.getOrderStatus().ordinal() >= OrderConstants.READY_FOR_DISPATCH.ordinal()) {
 				throw new BadRequestException("Order cannot be cancelled");
 			}
 			orderInfo.setOrderStatus(OrderConstants.CANCELLED);
