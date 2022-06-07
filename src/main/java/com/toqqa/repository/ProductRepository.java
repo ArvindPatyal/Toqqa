@@ -34,8 +34,8 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 	@Query(value = "SELECT * FROM Product p WHERE " + "p.is_deleted=:isDeleted", nativeQuery = true)
 	Page<Product> fetchProducts(Pageable pageable, @Param("isDeleted") Boolean isDeleted);
 
-	Page<Product> findByProductCategories_IdAndIsDeletedAndProductNameContainsOrDescriptionContains(
-			Pageable pageRequest, String categoryId, Boolean isDeleted, String nameParam, String descParam);
+	Page<Product> findByProductCategories_IdAndProductNameContainsOrDescriptionContainsAndIsDeleted(
+			Pageable pageRequest, String categoryId, String nameParam, String descParam, Boolean isDeleted);
 
 	Page<Product> findByIsDeletedAndProductNameContainsOrDescriptionContains(Pageable pageRequest, Boolean isDeleted,
 			String nameParam, String descParam);
