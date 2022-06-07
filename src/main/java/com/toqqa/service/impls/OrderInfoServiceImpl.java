@@ -256,12 +256,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	public Response updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
 		log.info("Inside sme Service updateOrderStatus");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
-		try {
-			OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant());
-		} catch (Exception e) {
-			throw new ResourceNotFoundException(
-					"invalid order constant " + orderStatusUpdatePayload.getOrderConstant());
-		}
 
 		if (optionalOrderInfo.isPresent()) {
 			OrderInfo orderInfo = optionalOrderInfo.get();
