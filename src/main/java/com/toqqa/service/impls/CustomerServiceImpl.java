@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.toqqa.bo.ProductBo;
@@ -45,18 +46,19 @@ public class CustomerServiceImpl implements CustomerService {
 	public ListResponseWithCount<ProductBo> productList(CustomerProductRequest bo) {
 		log.info("Inside productList");
 		Page<Product> products = null;
+		Sort sort = Sort.by("createdAt").descending();
 		if (helper.notNullAndHavingData(bo.getProductCategoryIds()) && bo.getShowBulkProducts()) {
 			products = this.productRepository
 					.findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
-							bo.getProductCategoryIds(), false, PageRequest.of(bo.getPageNumber(), pageSize), 2);
+							bo.getProductCategoryIds(), false, PageRequest.of(bo.getPageNumber(), pageSize,sort), 2);
 		} else if (bo.getShowBulkProducts()) {
 			products = this.productRepository.findByIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(false,
-					PageRequest.of(bo.getPageNumber(), pageSize), 2);
+					PageRequest.of(bo.getPageNumber(), pageSize,sort), 2);
 		} else if (helper.notNullAndHavingData(bo.getProductCategoryIds())) {
 			products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
-					PageRequest.of(bo.getPageNumber(), pageSize), bo.getProductCategoryIds(), false);
+					PageRequest.of(bo.getPageNumber(), pageSize,sort), bo.getProductCategoryIds(), false);
 		} else {
-			products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize), false);
+			products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize,sort), false);
 		}
 
 		List<ProductBo> productBos = new ArrayList<>();
