@@ -325,12 +325,12 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ListResponseWithCount<ProductBo> searchProducts(PaginationBo bo) {
 		Page<Product> page = null;
-	
+
 		Sort sort = this.sortBy(bo);
 		if (this.helper.notNullAndBlank(bo.getSearchText()) && this.helper.notNullAndBlank(bo.getCategoryId())) {
-			page = this.productRepo.findByProductCategories_IdAndIsDeletedAndProductNameContainsOrDescriptionContains(
-					PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getCategoryId(), false,
-					bo.getSearchText().trim(), bo.getSearchText().trim());
+			page = this.productRepo.findByProductCategories_IdAndProductNameContainsOrDescriptionContainsAndIsDeleted(
+					PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getCategoryId(),
+					bo.getSearchText().trim(), bo.getSearchText().trim(),false);
 
 		} else if (this.helper.notNullAndBlank(bo.getSearchText())) {
 			page = this.productRepo.findByIsDeletedAndProductNameContainsOrDescriptionContains(
