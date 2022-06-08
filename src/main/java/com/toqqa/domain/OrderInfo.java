@@ -63,7 +63,7 @@ public class OrderInfo {
 	private String phone;
 
 	@Column(length = 500)
-	private String cancelationReason;
+	private String cancellationReason;
 
 	@Enumerated(EnumType.STRING)
 	private OrderConstants orderStatus;

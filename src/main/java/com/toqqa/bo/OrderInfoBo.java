@@ -34,7 +34,7 @@ public class OrderInfoBo {
 
 	private SmeBo smeBo;
 
-	private String cancelationReason;
+	private String cancellationReason;
 
 	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo, SmeBo smeBo) {
 
@@ -51,6 +51,6 @@ public class OrderInfoBo {
 		this.paymentType = orderInfo.getPaymentType().name();
 		this.shippingFee = orderInfo.getShippingFee();
 		this.smeBo = smeBo;
-		this.cancelationReason = orderInfo.getCancelationReason();
+		this.cancellationReason = orderInfo.getCancellationReason();
 	}
 }

@@ -112,7 +112,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				throw new BadRequestException("Order cannot be cancelled");
 			}
 			orderInfo.setOrderStatus(OrderConstants.CANCELLED);
-			orderInfo.setCancelationReason(cancelPayload.getCancellationReason());
+			orderInfo.setCancellationReason(cancelPayload.getCancellationReason());
 			orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 
 			return new Response<>(true, "Order cancelled successfully ");
