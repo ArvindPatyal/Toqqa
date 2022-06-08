@@ -4,7 +4,7 @@ import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
-import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.WishlistItemPayload;
@@ -73,7 +73,7 @@ public class WishlistServiceImpl implements WishlistService {
             wishlist.setWishlistItems(persistWishlistItems(wishlistItemPayload, wishlist,product));
             return new Response(true, "item added to wishlist");
         } else {
-            throw new ResourceNotFoundException("product not found with id " + wishlistItemPayload.getProductId());
+            throw new BadRequestException("product not found with id " + wishlistItemPayload.getProductId());
         }
     }
 

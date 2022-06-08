@@ -1,13 +1,17 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
+import com.toqqa.bo.*;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.PaymentConstants;
+import com.toqqa.domain.*;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.payload.*;
+import com.toqqa.repository.*;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.InvoiceService;
+import com.toqqa.service.OrderInfoService;
+import com.toqqa.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -16,40 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.OrderInfoBo;
-import com.toqqa.bo.OrderItemBo;
-import com.toqqa.bo.PaginationBo;
-import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.constants.OrderConstants;
-import com.toqqa.constants.PaymentConstants;
-import com.toqqa.domain.DeliveryAddress;
-import com.toqqa.domain.OrderInfo;
-import com.toqqa.domain.OrderItem;
-import com.toqqa.domain.Product;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.OrderCancelPayload;
-import com.toqqa.payload.OrderItemPayload;
-import com.toqqa.payload.OrderPayload;
-import com.toqqa.payload.OrderStatusUpdatePayload;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.ToggleOrdersStatus;
-import com.toqqa.repository.CartRepository;
-import com.toqqa.repository.DeliveryAddressRepository;
-import com.toqqa.repository.OrderInfoRepository;
-import com.toqqa.repository.OrderItemRepository;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.SmeRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.InvoiceService;
-import com.toqqa.service.OrderInfoService;
-import com.toqqa.service.ProductService;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -123,7 +96,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				 */
 			});
 		} else {
-			throw new ResourceNotFoundException("Invalid address id");
+			throw new BadRequestException("Invalid address id");
 		}
 		this.cartRepository.deleteByUser(user);
 		return new Response<>("true", "order placed successfully");
@@ -144,7 +117,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 			return new Response<>(true, "Order cancelled successfully ");
 		} else {
-			throw new ResourceNotFoundException(
+			throw new BadRequestException(
 					"Order not found with id" + cancelPayload.getOrderId() + " Enter a valid orderId");
 		}
 	}
@@ -167,7 +140,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderItem = this.orderItemRepo.saveAndFlush(orderItem);
 				orderItemsList.add(orderItem);
 			} else {
-				throw new ResourceNotFoundException("invalid product id " + item.getProductId());
+				throw new BadRequestException("invalid product id " + item.getProductId());
 			}
 		}
 		return orderItemsList;
@@ -200,7 +173,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(id, orderInfo.get().getUser().getId()));
 			return orderInfoBo;
 		}
-		throw new ResourceNotFoundException("no order found with id= " + id);
+		throw new BadRequestException("no order found with id= " + id + " Enter a valid order Id");
 
 	}
 
@@ -273,10 +246,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderId, orderInfo.getUser().getId()));
 				return orderInfoBo;
 			} else {
-				throw new ResourceNotFoundException("Not a valid Sme");
+				throw new BadRequestException("Not a valid Sme");
 			}
 		} else {
-			throw new ResourceNotFoundException("Enter a valid order Id");
+			throw new BadRequestException("Enter a valid order Id");
 		}
 	}
 
@@ -289,7 +262,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			OrderInfo orderInfo = optionalOrderInfo.get();
 			if ((OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()).ordinal() <= orderInfo
 					.getOrderStatus().ordinal())) {
-				throw new ResourceNotFoundException("Cannot reverse orderStatus");
+				throw new BadRequestException("Cannot reverse orderStatus");
 
 			} else {
 				orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
@@ -297,7 +270,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				return new Response("", "ORDER STATUS UPDATED SUCCESSFULLY");
 			}
 		} else {
-			throw new ResourceNotFoundException("Enter a valid order Id");
+			throw new BadRequestException("Enter a valid order Id");
 		}
 
 	}
