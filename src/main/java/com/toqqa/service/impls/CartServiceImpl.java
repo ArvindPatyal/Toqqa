@@ -1,17 +1,5 @@
 package com.toqqa.service.impls;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.toqqa.bo.CartBo;
 import com.toqqa.bo.CartItemBo;
 import com.toqqa.bo.ProductBo;
@@ -19,8 +7,8 @@ import com.toqqa.domain.Cart;
 import com.toqqa.domain.CartItem;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
-import com.toqqa.domain.Wishlist;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.CartItemPayload;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
@@ -28,14 +16,19 @@ import com.toqqa.repository.CartItemRepository;
 import com.toqqa.repository.CartRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.CartService;
-import com.toqqa.service.CustomerService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.WishlistService;
+import com.toqqa.service.*;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -194,7 +187,7 @@ public class CartServiceImpl implements CartService {
 		log.info("Inside Service delete cart item");
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
 		if (cart == null) {
-			throw new BadRequestException("cart not found");
+			throw new ResourceNotFoundException("cart not found");
 		}
 		boolean isItemInCart = cart.getCartItems().stream()
 				.anyMatch(cartItem -> cartItem.getProductId().equals(productId));

@@ -5,7 +5,7 @@ import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Favourite;
 import com.toqqa.domain.FavouriteSme;
 import com.toqqa.domain.Sme;
-import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.FavouriteSmePayload;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
@@ -67,7 +67,7 @@ public class FavouriteServiceImpl implements FavouriteService {
             favourite.setFavouriteSmes(this.persistSmes(sme, favourite));
             return new Response(true, "Added to favourites Successfully");
         } else {
-            throw new ResourceNotFoundException("Sme not found with id " + favouriteSmePayload.getProductUserId());
+            throw new BadRequestException("Enter a valid SmeId");
         }
     }
 

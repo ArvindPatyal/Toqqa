@@ -4,7 +4,6 @@ import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.domain.DeliveryAddress;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
 import com.toqqa.payload.Response;
@@ -162,7 +161,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
         List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(userId);
         Boolean isExists = deliveryAddresses.stream().anyMatch(deliveryAddress -> deliveryAddress.getId().equals(addressId));
         if (!isExists) {
-            throw new ResourceNotFoundException("Address Not found with id " + addressId);
+            throw new BadRequestException("Address Not found with id " + addressId);
         }
         deliveryAddresses.forEach(deliveryAddress -> {
 
