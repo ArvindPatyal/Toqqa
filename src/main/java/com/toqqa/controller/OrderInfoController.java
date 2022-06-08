@@ -50,6 +50,8 @@ public class OrderInfoController {
 		return new Response<OrderInfoBo>(this.orderInfoService.fetchOrderInfo(id), "success");
 	}
 
+	@ApiOperation(value = "list of orders placed by customers")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/fetchOrderList")
 	public ListResponseWithCount<OrderInfoBo> fetchOrderList(@RequestBody @Valid PaginationBo paginationbo) {
 		log.info("Inside controller fetch Order List");
@@ -62,7 +64,7 @@ public class OrderInfoController {
 		return new Response(this.orderInfoService.orderInvoice(orderId), "Invoice Generated");
 	}*/
 
-	@ApiOperation(value = "Orders list of Customer (Live & Cancelled)")
+	@ApiOperation(value = "Orders list of Customer with respect to SME (Live & Cancelled)")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/list")
 	public ListResponseWithCount<OrderInfoBo> list(@RequestBody @Valid ToggleOrdersStatus toggleOrdersStatus) {

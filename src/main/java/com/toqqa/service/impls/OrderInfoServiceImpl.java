@@ -216,7 +216,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 					PageRequest.of(toggleOrdersStatus.getPageNumber(), pageSize), smeId,
 					toggleOrdersStatus.getOrderStatus());
 		} else {
-			throw new ResourceNotFoundException("OrderStatus empty");
+			throw new BadRequestException("invalid OrderStatus or empty");
 		}
 		List<OrderInfoBo> list = new ArrayList<>();
 		orderInfo.forEach(order -> {
