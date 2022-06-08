@@ -1,13 +1,16 @@
 package com.toqqa.bo;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Column;
+
 import com.toqqa.domain.OrderInfo;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -31,11 +34,13 @@ public class OrderInfoBo {
 
 	private SmeBo smeBo;
 
+	private String cancelationReason;
+
 	public OrderInfoBo(OrderInfo orderInfo, List<OrderItemBo> orderItemBo, SmeBo smeBo) {
 
 		this.id = orderInfo.getId();
 		this.createdDate = orderInfo.getCreatedDate();
-		this.orderStatus = orderInfo.getOrderStatus()!=null?orderInfo.getOrderStatus().name():"";
+		this.orderStatus = orderInfo.getOrderStatus() != null ? orderInfo.getOrderStatus().name() : "";
 		this.amount = orderInfo.getAmount();
 		this.orderItemBo = orderItemBo;
 		this.email = orderInfo.getEmail();
@@ -46,5 +51,6 @@ public class OrderInfoBo {
 		this.paymentType = orderInfo.getPaymentType().name();
 		this.shippingFee = orderInfo.getShippingFee();
 		this.smeBo = smeBo;
+		this.cancelationReason = orderInfo.getCancelationReason();
 	}
 }
