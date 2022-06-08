@@ -3,6 +3,8 @@ package com.toqqa.bo;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
+
 import com.toqqa.domain.OrderInfo;
 
 import lombok.AllArgsConstructor;

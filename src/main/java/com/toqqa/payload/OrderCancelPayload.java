@@ -15,6 +15,6 @@ public class OrderCancelPayload {
 	@NotNull
 	private String orderId;
 
-	@Size(max = 200, message = "Reason for cancelation need to have only 200 characters")
+	@Size(max = 500, message = "Max limit 500 characters.")
 	private String cancelationReason;
 }
