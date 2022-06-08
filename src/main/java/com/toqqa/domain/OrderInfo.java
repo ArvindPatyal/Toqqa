@@ -1,19 +1,32 @@
 package com.toqqa.domain;
 
+import java.util.Date;
+import java.util.List;
 
-import com.toqqa.constants.OrderConstants;
-import com.toqqa.constants.PaymentConstants;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.PaymentConstants;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -23,49 +36,51 @@ import java.util.List;
 @Table(name = "order_info")
 public class OrderInfo {
 
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    private String id;
+	@Id
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+	private String id;
 
-    @CreationTimestamp
-    private Date createdDate;
+	@CreationTimestamp
+	private Date createdDate;
 
-    @UpdateTimestamp
-    private Date modificationDate;
+	@UpdateTimestamp
+	private Date modificationDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "order_id")
-    private List<OrderItem> orderItems;
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "order_id")
+	private List<OrderItem> orderItems;
 
-    private Double amount;
+	private Double amount;
 
-    private String firstName;
+	private String firstName;
 
-    private String lastName;
+	private String lastName;
 
-    private String email;
+	private String email;
 
-    private String phone;
+	private String phone;
 
-    @Enumerated(EnumType.STRING)
-    private OrderConstants orderStatus;
+	private String cancelationReason;
 
-    private double shippingFee;
+	@Enumerated(EnumType.STRING)
+	private OrderConstants orderStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+	private double shippingFee;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "deliveryAddress_id")
-    private DeliveryAddress address;
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentConstants paymentType;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "deliveryAddress_id")
+	private DeliveryAddress address;
 
-    @ManyToOne
-    @JoinColumn(name = "sme_id")
-    private Sme sme;
+	@Enumerated(EnumType.STRING)
+	private PaymentConstants paymentType;
+
+	@ManyToOne
+	@JoinColumn(name = "sme_id")
+	private Sme sme;
 
 }
