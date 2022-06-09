@@ -38,7 +38,7 @@ public class StorageServiceImpl implements StorageService {
     @Override
     @Async
     public Future<String> uploadFileAsync(MultipartFile file, String userId, String dir) {
-        log.info("Inside file upload async");
+        log.info("Invoked :: StorageServiceImpl :: uploadFileAsync()");
         String folderName = bucketName + "/" + userId + "/" + dir;
         File fileObj = convertMultiPartFileToFile(file);
         String fileName = System.currentTimeMillis() + "" + file.getOriginalFilename();
@@ -52,7 +52,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Async
     public Future<String> uploadFile(File file, String userId, String dir) {
-        log.info("Inside file upload");
+        log.info("Invoked :: StorageServiceImpl :: uploadFile()");
         String fileName = file.getName();
         try {
             s3Client.putObject(new PutObjectRequest(bucketName + "/" + userId + "/" + dir, fileName, file));
@@ -64,14 +64,14 @@ public class StorageServiceImpl implements StorageService {
 
 
     public String deleteFile(String fileName) {
-        log.info("Inside delete file");
+        log.info("Invoked :: StorageServiceImpl :: deleteFile()");
         s3Client.deleteObject(bucketName, fileName);
         return fileName + "removed...";
     }
 
     public File convertMultiPartFileToFile(MultipartFile file) {
 
-        log.info("Inside Convert multipart to file");
+        log.info("Invoked :: StorageServiceImpl :: convertMultiPartFileToFile()");
         File convertedFile = new File(file.getOriginalFilename());
 
         try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
@@ -88,6 +88,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public Resource downloadFile(String fileName) throws IOException {
+        log.info("Invoked :: StorageServiceImpl :: downloadFile()");
         String[] name = fileName.split("&");
         byte[] stream = this.fetchFileFromAWS(name[0], name[1], name[2]);
         if (stream != null) {
@@ -98,7 +99,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     private byte[] fetchFileFromAWS(String userId, String dir, String fileName) {
-        log.info("Inside fetchFileFromAWS");
+        log.info("Invoked :: StorageServiceImpl :: fetchFileFromAWS()");
         S3Object s3Object = s3Client.getObject(bucketName + "/" + userId + "/" + dir, fileName);
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
         try {
@@ -140,6 +141,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String generatePresignedInvoiceUrl(String location, String userId) {
+        log.info("Invoked :: StorageServiceImpl :: generatePresignedInvoiceUrl()");
         if (location != null && !location.isEmpty()) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());

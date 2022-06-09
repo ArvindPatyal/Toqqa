@@ -40,7 +40,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	@Async
 	public void generateInvoice(OrderInfoBo orderInfoBo, User user) {
-		log.info("Inside generate Invoice");
+		log.info("Invoked :: InvoiceServiceImpl :: generateInvoice()");
 		Document document = new Document();
 		File file = null;
 		try {
@@ -346,7 +346,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 	@Override
 	public String fetchInvoice(String orderId, String userId) {
-
+		log.info("Invoked :: InvoiceServiceImpl :: fetchInvoice()");
 		return this.storageService.generatePresignedInvoiceUrl(orderId.concat(".pdf"), userId);
 	}
 

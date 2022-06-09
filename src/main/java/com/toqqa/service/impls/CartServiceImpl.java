@@ -59,7 +59,7 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public Response fetchCart() {
-		log.info("Inside fetch cart");
+		log.info("Invoked :: CartServiceImpl :: fetchCart()");
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
 		List<ProductBo> productBos = new ArrayList<>();
 		if (cart == null) {
@@ -92,7 +92,7 @@ public class CartServiceImpl implements CartService {
 	}
 
 	public Response manageCart(CartItemPayload cartItemPayload) {
-		log.info("Inside Service Add To cart");
+		log.info("Invoked :: CartServiceImpl :: manageCart()");
 		User user = this.authenticationService.currentUser();
 		Cart cart = this.cartRepo.findByUser(user);
 		if (cart == null) {
@@ -129,7 +129,7 @@ public class CartServiceImpl implements CartService {
 	}
 
 	private List<CartItem> persistCartItems(CartItemPayload cartItemPayload, Cart cart) {
-		log.info("Inside persist cart items");
+		log.info("Invoked :: CartServiceImpl :: persistCartItems()");
 		CartItem cartItem = new CartItem();
 		cartItem.setCart(cart);
 		cartItem.setProductId(cartItemPayload.getProductId());
@@ -150,6 +150,7 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public Response updateCart(CartItemPayload cartItemPayload) {
+		log.info("Invoked :: CartServiceImpl :: updateCart()");
 		Cart cart = this.cartRepo.findByUser(this.authenticationService.currentUser());
 		if (cart == null) {
 			return new Response(true, "cart not found");
@@ -173,6 +174,7 @@ public class CartServiceImpl implements CartService {
 	}
 
 	private Response removeCartItem(Cart cart, String productId) {
+		log.info("Invoked :: CartServiceImpl :: removeCartItem()");
 		cart.getCartItems()
 				.removeIf(cartItem -> cartItem.getProductId().equals(productId) && cartItem.getCart().equals(cart));
 		cartItemRepo.deleteByCartAndProductId(cart, productId);
@@ -184,7 +186,7 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public Response deleteCartItem(String productId) {
-		log.info("Inside Service delete cart item");
+		log.info("Invoked :: CartServiceImpl :: deleteCartItem()");
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
 		if (cart == null) {
 			throw new ResourceNotFoundException("cart not found");

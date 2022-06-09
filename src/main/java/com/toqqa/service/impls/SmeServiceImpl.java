@@ -1,11 +1,19 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
+import com.toqqa.bo.ProductBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.*;
+import com.toqqa.dto.NearbySmeRespDto;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.*;
+import com.toqqa.repository.*;
+import com.toqqa.service.*;
+import com.toqqa.util.Constants;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -15,41 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.constants.FolderConstants;
-import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.DeliveryAddress;
-import com.toqqa.domain.Product;
-import com.toqqa.domain.Role;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
-import com.toqqa.dto.NearbySmeRespDto;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.payload.ListResponse;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.ProductRequestFilter;
-import com.toqqa.payload.SmeRegistration;
-import com.toqqa.payload.SmeUpdate;
-import com.toqqa.repository.CategoryRepository;
-import com.toqqa.repository.FavouriteRepository;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.RoleRepository;
-import com.toqqa.repository.SmeRepository;
-import com.toqqa.repository.SubcategoryRepository;
-import com.toqqa.repository.UserRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.FavouriteService;
-import com.toqqa.service.InvoiceService;
-import com.toqqa.service.OrderInfoService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.SmeService;
-import com.toqqa.service.StorageService;
-import com.toqqa.util.Helper;
-
-import lombok.extern.slf4j.Slf4j;
-import com.toqqa.util.Constants;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -101,7 +79,7 @@ public class SmeServiceImpl implements SmeService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
-		log.info("Inside sme registration");
+		log.info("Invoked :: SmeServiceImpl :: smeRegistration()");
 		if (!alreadySme(userId)) {
 			try {
 				Sme sme = new Sme();
@@ -169,7 +147,7 @@ public class SmeServiceImpl implements SmeService {
 	}
 
 	private Boolean alreadySme(String id) {
-		log.info("Inside already sme");
+		log.info("Invoked :: SmeServiceImpl :: alreadySme()");
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}
@@ -183,7 +161,7 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public SmeBo smeUpdate(SmeUpdate smeUpdate) {
-		log.info("Inside sme update");
+		log.info("Invoked :: SmeServiceImpl :: smeUpdate()");
 
 		Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
 		if (sme != null) {
@@ -239,7 +217,7 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public SmeBo fetchSme(String id) {
-		log.info("Inside fetch sme");
+		log.info("Invoked :: SmeServiceImpl :: fetchSme()");
 		Sme sme = this.smeRepo.findByUserId(id);
 		if (sme != null) {
 			SmeBo bo = new SmeBo(sme);

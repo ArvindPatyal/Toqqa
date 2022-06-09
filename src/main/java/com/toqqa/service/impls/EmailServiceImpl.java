@@ -1,20 +1,20 @@
 package com.toqqa.service.impls;
 
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.toqqa.bo.EmailBo;
 import com.toqqa.domain.OrderInfo;
 import com.toqqa.service.EmailService;
 import com.toqqa.util.EmailUtility;
-
 import freemarker.template.Configuration;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service("emailService")
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
 	@Autowired
@@ -31,6 +31,7 @@ public class EmailServiceImpl implements EmailService {
 
 	@Override
 	public void sendOrderEmail(OrderInfo orderInfo) {
+		log.info("Invoked :: EmailServiceImpl :: sendOrderEmail()");
 		EmailBo bo = new EmailBo();
 
 		StringWriter writer = new StringWriter();

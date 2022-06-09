@@ -53,7 +53,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public Response<?> placeOrder(OrderPayload orderPayload) {
-		log.info("Inside Service placeOrder");
+		log.info("Invoked :: OrderInfoServiceImpl :: placeOrder()");
 		User user = this.authenticationService.currentUser();
 		Set<String> sellerIds = new HashSet<>();
 		orderPayload.getItems().forEach(orderItemPayload -> sellerIds.add(orderItemPayload.getSellerUserId()));
@@ -105,7 +105,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public Response<?> updateOrder(OrderCancelPayload cancelPayload) {
-		log.info("Inside Service UpdateOrder");
+		log.info("Invoked :: OrderInfoServiceImpl :: updateOrder()");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(cancelPayload.getOrderId());
 		if (optionalOrderInfo.isPresent()) {
 			OrderInfo orderInfo = optionalOrderInfo.get();
@@ -124,7 +124,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	}
 
 	private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
-		log.info("persist OrderItems");
+		log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
 		List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
 		for (OrderItemPayload item : orderItems) {
 			OrderItem orderItem = new OrderItem();
@@ -149,7 +149,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public List<OrderItemBo> fetchOrderItems(OrderInfo orderInfo) {
-		log.info("fetch OrderItems");
+		log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderItems()");
 
 		List<OrderItem> orderItems = this.orderItemRepo.findByOrderInfo(orderInfo);
 		List<OrderItemBo> orderItemBos = new ArrayList<OrderItemBo>();
@@ -165,7 +165,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public OrderInfoBo fetchOrderInfo(String id) {
-		log.info("Inside fetch order");
+		log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderInfo()");
 		Optional<OrderInfo> orderInfo = this.orderInfoRepo.findById(id);
 		if (orderInfo.isPresent()) {
 			Sme sme = orderInfo.get().getSme();
@@ -180,6 +180,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationBo) {
+		log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderList()");
 		User user = this.authenticationService.currentUser();
 		Page<OrderInfo> allOrders = null;
 		if (authenticationService.isAdmin()) {
@@ -207,7 +208,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public ListResponseWithCount<OrderInfoBo> list(ToggleOrdersStatus toggleOrdersStatus) {
-		log.info("Orders list of Customer (Live & Cancelled)");
+		log.info("Invoked :: OrderInfoServiceImpl :: list()");
 		User user = this.authenticationService.currentUser();
 		String userId = user.getId();
 		Sme sme = this.smeRepository.findByUserId(userId);
@@ -236,7 +237,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public OrderInfoBo orderDetails(String orderId) {
-		log.info("Inside Sme Service orderDetails");
+		log.info("Invoked :: OrderInfoServiceImpl :: orderDetails()");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderId);
 		if (optionalOrderInfo.isPresent()) {
 			User user = this.authenticationService.currentUser();
@@ -257,7 +258,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public Response updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
-		log.info("Inside sme Service updateOrderStatus");
+		log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
 
 		if (optionalOrderInfo.isPresent()) {

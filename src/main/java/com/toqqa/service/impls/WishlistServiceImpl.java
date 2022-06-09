@@ -51,7 +51,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
 
     public Response toggleWishlist(WishlistItemPayload wishlistItemPayload) {
-        log.info("Inside Service create wishlist");
+        log.info("Invoked :: WishlistServiceImpl :: toggleWishlist()");
 
         Optional<Product> optionalProduct = this.productRepository.findById(wishlistItemPayload.getProductId());
         if (optionalProduct.isPresent()) {
@@ -79,7 +79,7 @@ public class WishlistServiceImpl implements WishlistService {
 
 
     private List<WishlistItem> persistWishlistItems(WishlistItemPayload wishlistItemsPayload, Wishlist wishlist,Product product) {
-        log.info("Inside persist wishlist items");
+        log.info("Invoked :: WishlistServiceImpl :: persistWishlistItems()");
 
         WishlistItem wishlistItem = new WishlistItem();
         wishlistItem.setProductId(wishlistItemsPayload.getProductId());
@@ -92,7 +92,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public ListResponse fetchWishlist() {
-        log.info("inside Service fetch wishlist");
+        log.info("Invoked :: WishlistServiceImpl :: fetchWishlist()");
         Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
         if (wishlist == null) {
             return new ListResponse(null, "Wishlist Not Found");
@@ -121,7 +121,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public void deleteWishlistItem(String productId) {
-        log.info("Inside Service delete wishlist");
+        log.info("Invoked :: WishlistServiceImpl :: deleteWishlistItem()");
         Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
         if (wishlist != null && this.helper.notNullAndHavingData(wishlist.getWishlistItems())) {
             wishlistItemRepository.deleteByProductIdAndWishlist(productId, wishlist);
