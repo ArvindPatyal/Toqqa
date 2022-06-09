@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +32,8 @@ import com.toqqa.domain.Product;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.OrderCancelPayload;
 import com.toqqa.payload.OrderItemPayload;
 import com.toqqa.payload.OrderPayload;
 import com.toqqa.payload.OrderStatusUpdatePayload;
@@ -79,7 +80,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public Response<?> placeOrder(OrderPayload orderPayload) {
-		log.info("Inside Service placeOrder");
+		log.info("Invoked :: OrderInfoServiceImpl :: placeOrder()");
 		User user = this.authenticationService.currentUser();
 		Set<String> sellerIds = new HashSet<>();
 		orderPayload.getItems().forEach(orderItemPayload -> sellerIds.add(orderItemPayload.getSellerUserId()));
@@ -123,32 +124,34 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				 */
 			});
 		} else {
-			throw new ResourceNotFoundException("Invalid address id");
+			throw new BadRequestException("Invalid address id");
 		}
 		this.cartRepository.deleteByUser(user);
 		return new Response<>("true", "order placed successfully");
 	}
 
 	@Override
-	public Response updateOrder(String orderId) {
-		log.info("Inside Service UpdateOrder");
-		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderId);
+	public Response<?> updateOrder(OrderCancelPayload cancelPayload) {
+		log.info("Invoked :: OrderInfoServiceImpl :: updateOrder()");
+		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(cancelPayload.getOrderId());
 		if (optionalOrderInfo.isPresent()) {
 			OrderInfo orderInfo = optionalOrderInfo.get();
 			if (orderInfo.getOrderStatus().ordinal() >= OrderConstants.READY_FOR_DISPATCH.ordinal()) {
 				throw new BadRequestException("Order cannot be cancelled");
 			}
 			orderInfo.setOrderStatus(OrderConstants.CANCELLED);
+			orderInfo.setCancellationReason(cancelPayload.getCancellationReason());
 			orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 
 			return new Response<>(true, "Order cancelled successfully ");
 		} else {
-			throw new ResourceNotFoundException("Order not found with id" + orderId + " Enter a valid orderId");
+			throw new BadRequestException(
+					"Order not found with id" + cancelPayload.getOrderId() + " Enter a valid orderId");
 		}
 	}
 
 	private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
-		log.info("persist OrderItems");
+		log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
 		List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
 		for (OrderItemPayload item : orderItems) {
 			OrderItem orderItem = new OrderItem();
@@ -165,7 +168,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderItem = this.orderItemRepo.saveAndFlush(orderItem);
 				orderItemsList.add(orderItem);
 			} else {
-				throw new ResourceNotFoundException("invalid product id " + item.getProductId());
+				throw new BadRequestException("invalid product id " + item.getProductId());
 			}
 		}
 		return orderItemsList;
@@ -173,7 +176,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public List<OrderItemBo> fetchOrderItems(OrderInfo orderInfo) {
-		log.info("fetch OrderItems");
+		log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderItems()");
 
 		List<OrderItem> orderItems = this.orderItemRepo.findByOrderInfo(orderInfo);
 		List<OrderItemBo> orderItemBos = new ArrayList<OrderItemBo>();
@@ -189,7 +192,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public OrderInfoBo fetchOrderInfo(String id) {
-		log.info("Inside fetch order");
+		log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderInfo()");
 		Optional<OrderInfo> orderInfo = this.orderInfoRepo.findById(id);
 		if (orderInfo.isPresent()) {
 			Sme sme = orderInfo.get().getSme();
@@ -198,12 +201,13 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(id, orderInfo.get().getUser().getId()));
 			return orderInfoBo;
 		}
-		throw new ResourceNotFoundException("no order found with id= " + id);
+		throw new BadRequestException("no order found with id= " + id + " Enter a valid order Id");
 
 	}
 
 	@Override
 	public ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationBo) {
+		log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderList()");
 		User user = this.authenticationService.currentUser();
 		Page<OrderInfo> allOrders = null;
 		if (authenticationService.isAdmin()) {
@@ -223,26 +227,27 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				paginationBo.getPageNumber(), allOrders.getTotalPages());
 	}
 
-/*	@Override
-	public String orderInvoice(String id) {
-		String userId = this.authenticationService.currentUser().getId();
-		return this.invoiceService.fetchInvoice(id, userId);
-	}*/
+	/*
+	 * @Override public String orderInvoice(String id) { String userId =
+	 * this.authenticationService.currentUser().getId(); return
+	 * this.invoiceService.fetchInvoice(id, userId); }
+	 */
 
 	@Override
 	public ListResponseWithCount<OrderInfoBo> list(ToggleOrdersStatus toggleOrdersStatus) {
-		log.info("Orders list of Customer (Live & Cancelled)");
+		log.info("Invoked :: OrderInfoServiceImpl :: list()");
 		User user = this.authenticationService.currentUser();
 		String userId = user.getId();
 		Sme sme = this.smeRepository.findByUserId(userId);
 		String smeId = sme.getId();
 		Page<OrderInfo> orderInfo = null;
 		if (toggleOrdersStatus.getOrderStatus() != null) {
+			Sort sort = Sort.by("modificationDate").descending();
 			orderInfo = this.orderInfoRepo.findBySmeIdAndOrderStatusIn(
-					PageRequest.of(toggleOrdersStatus.getPageNumber(), pageSize), smeId,
+					PageRequest.of(toggleOrdersStatus.getPageNumber(), pageSize, sort), smeId,
 					toggleOrdersStatus.getOrderStatus());
 		} else {
-			throw new ResourceNotFoundException("OrderStatus empty");
+			throw new BadRequestException("invalid OrderStatus or empty");
 		}
 		List<OrderInfoBo> list = new ArrayList<>();
 		orderInfo.forEach(order -> {
@@ -259,7 +264,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
 	@Override
 	public OrderInfoBo orderDetails(String orderId) {
-		log.info("Inside Sme Service orderDetails");
+		log.info("Invoked :: OrderInfoServiceImpl :: orderDetails()");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderId);
 		if (optionalOrderInfo.isPresent()) {
 			User user = this.authenticationService.currentUser();
@@ -271,22 +276,23 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderId, orderInfo.getUser().getId()));
 				return orderInfoBo;
 			} else {
-				throw new ResourceNotFoundException("Not a valid Sme");
+				throw new BadRequestException("Not a valid Sme");
 			}
 		} else {
-			throw new ResourceNotFoundException("Enter a valid order Id");
+			throw new BadRequestException("Enter a valid order Id");
 		}
 	}
 
 	@Override
 	public Response updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
-		log.info("Inside sme Service updateOrderStatus");
+		log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
 
 		if (optionalOrderInfo.isPresent()) {
 			OrderInfo orderInfo = optionalOrderInfo.get();
-			if ((OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()).ordinal() <= orderInfo.getOrderStatus().ordinal())){
-				throw new ResourceNotFoundException("Cannot reverse orderStatus");
+			if ((OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()).ordinal() <= orderInfo
+					.getOrderStatus().ordinal())) {
+				throw new BadRequestException("Cannot reverse orderStatus");
 
 			} else {
 				orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
@@ -294,7 +300,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				return new Response("", "ORDER STATUS UPDATED SUCCESSFULLY");
 			}
 		} else {
-			throw new ResourceNotFoundException("Enter a valid order Id");
+			throw new BadRequestException("Enter a valid order Id");
 		}
 
 	}

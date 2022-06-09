@@ -1,12 +1,18 @@
 package com.toqqa.service.impls;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.toqqa.bo.UserBo;
+import com.toqqa.config.JWTConfig;
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.UserAlreadyExists;
+import com.toqqa.payload.*;
+import com.toqqa.repository.RoleRepository;
+import com.toqqa.repository.UserRepository;
 import com.toqqa.service.DeliveryAddressService;
+import com.toqqa.service.UserService;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -24,23 +30,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.UserBo;
-import com.toqqa.config.JWTConfig;
-import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.User;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.UserAlreadyExists;
-import com.toqqa.payload.JwtAuthenticationResponse;
-import com.toqqa.payload.LoginRequest;
-import com.toqqa.payload.LoginResponse;
-import com.toqqa.payload.UpdateUser;
-import com.toqqa.payload.UserSignUp;
-import com.toqqa.repository.RoleRepository;
-import com.toqqa.repository.UserRepository;
-import com.toqqa.service.UserService;
-import com.toqqa.util.Helper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -67,7 +61,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public UserBo addUser(UserSignUp userSignUp) {
-		log.info("Inside add user");
+		log.info("Invoked :: UserServiceImpl :: addUser()");
 		if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
 			throw new UserAlreadyExists("user with email/number already exists");
 		}
@@ -106,7 +100,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Boolean isUserExists(String email, String phone) {
-		log.info("Inside is user exists");
+		log.info("Invoked :: UserServiceImpl :: isUserExists()");
 		User user = null;
 		if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
 			if(this.helper.notNullAndBlank(email)) {
@@ -123,13 +117,13 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User findByEmailOrPhone(String username) {
-		log.info("Inside find by email or phone");
+		log.info("Invoked :: UserServiceImpl :: findByEmailOrPhone()");
 		return this.userRepository.findByEmailOrPhone(username, username);
 	}// find user by emailid or phone
 
 	@Override
 	public LoginResponse signIn(LoginRequest bo) {
-		log.info("Inside SignIn");
+		log.info("Invoked :: UserServiceImpl :: signIn()");
 		try {
 			Authentication authentication = this.manager
 					.authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
@@ -148,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserBo fetchUser(String id) {
-		log.info("Inside fetch User");
+		log.info("Invoked :: UserServiceImpl :: fetchUser()");
 		Optional<User> user = this.userRepository.findById(id);
 		if (user.isPresent()) {
 			return new UserBo(user.get());
@@ -158,7 +152,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDetails loadUserByUsername(String userName) {
-		log.info("Inside load user by username");
+		log.info("Invoked :: UserServiceImpl :: loadUserByUsername()");
 		User user = userRepository.findByEmailOrPhone(userName, userName);
 		if (user != null && !user.getIsDeleted()) {
 			List<GrantedAuthority> authorities = user.getRoles().stream()
@@ -174,14 +168,16 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserBo updateUser(UpdateUser updateUser) {
 
+		log.info("Invoked :: UserServiceImpl :: updateUser()");
+
 		User user = this.userRepository.findById(updateUser.getUserId()).get();
 		user.setCity(updateUser.getCity());
 		user.setCountry(updateUser.getCountry());
 		user.setAgentId(updateUser.getAgentId());
 		user.setIsDeleted(false);
-		if(this.helper.notNullAndBlank(updateUser.getEmail())){
-			if(!EmailValidator.getInstance().isValid(updateUser.getEmail())){
-				throw new BadRequestException("invalid email value : "+updateUser.getEmail());
+		if (this.helper.notNullAndBlank(updateUser.getEmail())) {
+			if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
+				throw new BadRequestException("invalid email value : " + updateUser.getEmail());
 			}
 			user.setEmail(updateUser.getEmail());
 		}

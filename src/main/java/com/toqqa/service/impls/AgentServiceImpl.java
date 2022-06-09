@@ -1,16 +1,5 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
-import com.toqqa.util.Helper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.toqqa.bo.AgentBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
@@ -25,9 +14,16 @@ import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AgentService;
 import com.toqqa.service.StorageService;
-
+import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -50,7 +46,7 @@ public class AgentServiceImpl implements AgentService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId) {
-		log.info("Inside agent registration");
+		log.info("Invoked :: AgentServiceImpl :: agentRegistration()");
 		if (!this.alreadyAgent(userId)) {
 			try {
 				Agent agent = new Agent();
@@ -80,7 +76,7 @@ public class AgentServiceImpl implements AgentService {
 				return bo;
 			}
 			catch (Exception e){
-				log.error("unable to create agent",e);
+				log.error("Invoked :: AgentServiceImpl :: agentRegistration() :: Unable to create Agent", e);
 				this.userRepo.deleteById(userId);
 			}
 		}
@@ -88,6 +84,7 @@ public class AgentServiceImpl implements AgentService {
 	}
 
 	private String prepareResource(String location){
+		log.info("Invoked :: AgentServiceImpl :: prepareResource()");
 		if(this.helper.notNullAndBlank(location)){
 			return this.storageService.generatePresignedUrl(location);
 		}
@@ -95,14 +92,14 @@ public class AgentServiceImpl implements AgentService {
 	}
 
 	private Boolean alreadyAgent(String id) {
-		log.info("Inside  already agent");
+		log.info("Invoked :: AgentServiceImpl :: alreadyAgent");
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.AGENT.getValue()));
 	}
 
 	@Override
 	public AgentBo agentUpdate(AgentUpdate payload) {
-		log.info("Inside  agent Update");
+		log.info("Invoked :: AgentServiceImpl :: agentUpdate()");
 		Agent agent = this.agentRepo.findById(payload.getAgentId()).get();
 
 		try {
@@ -125,7 +122,7 @@ public class AgentServiceImpl implements AgentService {
 
 	@Override
 	public AgentBo fetchAgent(String id) {
-		log.info("Inside fetch Agent");
+		log.info("Invoked :: AgentServiceImpl :: fetchAgent()");
 		Agent agent = this.agentRepo.findByUserId(id);
 		if (agent!=null) {
 			AgentBo bo = new AgentBo(agent);

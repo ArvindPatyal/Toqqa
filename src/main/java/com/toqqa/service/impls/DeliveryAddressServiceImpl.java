@@ -4,7 +4,6 @@ import com.toqqa.bo.DeliveryAddressBo;
 import com.toqqa.domain.DeliveryAddress;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.DeliveryAddressPayload;
 import com.toqqa.payload.DeliveryAddressUpdate;
 import com.toqqa.payload.Response;
@@ -37,7 +36,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public DeliveryAddressBo createAddress(DeliveryAddressPayload addressPayload) {
 
-        log.info("Inside Add address");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: createAddress()");
         User user = this.authenticationService.currentUser();
         List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(user.getId());
         DeliveryAddress deliveryAddress = new DeliveryAddress();
@@ -71,7 +70,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public void create(User user) {
 
-        log.info("Inside Add address");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: create()");
         DeliveryAddress deliveryAddress = new DeliveryAddress();
         deliveryAddress.setUser(user);
         deliveryAddress.setIsCurrentAddress(true);
@@ -89,7 +88,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public DeliveryAddressBo updateAddress(DeliveryAddressUpdate addressUpdate) {
 
-        log.info("inside update address");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: updateAddress()");
 
         DeliveryAddress deliveryAddress = this.deliveryAddressRepository.findById(addressUpdate.getDeliveryAddressId()).get();
         deliveryAddress.setCity(addressUpdate.getCity());
@@ -112,7 +111,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public DeliveryAddressBo fetchAddress(String id) {
-        log.info("Inside fetch Address");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: fetchAddress()");
         Optional<DeliveryAddress> address = this.deliveryAddressRepository.findById(id);
         if (address.isPresent()) {
             return new DeliveryAddressBo(address.get());
@@ -124,7 +123,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     @Override
     public void deleteAddress(String id) {
 
-        log.info("inside delete address");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: deleteAddress()");
 
         Optional<DeliveryAddress> da = this.deliveryAddressRepository.findById(id);
 
@@ -138,7 +137,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public Response fetchAddressList() {
-        log.info("Inside Service fetchAddress List");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: fetchAddressList()");
         User user = this.authenticationService.currentUser();
         List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(user.getId());
         if (!(this.helper.notNullAndHavingData(deliveryAddresses))) {
@@ -156,13 +155,13 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public Response currentAddress(String addressId) {
-        log.info("");
+        log.info("Invoked :: DeliveryAddressServiceImpl :: currentAddress()");
         String userId = this.authenticationService.currentUser().getId();
         List<DeliveryAddress> addressList = new ArrayList<>();
         List<DeliveryAddress> deliveryAddresses = this.deliveryAddressRepository.findByUser_Id(userId);
         Boolean isExists = deliveryAddresses.stream().anyMatch(deliveryAddress -> deliveryAddress.getId().equals(addressId));
         if (!isExists) {
-            throw new ResourceNotFoundException("Address Not found with id " + addressId);
+            throw new BadRequestException("Address Not found with id " + addressId);
         }
         deliveryAddresses.forEach(deliveryAddress -> {
 
@@ -179,6 +178,7 @@ public class DeliveryAddressServiceImpl implements DeliveryAddressService {
     
     @Override
     public Optional<DeliveryAddress> getCurrentDelAddress(User user) {
+        log.info("Invoked :: DeliveryAddressServiceImpl :: getCurrentDelAddress()");
     	return deliveryAddressRepository.findCurrentDelAddress(user);
     }
 

@@ -44,7 +44,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/addProduct")
 	public Response<ProductBo> addProduct(@ModelAttribute @Valid AddProduct addProduct) {
-		log.info("Inside controller add product");
+		log.info("Invoked:: ProductController:: addProduct");
 		return new Response<ProductBo>(this.productService.addProduct(addProduct), "success");
 	}
 
@@ -53,7 +53,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/updateProduct")
 	public Response<ProductBo> updateProduct(@ModelAttribute @Valid UpdateProduct updateProduct) {
-		log.info("Inside controller update product");
+		log.info("Invoked:: ProductController:: updateProduct");
 		return new Response<ProductBo>(this.productService.updateProduct(updateProduct), "success");
 	}
 
@@ -62,7 +62,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchProduct/{id}")
 	public Response<ProductBo> fetchProduct(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetch product");
+		log.info("Invoked:: ProductController:: fetchProduct");
 		return new Response<ProductBo>(this.productService.fetchProduct(id), "success");
 	}
 
@@ -71,14 +71,14 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/fetchProductList")
 	public ListResponseWithCount<ProductBo> fetchProductList(@RequestBody @Valid ListProductRequest paginationbo) {
-		log.info("Inside controller fetch Product List");
+		log.info("Invoked:: ProductController:: fetchProductList");
 		return this.productService.fetchProductList(paginationbo);
 
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public Response<?> deleteProduct(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetch product");
+		log.info("Invoked:: ProductController:: deleteProduct");
 		this.productService.deleteProduct(id);
 		return new Response<Boolean>(true, "deleted successfully");
 	}
@@ -88,13 +88,13 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/updateProductStatus")
 	public Response<ProductBo> updateProductStatus(@RequestBody @Valid ToggleStatus request) {
-		log.info("Inside controller update product status");
+		log.info("Invoked:: ProductController:: updateProductStatus");
 		return new Response<ProductBo>(this.productService.updateProductStatus(request), "success");
 	}
 
 	@DeleteMapping("/deleteattachment/{id}")
 	public Response<?> deleteAttachment(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller delete attachment");
+		log.info("Invoked:: ProductController:: deleteAttachment");
 		return new Response<Boolean>(this.productService.deleteAttachment(id), "product disabled successfully");
 	}
 
@@ -103,7 +103,7 @@ public class ProductController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/updateProductImage")
 	public ListResponse<FileBo> updateProductImage(@ModelAttribute @Valid FileUpload file) {
-		log.info("inside controller updateProductImage");
+		log.info("Invoked:: ProductController:: updateProductImage");
 		return this.productService.updateProductImage(file);
 	}
 
@@ -111,6 +111,7 @@ public class ProductController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad request") })
 	@PostMapping("/search")
 	public ListResponseWithCount<ProductBo> searchProducts(@RequestBody PaginationBo bo) {
+		log.info("Invoked:: ProductController:: searchProducts");
 		return this.productService.searchProducts(bo);
 	}
 

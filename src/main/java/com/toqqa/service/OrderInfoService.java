@@ -9,6 +9,7 @@ import com.toqqa.bo.OrderItemBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.domain.OrderInfo;
 import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.OrderCancelPayload;
 import com.toqqa.payload.OrderPayload;
 import com.toqqa.payload.OrderStatusUpdatePayload;
 import com.toqqa.payload.Response;
@@ -24,7 +25,7 @@ public interface OrderInfoService {
 
 //	String orderInvoice(String id);
 
-	Response<?> updateOrder(String orderId);
+	Response<?> updateOrder(OrderCancelPayload cancelPayload);
 
 	List<OrderItemBo> fetchOrderItems(OrderInfo orderInfo);
 

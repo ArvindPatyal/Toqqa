@@ -37,7 +37,7 @@ public class RegistrationController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/customer")
 	public Response<?> addUser(@RequestBody @Valid UserSignUp userSignUp) {
-		log.info("Inside controller add user");
+		log.info("Invoked:: RegistrationController:: addUser");
 		return new Response<>(this.userService.addUser(userSignUp), "success");
 	}
 
@@ -46,7 +46,7 @@ public class RegistrationController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/sme")
 	public Response<?> smeRegistration(@Valid @ModelAttribute SmeRegistrationPayload smeRegistration) {
-		log.info("Inside controller sme registration");
+		log.info("Invoked:: RegistrationController:: smeRegistration");
 		return this.registrationService.registerSme(smeRegistration);
 	}
 
@@ -55,7 +55,7 @@ public class RegistrationController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/agent")
 	public Response<?> agentRegistration(@ModelAttribute @Valid AgentRegistrationPayload agentRegistration) {
-		log.info("Inside controller agent registration");
+		log.info("Invoked:: RegistrationController:: agentRegistration");
 		return this.registrationService.registerAgent(agentRegistration);
 	}
 }

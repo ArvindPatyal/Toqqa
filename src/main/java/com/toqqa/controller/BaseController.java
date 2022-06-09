@@ -11,9 +11,9 @@ import com.toqqa.payload.Response;
 
 @Component
 public class BaseController {
-	
+
 	public <T> ListResponse<T> doSuccessResponse(List<T> object, String message) {
-		ListResponse<T> response = new ListResponse<>(object,message);
+		ListResponse<T> response = new ListResponse<>(object, message);
 		return response;
 	}
 
@@ -29,6 +29,5 @@ public class BaseController {
 		response.setHasError(true);
 		return response;
 	}
-
 
 }

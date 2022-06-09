@@ -56,7 +56,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public AdvertisementBo createAds(AdvertisementPayload advertisementPayload) {
-        log.info("Inside create Advertisement");
+        log.info("Invoked :: AdvertisementServiceImpl :: createAds()");
         if (!this.authenticationService.isSME()) {
             throw new AccessDeniedException("user is not an sme");
         }
@@ -98,7 +98,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
      */
 
     private void updateOldAdsStatus(User user) {
-        log.info("Inside advertisement update ads Status");
+        log.info("Invoked :: AdvertisementServiceImpl :: updateOldAdsStatus()");
         List<Advertisement> ads = this.advertisementRepo.findByUserAndIsActiveAndIsDeleted(user, true, false);
         ads.forEach(ad -> {
             ad.setIsActive(false);
@@ -108,7 +108,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public AdvertisementBo updateAd(AdvertisementUpdate advertisementUpdate) {
-        log.info("Inside Update Advertisement");
+        log.info("Invoked :: AdvertisementServiceImpl :: updateAd()");
         if (!this.authenticationService.isSME()) {
             throw new AccessDeniedException("user is not an sme");
         }
@@ -136,7 +136,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     }
 
     public void deleteAd(String id) {
-        log.info("inside delete ad");
+        log.info("Invoked :: AdvertisementServiceImpl :: deleteAd()");
         Advertisement ad = this.advertisementRepo.findById(id).get();
         ad.setIsDeleted(true);
         ad.setIsActive(false);
@@ -145,7 +145,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public AdvertisementBo fetchAd(String id) {
-        log.info("Inside fetch advertisement");
+        log.info("Invoked :: AdvertisementServiceImpl :: fetchAd()");
         Optional<Advertisement> advertisement = this.advertisementRepo.findById(id);
         if (advertisement.isPresent()) {
             ProductBo productBo = new ProductBo(advertisement.get().getProduct(),
@@ -160,7 +160,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public ListResponseWithCount<AdvertisementBo> fetchAdvertisementList(PaginationBo paginationBo) {
-        log.info("inside fetch advertisementList ");
+        log.info("Invoked :: AdvertisementServiceImpl :: fetchAdvertisementList()");
         User user = this.authenticationService.currentUser();
         Page<Advertisement> allAdvertisements = null;
         if (this.authenticationService.isAdmin()) {
@@ -185,7 +185,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public AdvertisementBo updateClick(String id) {
-        log.info("Inside updateClicks advertisement");
+        log.info("Invoked :: AdvertisementServiceImpl :: updateClick()");
         Advertisement ads = this.advertisementRepo.getById(id);
         ads.setClicks(ads.getClicks() + 1);
         ads.setModificationDate(new Date());
@@ -195,7 +195,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public AdvertisementBo updateAdsStatus(ToggleAdStatus status) {
-        log.info("Inside update Ads Status");
+        log.info("Invoked :: AdvertisementServiceImpl :: updateAdsStatus()");
         User user = this.authenticationService.currentUser();
         Optional<Advertisement> ad = this.advertisementRepo.findById(status.getAdId());
         if (ad.isPresent()) {
@@ -217,7 +217,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public List<AdvertisementBo> fetchTopActiveAdds() {
-        log.info("inside top active ads.");
+        log.info("Invoked :: AdvertisementServiceImpl :: fetchTopActiveAdds()");
         List<Advertisement> ads = this.advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
         List<AdvertisementBo> adds = new ArrayList<AdvertisementBo>();
 
@@ -235,6 +235,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Scheduled(fixedRate = 14400000,initialDelay =14400000)
     private void resetAdds() {
+        log.info("Invoked :: AdvertisementServiceImpl :: resetAdds()");
         List<Advertisement> ads = this.advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
         if(this.helper.notNullAndHavingData(ads)) {
             Advertisement ad = ads.get(0);

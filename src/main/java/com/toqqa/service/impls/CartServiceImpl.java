@@ -1,17 +1,5 @@
 package com.toqqa.service.impls;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.toqqa.bo.CartBo;
 import com.toqqa.bo.CartItemBo;
 import com.toqqa.bo.ProductBo;
@@ -19,8 +7,8 @@ import com.toqqa.domain.Cart;
 import com.toqqa.domain.CartItem;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
-import com.toqqa.domain.Wishlist;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.CartItemPayload;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
@@ -28,14 +16,19 @@ import com.toqqa.repository.CartItemRepository;
 import com.toqqa.repository.CartRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.repository.WishlistRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.CartService;
-import com.toqqa.service.CustomerService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.WishlistService;
+import com.toqqa.service.*;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -66,7 +59,7 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public Response fetchCart() {
-		log.info("Inside fetch cart");
+		log.info("Invoked :: CartServiceImpl :: fetchCart()");
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
 		List<ProductBo> productBos = new ArrayList<>();
 		if (cart == null) {
@@ -99,7 +92,7 @@ public class CartServiceImpl implements CartService {
 	}
 
 	public Response manageCart(CartItemPayload cartItemPayload) {
-		log.info("Inside Service Add To cart");
+		log.info("Invoked :: CartServiceImpl :: manageCart()");
 		User user = this.authenticationService.currentUser();
 		Cart cart = this.cartRepo.findByUser(user);
 		if (cart == null) {
@@ -136,7 +129,7 @@ public class CartServiceImpl implements CartService {
 	}
 
 	private List<CartItem> persistCartItems(CartItemPayload cartItemPayload, Cart cart) {
-		log.info("Inside persist cart items");
+		log.info("Invoked :: CartServiceImpl :: persistCartItems()");
 		CartItem cartItem = new CartItem();
 		cartItem.setCart(cart);
 		cartItem.setProductId(cartItemPayload.getProductId());
@@ -157,6 +150,7 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public Response updateCart(CartItemPayload cartItemPayload) {
+		log.info("Invoked :: CartServiceImpl :: updateCart()");
 		Cart cart = this.cartRepo.findByUser(this.authenticationService.currentUser());
 		if (cart == null) {
 			return new Response(true, "cart not found");
@@ -180,6 +174,7 @@ public class CartServiceImpl implements CartService {
 	}
 
 	private Response removeCartItem(Cart cart, String productId) {
+		log.info("Invoked :: CartServiceImpl :: removeCartItem()");
 		cart.getCartItems()
 				.removeIf(cartItem -> cartItem.getProductId().equals(productId) && cartItem.getCart().equals(cart));
 		cartItemRepo.deleteByCartAndProductId(cart, productId);
@@ -191,10 +186,10 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public Response deleteCartItem(String productId) {
-		log.info("Inside Service delete cart item");
+		log.info("Invoked :: CartServiceImpl :: deleteCartItem()");
 		Cart cart = this.cartRepo.findByUser(authenticationService.currentUser());
 		if (cart == null) {
-			throw new BadRequestException("cart not found");
+			throw new ResourceNotFoundException("cart not found");
 		}
 		boolean isItemInCart = cart.getCartItems().stream()
 				.anyMatch(cartItem -> cartItem.getProductId().equals(productId));

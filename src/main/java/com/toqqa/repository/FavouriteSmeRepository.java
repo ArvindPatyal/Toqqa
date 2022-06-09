@@ -5,11 +5,9 @@ import com.toqqa.domain.FavouriteSme;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface FavouriteSmeRepository extends JpaRepository<FavouriteSme, String> {
-    List<FavouriteSme> findByFavourite(Favourite favourite);
+//    List<FavouriteSme> findByFavourite(Favourite favourite);
 
     void deleteBySmeIdAndFavourite(String smeId, Favourite favourite);
 }

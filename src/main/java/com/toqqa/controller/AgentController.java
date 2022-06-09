@@ -33,7 +33,7 @@ public class AgentController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/agentupdate")
 	public Response<AgentBo> agentUpdate(@ModelAttribute @Valid AgentUpdate agentUpdate) {
-		log.info("Inside controller agent Update");
+		log.info("Invoked:: Agentcontroller:: agentUpdate");
 		return new Response<AgentBo>(this.agentService.agentUpdate(agentUpdate), "success");
 	}
 
@@ -42,7 +42,7 @@ public class AgentController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchAgent/{id}")
 	public Response<AgentBo> fetchAgent(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetch user");
+		log.info("Invoked:: Agentcontroller:: fetchAgent");
 		return new Response<AgentBo>(this.agentService.fetchAgent(id), "success");
 	}
 }

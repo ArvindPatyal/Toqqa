@@ -4,7 +4,7 @@ import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Product;
 import com.toqqa.domain.Wishlist;
 import com.toqqa.domain.WishlistItem;
-import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.WishlistItemPayload;
@@ -51,7 +51,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
 
     public Response toggleWishlist(WishlistItemPayload wishlistItemPayload) {
-        log.info("Inside Service create wishlist");
+        log.info("Invoked :: WishlistServiceImpl :: toggleWishlist()");
 
         Optional<Product> optionalProduct = this.productRepository.findById(wishlistItemPayload.getProductId());
         if (optionalProduct.isPresent()) {
@@ -73,13 +73,13 @@ public class WishlistServiceImpl implements WishlistService {
             wishlist.setWishlistItems(persistWishlistItems(wishlistItemPayload, wishlist,product));
             return new Response(true, "item added to wishlist");
         } else {
-            throw new ResourceNotFoundException("product not found with id " + wishlistItemPayload.getProductId());
+            throw new BadRequestException("product not found with id " + wishlistItemPayload.getProductId());
         }
     }
 
 
     private List<WishlistItem> persistWishlistItems(WishlistItemPayload wishlistItemsPayload, Wishlist wishlist,Product product) {
-        log.info("Inside persist wishlist items");
+        log.info("Invoked :: WishlistServiceImpl :: persistWishlistItems()");
 
         WishlistItem wishlistItem = new WishlistItem();
         wishlistItem.setProductId(wishlistItemsPayload.getProductId());
@@ -92,7 +92,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public ListResponse fetchWishlist() {
-        log.info("inside Service fetch wishlist");
+        log.info("Invoked :: WishlistServiceImpl :: fetchWishlist()");
         Wishlist wishlist = this.wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
         if (wishlist == null) {
             return new ListResponse(null, "Wishlist Not Found");
@@ -121,7 +121,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public void deleteWishlistItem(String productId) {
-        log.info("Inside Service delete wishlist");
+        log.info("Invoked :: WishlistServiceImpl :: deleteWishlistItem()");
         Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
         if (wishlist != null && this.helper.notNullAndHavingData(wishlist.getWishlistItems())) {
             wishlistItemRepository.deleteByProductIdAndWishlist(productId, wishlist);

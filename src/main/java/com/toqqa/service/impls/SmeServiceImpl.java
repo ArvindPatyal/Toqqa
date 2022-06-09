@@ -52,7 +52,6 @@ import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -111,7 +110,7 @@ public class SmeServiceImpl implements SmeService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
-		log.info("Inside sme registration");
+		log.info("Invoked :: SmeServiceImpl :: smeRegistration()");
 		if (!alreadySme(userId)) {
 			try {
 				Sme sme = new Sme();
@@ -179,7 +178,7 @@ public class SmeServiceImpl implements SmeService {
 	}
 
 	private Boolean alreadySme(String id) {
-		log.info("Inside already sme");
+		log.info("Invoked :: SmeServiceImpl :: alreadySme()");
 		User user = this.userRepo.findById(id).get();
 		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
 	}
@@ -193,7 +192,7 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public SmeBo smeUpdate(SmeUpdate smeUpdate) {
-		log.info("Inside sme update");
+		log.info("Invoked :: SmeServiceImpl :: smeUpdate()");
 
 		Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
 		if (sme != null) {
@@ -249,7 +248,7 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public SmeBo fetchSme(String id) {
-		log.info("Inside fetch sme");
+		log.info("Invoked :: SmeServiceImpl :: fetchSme()");
 		Sme sme = this.smeRepo.findByUserId(id);
 		if (sme != null) {
 			SmeBo bo = new SmeBo(sme);
