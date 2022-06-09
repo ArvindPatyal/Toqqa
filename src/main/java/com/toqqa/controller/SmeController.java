@@ -36,7 +36,7 @@ public class SmeController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/smeupdate")
 	public Response<SmeBo> smeUpdate(@ModelAttribute @Valid SmeUpdate smeUpdate) {
-		log.info("Inside Controller sme update");
+		log.info("Invoked:: SmeController:: smeUpdate");
 		return new Response<SmeBo>(this.smeService.smeUpdate(smeUpdate), "success");
 	}
 
@@ -45,7 +45,7 @@ public class SmeController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchSme/{id}")
 	public Response<SmeBo> fetchSme(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetchSme");
+		log.info("Invoked:: SmeController:: fetchSme");
 		return new Response<SmeBo>(this.smeService.fetchSme(id), "success");
 	}
 
@@ -53,7 +53,7 @@ public class SmeController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/productsList")
 	public ListResponseWithCount smeProductsFilter(@RequestBody ProductRequestFilter productRequestFilter) {
-		log.info("Inside Controller Sme products List");
+		log.info("Invoked:: SmeController:: smeProductsFilter");
 		return smeService.fetchProductsList(productRequestFilter);
 	}
 

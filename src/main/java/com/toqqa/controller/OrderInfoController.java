@@ -41,7 +41,7 @@ public class OrderInfoController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/placeOrder")
 	public Response placeOrder(@Valid @RequestBody OrderPayload orderPayload) {
-		log.info("Inside controller add order");
+		log.info("Invoked:: OrderInfoController:: placeOrder");
 		return this.orderInfoService.placeOrder(orderPayload);
 	}
 
@@ -50,7 +50,7 @@ public class OrderInfoController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/cancel")
 	public Response<?> updateOrder(@Valid @RequestBody OrderCancelPayload cancelPayload) {
-		log.info("Inside controller cancel order");
+		log.info("Invoked:: OrderInfoController:: updateOrder");
 		return this.orderInfoService.updateOrder(cancelPayload);
 	}
 
@@ -59,7 +59,7 @@ public class OrderInfoController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchOrderInfo/{id}")
 	public Response<OrderInfoBo> fetchOrderInfo(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetch product");
+		log.info("Invoked:: OrderInfoController:: fetchOrderInfo");
 		return new Response<OrderInfoBo>(this.orderInfoService.fetchOrderInfo(id), "success");
 	}
 
@@ -67,7 +67,7 @@ public class OrderInfoController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/fetchOrderList")
 	public ListResponseWithCount<OrderInfoBo> fetchOrderList(@RequestBody @Valid PaginationBo paginationbo) {
-		log.info("Inside controller fetch Order List");
+		log.info("Invoked:: OrderInfoController:: fetchOrderList");
 		return this.orderInfoService.fetchOrderList(paginationbo);
 	}
 
@@ -82,7 +82,7 @@ public class OrderInfoController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/list")
 	public ListResponseWithCount<OrderInfoBo> list(@RequestBody @Valid ToggleOrdersStatus toggleOrdersStatus) {
-		log.info("Inside controller fetch Order List");
+		log.info("Invoked:: OrderInfoController:: list");
 		return this.orderInfoService.list(toggleOrdersStatus);
 	}
 
@@ -90,7 +90,7 @@ public class OrderInfoController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/order/{orderId}")
 	public Response orderItems(@PathVariable String orderId) {
-		log.info("Inside Controller Sme order items");
+		log.info("Invoked:: OrderInfoController:: orderItems");
 		return new Response(orderInfoService.orderDetails(orderId), "");
 	}
 
@@ -98,7 +98,7 @@ public class OrderInfoController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/updateStatus")
 	public Response orderStatus(@RequestBody @Valid OrderStatusUpdatePayload orderStatusUpdatePayload) {
-		log.info("Inside Controller update order status");
+		log.info("Invoked:: OrderInfoController:: orderStatus");
 		try {
 			OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant());
 		} catch (Exception e) {

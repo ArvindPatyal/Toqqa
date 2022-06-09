@@ -34,7 +34,7 @@ public class AuthController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/signIn")
 	public Response<?> signIn(@RequestBody @Valid LoginRequest request) {
-		log.info("Inside Controller Signin");
+		log.info("Invoked:: AuthController:: signIn");
 		return new Response<LoginResponse>(this.userService.signIn(request), "success");
 	}
 

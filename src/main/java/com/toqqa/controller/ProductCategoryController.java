@@ -27,7 +27,7 @@ public class ProductCategoryController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@GetMapping("/categories")
 	public ListResponse<ProductCategoryBo> getProductCategoryList() {
-		log.info("Inside controller get product category list");
+		log.info("Invoked:: ProductCategoryController:: getProductCategoryList");
 		return new ListResponse<ProductCategoryBo>(this.productCategoryService.getProductCategories(), "success");
 	}
 

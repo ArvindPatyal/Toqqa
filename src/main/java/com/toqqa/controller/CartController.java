@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.toqqa.bo.PaginationBo;
 import com.toqqa.payload.CartItemPayload;
-import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.service.CartService;
 
@@ -28,38 +26,42 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/cart")
 public class CartController {
 
-    @Autowired
-    private CartService cartService;
+	@Autowired
+	private CartService cartService;
 
-    @ApiOperation(value = "manage cart addition or updation")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping("/managecart")
-    public Response manageCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
-        log.info("Inside Controller manage Cart");
-        return this.cartService.manageCart(cartItemPayload);
-    }
+	@ApiOperation(value = "manage cart addition or updation")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@PostMapping("/managecart")
+	public Response manageCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
+		log.info("Invoked:: CartController:: manageCart");
+		return this.cartService.manageCart(cartItemPayload);
+	}
 
-    @ApiOperation(value = "Fetch cart details")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping("/fetchcart")
-    public Response fetchCart() {
-        log.info("Inside Controller fetch cart ");
-        return this.cartService.fetchCart();
-    }
+	@ApiOperation(value = "Fetch cart details")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@GetMapping("/fetchcart")
+	public Response fetchCart() {
+		log.info("Invoked:: CartControllerr:: fetchCart");
+		return this.cartService.fetchCart();
+	}
 
-    @ApiOperation(value = "Update Product To Cart")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"), @ApiResponse(code = 400, message = "Bad Request")})
-    @PutMapping("/updatecart")
-    public Response updateCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
-        log.info("Inside Controller Add To Cart");
-        return this.cartService.updateCart(cartItemPayload);
-    }
+	@ApiOperation(value = "Update Product To Cart")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@PutMapping("/updatecart")
+	public Response updateCart(@RequestBody @Valid CartItemPayload cartItemPayload) {
+		log.info("Invoked:: CartController:: updateCart");
+		return this.cartService.updateCart(cartItemPayload);
+	}
 
-    @ApiOperation(value = "remove an item from cart")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Sucess"), @ApiResponse(code = 400, message = "Bad Request")})
-    @DeleteMapping("/delete/{productId}")
-    public Response deleteitem(@PathVariable @Valid String productId) {
-        log.info("Inside controller delete cart item");
-        return cartService.deleteCartItem(productId);
-    }
+	@ApiOperation(value = "remove an item from cart")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Sucess"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@DeleteMapping("/delete/{productId}")
+	public Response deleteitem(@PathVariable @Valid String productId) {
+		log.info("Invoked:: CartController:: deleteitem");
+		return cartService.deleteCartItem(productId);
+	}
 }
