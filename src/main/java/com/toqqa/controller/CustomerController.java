@@ -1,7 +1,15 @@
 package com.toqqa.controller;
 
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.toqqa.bo.AdvertisementBo;
-import com.toqqa.dto.CustomResponseDto;
 import com.toqqa.dto.NearbySmeRespDto;
 import com.toqqa.payload.CustomerProductRequest;
 import com.toqqa.payload.ListResponse;
@@ -10,21 +18,17 @@ import com.toqqa.payload.ProductRequestFilter;
 import com.toqqa.service.AdvertisementService;
 import com.toqqa.service.CustomerService;
 import com.toqqa.service.SmeService;
+import com.toqqa.util.Constants;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import com.toqqa.util.Constants;
-
 
 @RestController
 @Slf4j
 @RequestMapping("/api/customer")
-public class CustomerController extends BaseController{
+public class CustomerController extends BaseController {
 
 	@Autowired
 	private CustomerService customerService;
@@ -32,10 +36,10 @@ public class CustomerController extends BaseController{
 	private AdvertisementService advertisementService;
 	@Autowired
 	private SmeService smeService;
-	
-	
+
 	@Autowired
-	CustomerController(CustomerService customerService, AdvertisementService advertisementService, SmeService smeService){
+	CustomerController(CustomerService customerService, AdvertisementService advertisementService,
+			SmeService smeService) {
 		this.customerService = customerService;
 		this.advertisementService = advertisementService;
 		this.smeService = smeService;
@@ -46,7 +50,7 @@ public class CustomerController extends BaseController{
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/productList")
 	public ListResponseWithCount productList(@RequestBody @Valid CustomerProductRequest bo) {
-		log.info("Inside Controller customer productList");
+		log.info("Invoked:: CustomerController:: Customer:: Fetch productList");
 		return customerService.productList(bo);
 	}
 
@@ -55,7 +59,7 @@ public class CustomerController extends BaseController{
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@GetMapping("/fetchTopAds")
 	public ListResponse<AdvertisementBo> fetchTopActiveAdds() {
-		log.info("Inside controller fetch top ads");
+		log.info("Invoked:: CustomerController:: fetchTopActiveAdds");
 		return new ListResponse<>(advertisementService.fetchTopActiveAdds(), "");
 	}
 
@@ -72,11 +76,11 @@ public class CustomerController extends BaseController{
 	 * ListResponse<>(this..fetchProductsByProductCategories(),""); }
 	 */
 	@ApiOperation(value = "fetch productsList of a Specific Sme")
-	@ApiResponses(value = {@ApiResponse(code = 200, message = ""),
-			@ApiResponse(code = 400, message = "Bad Request!")})
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/fetchSmeProducts")
 	public ListResponseWithCount fetchSmeProducts(@RequestBody ProductRequestFilter productRequestFilter) {
-		log.info("Inside Controller fetchSmeProducts");
+		log.info("Invoked CustomerController fetchSmeProducts");
 		return customerService.smeProductList(productRequestFilter);
 	}
 
@@ -86,7 +90,7 @@ public class CustomerController extends BaseController{
 	@GetMapping("/nearby-sme")
 	public ListResponse<NearbySmeRespDto> getNearbySme() {
 		log.info("Invoked :: CustomerController :: getNearbySme()");
-		return doSuccessResponse(smeService.getNearbySme(),Constants.MSG_DATA_PROCESSED);
+		return doSuccessResponse(smeService.getNearbySme(), Constants.MSG_DATA_PROCESSED);
 	}
-	
+
 }

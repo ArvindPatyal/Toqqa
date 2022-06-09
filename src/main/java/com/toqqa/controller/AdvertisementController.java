@@ -1,7 +1,5 @@
 package com.toqqa.controller;
 
-import java.util.List;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +40,7 @@ public class AdvertisementController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/createAd")
 	public Response<AdvertisementBo> createAd(@ModelAttribute @Valid AdvertisementPayload advertisementPayload) {
-		log.info("Inside controller add order");
+		log.info("Invoked:: AdvertisementController:: createAd");
 		return new Response<AdvertisementBo>(this.advertisementService.createAds(advertisementPayload), "success");
 	}
 
@@ -50,14 +48,14 @@ public class AdvertisementController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/updateAd")
-	public Response<AdvertisementBo> createAd(@ModelAttribute @Valid AdvertisementUpdate advertisementUpdate) {
-		log.info("Inside controller update Advertisement");
+	public Response<AdvertisementBo> updateAd(@ModelAttribute @Valid AdvertisementUpdate advertisementUpdate) {
+		log.info("Invoked::  AdvertisementController:: updateAd");
 		return new Response<AdvertisementBo>(this.advertisementService.updateAd(advertisementUpdate), "success");
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public Response<?> deleteAdvertisement(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller delete product");
+		log.info("Invoked::  AdvertisementController:: deleteAdvertisement");
 		this.advertisementService.deleteAd(id);
 		return new Response<Boolean>(true, "success");
 	}
@@ -67,7 +65,7 @@ public class AdvertisementController {
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@GetMapping("/fetchAd/{id}")
 	public Response<AdvertisementBo> fetchAd(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller fetch product");
+		log.info("Invoked::  AdvertisementController:: fetchAd");
 		return new Response<AdvertisementBo>(this.advertisementService.fetchAd(id), "success");
 	}
 
@@ -77,7 +75,7 @@ public class AdvertisementController {
 	@PostMapping("/fetchAdList")
 	public ListResponseWithCount<AdvertisementBo> fetchAdvertisementList(
 			@RequestBody @Valid PaginationBo paginationbo) {
-		log.info("Inside controller fetch Advertisement List");
+		log.info("Invoked::  AdvertisementController::fetchAdvertisementList");
 		return this.advertisementService.fetchAdvertisementList(paginationbo);
 	}
 
@@ -86,7 +84,7 @@ public class AdvertisementController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PutMapping("/updateClicks/{id}")
 	public Response<AdvertisementBo> updateClick(@PathVariable("id") @Valid String id) {
-		log.info("Inside controller update clicks");
+		log.info("Invoked::  AdvertisementController:: updateClick");
 		return new Response<AdvertisementBo>(this.advertisementService.updateClick(id), "success");
 	}
 
@@ -95,18 +93,21 @@ public class AdvertisementController {
 			@ApiResponse(code = 400, message = "Bad Request!") })
 	@PostMapping("/updateAdsStatus")
 	public Response<AdvertisementBo> updateAdsStatus(@RequestBody @Valid ToggleAdStatus request) {
-		log.info("Inside controller update ad status");
+		log.info("Invoked::  AdvertisementController:: updateAdsStatus");
 		return new Response<AdvertisementBo>(this.advertisementService.updateAdsStatus(request), "success");
 	}
 
-	/*@ApiOperation(value = "fetchTopAds")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
-			@ApiResponse(code = 400, message = "Bad Request!") })
-	@GetMapping("/fetchTopAds")
-	public List<AdvertisementBo> fetchTopActiveAdds() {
-		log.info("Inside controller fetch top ads");
-		return this.advertisementService.fetchTopActiveAdds();
-	}*/
+	/*
+	 * @ApiOperation(value = "fetchTopAds")
+	 * 
+	 * @ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+	 * 
+	 * @ApiResponse(code = 400, message = "Bad Request!") })
+	 * 
+	 * @GetMapping("/fetchTopAds") public List<AdvertisementBo> fetchTopActiveAdds()
+	 * { log.info("Inside controller fetch top ads"); return
+	 * this.advertisementService.fetchTopActiveAdds(); }
+	 */
 
 //	@ApiOperation(value = "allotQueueNumber")
 //	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),

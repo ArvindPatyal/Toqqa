@@ -30,9 +30,10 @@ public class ProductSubCategoryController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "sucess"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PostMapping("/productsubcategories")
-	public ListResponse<ProductSubCategoryBo> getCategoryList(@RequestBody @Valid FetchSubCategoriesPayload getSub) {			
-		log.info("Inside controller get category list");
-		return new ListResponse<ProductSubCategoryBo>(this.productSubCategoryService.getProductSubCategories(getSub),"success");				
+	public ListResponse<ProductSubCategoryBo> getCategoryList(@RequestBody @Valid FetchSubCategoriesPayload getSub) {
+		log.info("Invoked:: ProductSubCategoryController:: getCategoryList");
+		return new ListResponse<ProductSubCategoryBo>(this.productSubCategoryService.getProductSubCategories(getSub),
+				"success");
 	}
 
 }
