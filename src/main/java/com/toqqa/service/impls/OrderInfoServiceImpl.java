@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,8 +214,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		String smeId = sme.getId();
 		Page<OrderInfo> orderInfo = null;
 		if (toggleOrdersStatus.getOrderStatus() != null) {
+			Sort sort = Sort.by("modificationDate").descending();
 			orderInfo = this.orderInfoRepo.findBySmeIdAndOrderStatusIn(
-					PageRequest.of(toggleOrdersStatus.getPageNumber(), pageSize), smeId,
+					PageRequest.of(toggleOrdersStatus.getPageNumber(), pageSize, sort), smeId,
 					toggleOrdersStatus.getOrderStatus());
 		} else {
 			throw new BadRequestException("invalid OrderStatus or empty");

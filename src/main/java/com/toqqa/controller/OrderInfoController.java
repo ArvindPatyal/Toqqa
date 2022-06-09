@@ -80,7 +80,7 @@ public class OrderInfoController {
 
 	@ApiOperation(value = "Orders list of Customer with respect to SME (Live & Cancelled)")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request") })
-	@GetMapping("/list")
+	@PostMapping("/list")
 	public ListResponseWithCount<OrderInfoBo> list(@RequestBody @Valid ToggleOrdersStatus toggleOrdersStatus) {
 		log.info("Inside controller fetch Order List");
 		return this.orderInfoService.list(toggleOrdersStatus);
