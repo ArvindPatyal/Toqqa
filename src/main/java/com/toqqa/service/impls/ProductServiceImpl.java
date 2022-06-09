@@ -1,11 +1,19 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
+import com.toqqa.bo.FileBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.ProductBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.constants.FileType;
+import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.OrderBy;
+import com.toqqa.domain.*;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.payload.*;
+import com.toqqa.repository.*;
+import com.toqqa.service.*;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -16,42 +24,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.toqqa.bo.FileBo;
-import com.toqqa.bo.PaginationBo;
-import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.constants.FileType;
-import com.toqqa.constants.FolderConstants;
-import com.toqqa.constants.OrderBy;
-import com.toqqa.domain.Advertisement;
-import com.toqqa.domain.Attachment;
-import com.toqqa.domain.Product;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
-import com.toqqa.domain.Wishlist;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.AddProduct;
-import com.toqqa.payload.FileUpload;
-import com.toqqa.payload.ListProductRequest;
-import com.toqqa.payload.ListResponse;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.ToggleStatus;
-import com.toqqa.payload.UpdateProduct;
-import com.toqqa.repository.AdvertisementRepository;
-import com.toqqa.repository.AttachmentRepository;
-import com.toqqa.repository.ProductCategoryRepository;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.ProductSubCategoryRepository;
-import com.toqqa.repository.SmeRepository;
-import com.toqqa.repository.WishlistRepository;
-import com.toqqa.service.AttachmentService;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.StorageService;
-import com.toqqa.service.WishlistService;
-import com.toqqa.util.Helper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -96,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ProductBo addProduct(AddProduct addProduct) {
-		log.info("Inside Add Product");
+		log.info("Invoked :: ProductServiceImpl :: addProduct()");
 		if (addProduct.getMaximumUnitsInOneOrder() != null && addProduct.getMinimumUnitsInOneOrder() != null) {
 			if (addProduct.getMaximumUnitsInOneOrder() < addProduct.getMinimumUnitsInOneOrder()) {
 				throw new BadRequestException("Max. value greater then min. value");
@@ -153,16 +130,16 @@ public class ProductServiceImpl implements ProductService {
 		return bo;
 	}
 
-	private String prepareResource(String location) {
+	/*private String prepareResource(String location) {
 		if (this.helper.notNullAndBlank(location)) {
 			return this.storageService.generatePresignedUrl(location);
 		}
 		return "";
-	}
+	}*/
 
 	@Override
 	public ProductBo updateProduct(UpdateProduct updateProduct) {
-		log.info("inside update Product");
+		log.info("Invoked :: ProductServiceImpl :: updateProduct()");
 
 		if (updateProduct.getMaximumUnitsInOneOrder() != null && updateProduct.getMinimumUnitsInOneOrder() != null) {
 			if (updateProduct.getMaximumUnitsInOneOrder() < updateProduct.getMinimumUnitsInOneOrder()) {
@@ -212,7 +189,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ProductBo fetchProduct(String id) {
-		log.info("Inside fetch product");
+		log.info("Invoked :: ProductServiceImpl :: fetchProduct()");
 		Optional<Product> product = this.productRepo.findById(id);
 		if (product.isPresent()) {
 			return this.toProductBo(product.get());
@@ -222,7 +199,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ListResponseWithCount<ProductBo> fetchProductList(ListProductRequest paginationBo) {
-		log.info("inside fetch products");
+		log.info("Invoked :: ProductServiceImpl :: fetchProductList()");
 		User user = this.authenticationService.currentUser();
 		Page<Product> allProducts = null;
 
@@ -243,7 +220,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	public void deleteProduct(String id) {
-		log.info("inside delete product");
+		log.info("Invoked :: ProductServiceImpl :: deleteProduct()");
 		Product prod = this.productRepo.findById(id).get();
 		prod.setIsDeleted(true);
 		Advertisement adv = this.advertisementRepo.findByProduct_Id(id);
@@ -255,7 +232,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public Boolean deleteAttachment(String id) {
-		log.info("inside delete attachment");
+		log.info("Invoked :: ProductServiceImpl :: deleteAttachment()");
 		if (this.attachmentRepository.findById(id).isPresent()) {
 			this.attachmentRepository.deleteById(id);
 			return true;
@@ -265,7 +242,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ListResponse<FileBo> updateProductImage(FileUpload file) {
-		log.info("inside upload product image");
+		log.info("Invoked :: ProductServiceImpl :: updateProductImage()");
 		Product prod = this.productRepo.findById(file.getId()).get();
 		List<FileBo> presignedUrls = new ArrayList<>();
 		if (prod != null) {
@@ -291,7 +268,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ProductBo updateProductStatus(ToggleStatus toggleStatus) {
-		log.info("Inside update Product status");
+		log.info("Invoked :: ProductServiceImpl :: updateProductStatus()");
 		if (!this.authenticationService.isSME()) {
 			throw new AccessDeniedException("user is not an sme");
 		}
@@ -310,7 +287,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ListResponse<ProductBo> productList() {
-		log.info("Inside productList");
+		log.info("Invoked :: ProductServiceImpl :: productList()");
 		List<Product> products = null;
 
 		products = this.productRepo.findAll();
@@ -324,6 +301,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ListResponseWithCount<ProductBo> searchProducts(PaginationBo bo) {
+		log.info("Invoked :: ProductServiceImpl :: searchProducts()");
 		Page<Product> page = null;
 
 		Sort sort = this.sortBy(bo);

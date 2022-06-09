@@ -1,15 +1,5 @@
 package com.toqqa.service.impls;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
 import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Product;
 import com.toqqa.payload.CustomerProductRequest;
@@ -20,8 +10,16 @@ import com.toqqa.service.CustomerService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.SmeService;
 import com.toqqa.util.Helper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -44,7 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public ListResponseWithCount<ProductBo> productList(CustomerProductRequest bo) {
-		log.info("Inside productList");
+		log.info("Invoked :: CustomerServiceImpl :: productList()");
 		Page<Product> products = null;
 		Sort sort = Sort.by("createdAt").descending();
 		if (helper.notNullAndHavingData(bo.getProductCategoryIds()) && bo.getShowBulkProducts()) {
@@ -71,7 +69,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public ListResponseWithCount<?> smeProductList(ProductRequestFilter productRequestFilter) {
-		log.info("Inside Service smeProductList");
+		log.info("Invoked :: CustomerServiceImpl :: smeProductList()");
 		return this.smeService.fetchProducts(productRequestFilter);
 	}
 }

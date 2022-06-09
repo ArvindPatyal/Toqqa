@@ -1,6 +1,5 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.FavouriteSmeBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.domain.Favourite;
 import com.toqqa.domain.FavouriteSme;
@@ -47,7 +46,7 @@ public class FavouriteServiceImpl implements FavouriteService {
 
     @Override
     public Response addFavouriteSme(FavouriteSmePayload favouriteSmePayload) {
-        log.info("Inside Service addFavouriteSme");
+        log.info("Invoked :: FavouriteServiceImpl :: addFavouriteSme()");
         Sme sme = this.smeRepository.findByUserId(favouriteSmePayload.getProductUserId());
         if (sme != null) {
             Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
@@ -73,7 +72,7 @@ public class FavouriteServiceImpl implements FavouriteService {
 
     @Override
     public ListResponse<SmeBo> fetchFavoriteList() {
-        log.info("Inside Service fetchFavoriteList");
+        log.info("Invoked :: FavouriteServiceImpl :: fetchFavoriteList()");
         Favourite favourite = this.favouriteRepository.findByUser(this.authenticationService.currentUser());
         if (favourite == null) {
             return new ListResponse<>(null, "favourites not found");
@@ -92,7 +91,7 @@ public class FavouriteServiceImpl implements FavouriteService {
 
     @Override
     public Boolean isFavSme(SmeBo smeBo, Favourite favourite) {
-        log.info("Inside Service isFavSme");
+        log.info("Invoked :: FavouriteServiceImpl :: isFavSme()");
         if (favourite != null && this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {
             return favourite.getFavouriteSmes().stream().anyMatch(favouriteSme -> favouriteSme.getSmeId().equals(smeBo.getId()));
         } else {
@@ -101,7 +100,7 @@ public class FavouriteServiceImpl implements FavouriteService {
     }
 
     private List<FavouriteSme> persistSmes(Sme sme, Favourite favourite) {
-        log.info("Inside Service persistSmes");
+        log.info("Invoked :: FavouriteServiceImpl :: persistSmes()");
         FavouriteSme favouriteSme = new FavouriteSme();
         favouriteSme.setSmeId(sme.getId());
         favouriteSme.setSme(sme);
@@ -111,18 +110,18 @@ public class FavouriteServiceImpl implements FavouriteService {
     }
 
 
-    private List<FavouriteSmeBo> fetchFavouriteSme(Favourite favourite) {
-        log.info("Inside Service fetchFavouriteSme");
+   /* private List<FavouriteSmeBo> fetchFavouriteSme(Favourite favourite) {
+        log.info("Invoked :: FavouriteServiceImpl :: fetchFavoriteSme()");
         List<FavouriteSme> favouriteSmes = favouriteSmeRepository.findByFavourite(favourite);
         List<FavouriteSmeBo> favouriteSmeBoList = new ArrayList<>();
         favouriteSmes.forEach(sme -> favouriteSmeBoList.add(new FavouriteSmeBo(sme)));
         return favouriteSmeBoList;
-    }
+    }*/
 
 
     @Override
     public void removeFavoriteSme(String productUserId) {
-        log.info("Inside Service removeFavoriteSme");
+        log.info("Invoked :: FavouriteServiceImpl :: removeFavoriteSme()");
         Favourite favourite = favouriteRepository.findByUser(authenticationService.currentUser());
         Sme sme = this.smeRepository.findByUserId(productUserId);
         if (favourite != null && this.helper.notNullAndHavingData(favourite.getFavouriteSmes())) {

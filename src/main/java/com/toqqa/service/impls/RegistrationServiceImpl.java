@@ -1,25 +1,19 @@
 package com.toqqa.service.impls;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.toqqa.bo.AgentBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.bo.UserBo;
 import com.toqqa.exception.UserAlreadyExists;
-import com.toqqa.payload.AgentRegistrationPayload;
-import com.toqqa.payload.AgentRegistrationResponse;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.SmeRegistrationPayload;
-import com.toqqa.payload.SmeRegistrationResponse;
+import com.toqqa.payload.*;
 import com.toqqa.service.AgentService;
 import com.toqqa.service.RegistrationService;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.UserService;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -34,7 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Response<?> registerAgent(AgentRegistrationPayload payload) {
-		log.info("Inside register agent");
+		log.info("Invoked :: RegistrationServiceImpl :: registerAgent()");
 		if (userService.isUserExists(payload.getUserSignUp().getEmail(), payload.getUserSignUp().getPhone())) {
 			throw new UserAlreadyExists("user with email/number already exists");
 		}
@@ -48,7 +42,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 	@Override
 	public Response<?> registerSme(SmeRegistrationPayload payload) {
-		log.info("Inside register sme");
+		log.info("Invoked :: RegistrationServiceImpl :: registerSme()");
 		if (userService.isUserExists(payload.getUserSignUp().getEmail(), payload.getUserSignUp().getPhone())) {
 			throw new UserAlreadyExists("user with email/number already exists");
 		}
