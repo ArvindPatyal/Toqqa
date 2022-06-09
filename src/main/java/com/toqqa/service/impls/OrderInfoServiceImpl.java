@@ -1,18 +1,14 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.*;
-import com.toqqa.constants.OrderConstants;
-import com.toqqa.constants.PaymentConstants;
-import com.toqqa.domain.*;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.payload.*;
-import com.toqqa.repository.*;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.InvoiceService;
-import com.toqqa.service.OrderInfoService;
-import com.toqqa.service.ProductService;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -21,9 +17,39 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import com.toqqa.bo.OrderInfoBo;
+import com.toqqa.bo.OrderItemBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.ProductBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.PaymentConstants;
+import com.toqqa.domain.DeliveryAddress;
+import com.toqqa.domain.OrderInfo;
+import com.toqqa.domain.OrderItem;
+import com.toqqa.domain.Product;
+import com.toqqa.domain.Sme;
+import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.OrderItemPayload;
+import com.toqqa.payload.OrderPayload;
+import com.toqqa.payload.OrderStatusUpdatePayload;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.ToggleOrdersStatus;
+import com.toqqa.repository.CartRepository;
+import com.toqqa.repository.DeliveryAddressRepository;
+import com.toqqa.repository.OrderInfoRepository;
+import com.toqqa.repository.OrderItemRepository;
+import com.toqqa.repository.ProductRepository;
+import com.toqqa.repository.SmeRepository;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.InvoiceService;
+import com.toqqa.service.OrderInfoService;
+import com.toqqa.service.ProductService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -272,5 +298,19 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 		}
 
 	}
+
+	@Override
+	public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate){
+		return orderInfoRepo.findDelOrderAmountBySmeAndDate(smeId, startDate, endDate);
+
+	}
+	
+	@Override
+	public Optional<Integer> getOrderCountBySmeAndDateAndStatus(String smeId, String orderStatus, LocalDate startDate, LocalDate endDate) {
+		return orderInfoRepo.findOrderCountBySmeAndDateAndStatus(smeId, orderStatus, startDate, endDate);
+
+	}
+	
+	
 
 }

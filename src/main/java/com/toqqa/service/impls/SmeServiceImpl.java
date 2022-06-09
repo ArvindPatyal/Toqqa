@@ -1,5 +1,6 @@
 package com.toqqa.service.impls;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.OrderConstants;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.DeliveryAddress;
 import com.toqqa.domain.Product;
@@ -25,7 +27,9 @@ import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.dto.NearbySmeRespDto;
+import com.toqqa.dto.SmeStatsResponseDto;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.InvalidAccessException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponse;
 import com.toqqa.payload.ListResponseWithCount;
@@ -41,15 +45,15 @@ import com.toqqa.repository.SubcategoryRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.FavouriteService;
-import com.toqqa.service.InvoiceService;
 import com.toqqa.service.OrderInfoService;
+import com.toqqa.service.OrderItemService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
+import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
 
 import lombok.extern.slf4j.Slf4j;
-import com.toqqa.util.Constants;
 
 @Service
 @Slf4j
@@ -97,6 +101,12 @@ public class SmeServiceImpl implements SmeService {
 
 	@Autowired
 	private DeliveryAddressServiceImpl deliveryAddressService;
+
+	@Autowired
+	private OrderInfoService orderInfoService;
+
+	@Autowired
+	private OrderItemService orderItemService;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -318,16 +328,21 @@ public class SmeServiceImpl implements SmeService {
 
 	@Override
 	public List<Sme> getAllSme(Boolean isDeleted) {
-		return this.smeRepo.findAll(isDeleted);
+		return smeRepo.findAll(isDeleted);
+	}
+
+	@Override
+	public Sme getSmeByUserId(String userId) {
+		return smeRepo.findByUserId(userId);
 	}
 
 	@Override
 	public List<NearbySmeRespDto> getNearbySme() {
 		log.info("Invoked :: SmeServiceImpl :: getNearbySme()");
-	
+
 		Optional<DeliveryAddress> deliveryAddObj = deliveryAddressService
 				.getCurrentDelAddress(authenticationService.currentUser());
-		
+
 		List<NearbySmeRespDto> dtoList = new ArrayList<NearbySmeRespDto>(0);
 
 		if (deliveryAddObj.isPresent()) {
@@ -339,12 +354,12 @@ public class SmeServiceImpl implements SmeService {
 							deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
 
 					if (distance <= Constants.MIN_DISTANCE) {
-						dtoList.add(new NearbySmeRespDto(smeObj.getId(), smeObj.getNameOfBusiness(), 
-								smeObj.getBusinessAddress(),smeObj.getLatitude(),smeObj.getLongitude()));
+						dtoList.add(new NearbySmeRespDto(smeObj.getId(), smeObj.getNameOfBusiness(),
+								smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude()));
 					}
 				}
 			}
-		}else {
+		} else {
 			throw new ResourceNotFoundException(Constants.ERR_NO_CURRENT_ADDRESS);
 		}
 
@@ -363,6 +378,52 @@ public class SmeServiceImpl implements SmeService {
 		distance = distance * 60 * 1.1515;
 		distance = distance * 1.609344;
 		return (int) distance;
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public SmeStatsResponseDto getOverallStatsByDate(LocalDate startDate, LocalDate endDate) {
+		log.info("Invoked :: SmeServiceImpl :: getOverallStats() :: with params :: startDate=" + startDate
+				+ " :: endDate=" + endDate);
+
+		Sme smeUser = getSmeByUserId(authenticationService.currentUser().getId());
+		SmeStatsResponseDto responseObj = null;
+
+		if (smeUser == null) {
+			throw new InvalidAccessException(Constants.ERR_USER_NOT_SME);
+
+		} else {
+
+			Optional<Integer> totalOrderAmount = orderInfoService.getDeliveredOrderCountBySmeAndDate(smeUser.getId(),
+					startDate, endDate);
+
+			Optional<Integer> totalOrderQty = orderItemService.getDeleviredQtyCountBySmeAndDate(smeUser.getId(),
+					startDate, endDate);
+			Optional<Integer> totalOrderDelivered = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.DELIVERED.name(), startDate, endDate);
+			Optional<Integer> totalOrderCancelled = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.CANCELLED.name(), startDate, endDate);
+			Optional<Integer> totalOrderPlaced = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.PLACED.name(), startDate, endDate);
+			Optional<Integer> totalOrderReceived = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.RECEIVED.name(), startDate, endDate);
+			Optional<Integer> totalOrderConfirmed = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.CONFIRMED.name(), startDate, endDate);
+			Optional<Integer> totalOrderOut = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.OUT_FOR_DELIVERY.name(), startDate, endDate);
+
+			responseObj = new SmeStatsResponseDto(totalOrderAmount.isPresent() ? totalOrderAmount.get() : 0,
+					totalOrderQty.isPresent() ? totalOrderQty.get() : 0,
+					totalOrderDelivered.isPresent() ? totalOrderDelivered.get() : 0,
+					totalOrderCancelled.isPresent() ? totalOrderCancelled.get() : 0,
+					totalOrderPlaced.isPresent() ? totalOrderPlaced.get() : 0,
+					totalOrderReceived.isPresent() ? totalOrderReceived.get() : 0,
+					totalOrderConfirmed.isPresent() ? totalOrderConfirmed.get() : 0,
+					totalOrderOut.isPresent() ? totalOrderOut.get() : 0);
+
+		}
+
+		return responseObj;
 	}
 
 }

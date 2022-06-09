@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -116,10 +116,10 @@ public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
 				apiError.getStatus());
 	}
 
-	@ExceptionHandler(ResourceAccessException.class)
-	public ResponseEntity<Response<ErrorBo>> resourceAccessExceptionException(ResourceAccessException ex,
+	@ExceptionHandler(InvalidAccessException.class)
+	public ResponseEntity<Response<ErrorBo>> invalidAccessException(InvalidAccessException ex,
 			HttpServletRequest request, HttpServletResponse response) {
-		ErrorBo apiError = new ErrorBo(HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), ex.getMessage());
+		ErrorBo apiError = new ErrorBo(HttpStatus.UNPROCESSABLE_ENTITY, ex.getLocalizedMessage(), ex.getMessage());
 		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
 				apiError.getStatus());
 	}
@@ -163,6 +163,14 @@ public class ExceptionHandlingConfig extends ResponseEntityExceptionHandler {
 		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), ex.getMessage());
 		return new ResponseEntity<Response<ErrorBo>>(new Response<>(apiError, ""), new HttpHeaders(),
 				apiError.getStatus());
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
+			HttpStatus status, WebRequest request) {
+		String error = "Invalid date " + ex.getValue() + ".. Please enter date in yyyy-MM-dd.";
+		ErrorBo apiError = new ErrorBo(HttpStatus.BAD_REQUEST, error, ex.getMessage());
+		return this.handleExceptionInternal(ex, apiError, headers, apiError.getStatus(), request);
 	}
 
 }
