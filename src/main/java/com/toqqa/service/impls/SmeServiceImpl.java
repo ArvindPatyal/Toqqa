@@ -353,8 +353,8 @@ public class SmeServiceImpl implements SmeService {
 							deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
 
 					if (distance <= Constants.MIN_DISTANCE) {
-						dtoList.add(new NearbySmeRespDto(smeObj.getId(), smeObj.getNameOfBusiness(),
-								smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude()));
+						dtoList.add(new NearbySmeRespDto(smeObj.getUserId(), smeObj.getNameOfBusiness(),
+								smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),smeObj.getBusinessLogo()));
 					}
 				}
 			}

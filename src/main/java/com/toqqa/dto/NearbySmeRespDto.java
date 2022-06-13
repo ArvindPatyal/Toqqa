@@ -13,5 +13,7 @@ public class NearbySmeRespDto {
 	private String businessAddress;
 	private Double latitude;
 	private Double longitude;
+	private String businessLogo;
+	
 
 }
