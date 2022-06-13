@@ -3,8 +3,7 @@ package com.toqqa.bo;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
-
+import com.toqqa.constants.OrderConstants;
 import com.toqqa.domain.OrderInfo;
 
 import lombok.AllArgsConstructor;
@@ -29,6 +28,8 @@ public class OrderInfoBo {
 	private DeliveryAddressBo address;
 	private String paymentType;
 	private double shippingFee;
+	private Date deliveryDate;
+	private String orderTransactionId;
 
 	private String invoiceUrl;
 
@@ -52,5 +53,8 @@ public class OrderInfoBo {
 		this.shippingFee = orderInfo.getShippingFee();
 		this.smeBo = smeBo;
 		this.cancellationReason = orderInfo.getCancellationReason();
+		this.deliveryDate = orderInfo.getOrderStatus() == OrderConstants.DELIVERED ? orderInfo.getModificationDate()
+				: null;
+		this.orderTransactionId = orderInfo.getOrderTransactionId();
 	}
 }

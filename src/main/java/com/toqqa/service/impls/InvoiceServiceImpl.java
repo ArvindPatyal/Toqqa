@@ -1,6 +1,29 @@
 package com.toqqa.service.impls;
 
-import com.itextpdf.text.*;
+import static com.itextpdf.text.pdf.BaseFont.COURIER;
+import static com.itextpdf.text.pdf.BaseFont.COURIER_BOLD;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -12,21 +35,8 @@ import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.service.InvoiceService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Helper;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.itextpdf.text.pdf.BaseFont.COURIER;
-import static com.itextpdf.text.pdf.BaseFont.COURIER_BOLD;
 
 @Service
 @Slf4j
@@ -146,7 +156,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 			/* ORDER NUMBER */
 			Paragraph orderNumber = new Paragraph();
 			orderNumber.add(new Chunk("Order number :", fontBold));
-			orderNumber.add(new Chunk("\n" + orderInfoBo.getId(), fontLite));
+			orderNumber.add(new Chunk("\n" + orderInfoBo.getOrderTransactionId(), fontLite));
 			orderNumber.setAlignment(Element.ALIGN_LEFT);
 			PdfPCell orderNoCell = new PdfPCell(orderNumber);
 			orderNoCell.setBorder(Rectangle.NO_BORDER);
@@ -328,7 +338,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
 			document.close();
 			pdfWriter.close();
-			file = new File(orderInfoBo.getId().concat(".pdf"));
+			file = new File(orderInfoBo.getId()+".pdf");
 
 			/* STORING INVOICE ON AMAZON S3 CLOUD STORAGE */
 			this.storageService.uploadFile(file, user.getId(), FolderConstants.INVOICE.getValue());
@@ -347,7 +357,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Override
 	public String fetchInvoice(String orderId, String userId) {
 		log.info("Invoked :: InvoiceServiceImpl :: fetchInvoice()");
-		return this.storageService.generatePresignedInvoiceUrl(orderId.concat(".pdf"), userId);
+		return this.storageService.generatePresignedInvoiceUrl(orderId+".pdf", userId);
 	}
 
 	/*

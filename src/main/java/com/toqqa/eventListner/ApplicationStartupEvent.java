@@ -78,7 +78,7 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 
 	private void initRoles() {
 		List<String> roles = Arrays.asList(RoleConstants.AGENT.getValue(), RoleConstants.CUSTOMER.getValue(),
-				RoleConstants.SME.getValue(),RoleConstants.ADMIN.getValue());
+				RoleConstants.SME.getValue(), RoleConstants.ADMIN.getValue());
 		roles.forEach(role -> {
 			if (this.roleRepository.findByRole(role) == null) {
 				Role r = new Role(null, role, null);
@@ -89,9 +89,8 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 
 	private void initProductcategories() {
 		List<String> productCategories = Arrays.asList("Dining", "Groceries and Food", "Cleaning Supplies", "Weavers",
-				"Jewellery", "Fashion", "Health and Beauty", "Home and Lifestyle",
-				"Stationary, Gift Cards and Vouchers", "Toys", "Financial Services", "Outdoor, Fitness and Sport",
-				"Other");
+				"Jewellery", "Fashion", "Health and Beauty", "Home and Lifestyle", "Oonery, Gift Cards and Vouchers",
+				"Toys", "Financial Services", "Outdoor, Fitness and Sport", "Other");
 		productCategories.forEach(productcategory -> {
 			if (this.productCategoryRepo.findByProductCategory(productcategory) == null) {
 				ProductCategory pc = new ProductCategory();
@@ -114,7 +113,7 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 		map.put("Jewellery", Arrays.asList("Handmade", "Retail"));
 		map.put("Fashion", Arrays.asList("Men", "Women", "Children and Infants"));
 		map.put("Home & Lifestyle", Arrays.asList());
-		map.put("Health and Beauty", Arrays.asList("For Men","For Women"));
+		map.put("Health and Beauty", Arrays.asList("For Men", "For Women"));
 		map.put("Stationery, Gift Cards and Vouchers", Arrays.asList());
 		map.put("Toys", Arrays.asList());
 		map.put("Financial Services", Arrays.asList());

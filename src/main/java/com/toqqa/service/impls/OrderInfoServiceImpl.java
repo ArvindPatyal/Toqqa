@@ -49,8 +49,10 @@ import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.InvoiceService;
 import com.toqqa.service.OrderInfoService;
 import com.toqqa.service.ProductService;
+import com.toqqa.util.Constants;
 
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.utility.RandomString;
 
 @Service
 @Slf4j
@@ -106,6 +108,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderInfo.setShippingFee(shippingFee.get());
 				orderInfo.setAddress(address);
 				orderInfo.setUser(user);
+				orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + RandomString.make(7));
 				orderInfo.setOrderStatus(OrderConstants.PLACED);
 				orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
 				orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
@@ -284,7 +287,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	}
 
 	@Override
-	public Response updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
+	public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
 		log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
 		Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
 
@@ -297,7 +300,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 			} else {
 				orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
 				this.orderInfoRepo.saveAndFlush(orderInfo);
-				return new Response("", "ORDER STATUS UPDATED SUCCESSFULLY");
+				return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
 			}
 		} else {
 			throw new BadRequestException("Enter a valid order Id");
@@ -306,17 +309,16 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	}
 
 	@Override
-	public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate){
+	public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate) {
 		return orderInfoRepo.findDelOrderAmountBySmeAndDate(smeId, startDate, endDate);
 
 	}
-	
+
 	@Override
-	public Optional<Integer> getOrderCountBySmeAndDateAndStatus(String smeId, String orderStatus, LocalDate startDate, LocalDate endDate) {
+	public Optional<Integer> getOrderCountBySmeAndDateAndStatus(String smeId, String orderStatus, LocalDate startDate,
+			LocalDate endDate) {
 		return orderInfoRepo.findOrderCountBySmeAndDateAndStatus(smeId, orderStatus, startDate, endDate);
 
 	}
-	
-	
 
 }

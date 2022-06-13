@@ -42,6 +42,9 @@ public class OrderInfo {
 	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
 	private String id;
 
+	@Column(unique = true)
+	private String orderTransactionId;
+
 	@CreationTimestamp
 	private Date createdDate;
 
