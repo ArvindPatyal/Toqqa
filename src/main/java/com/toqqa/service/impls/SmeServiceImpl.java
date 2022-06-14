@@ -433,8 +433,8 @@ public class SmeServiceImpl implements SmeService {
 					totalOrderPlaced.isPresent() ? totalOrderPlaced.get() : 0,
 					totalOrderReceived.isPresent() ? totalOrderReceived.get() : 0,
 					totalOrderConfirmed.isPresent() ? totalOrderConfirmed.get() : 0,
-					totalOrderOut.isPresent() ? totalOrderOut.get() : 0);
-
+					totalOrderOut.isPresent() ? totalOrderOut.get() : 0
+				    totalOrderDispatch.isPresent() ? totalOrderDispatch.get() : 0);
 		}
 
 		return responseObj;

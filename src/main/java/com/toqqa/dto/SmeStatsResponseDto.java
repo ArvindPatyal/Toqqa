@@ -15,7 +15,6 @@ public class SmeStatsResponseDto {
 	int totalOrderReceived;
 	int totalOrderConfirmed;
 	int totalOrderOut;
-
-
+	int totalOrderDispatch;
 
 }
