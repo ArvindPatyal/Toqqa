@@ -108,7 +108,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderInfo.setShippingFee(shippingFee.get());
 				orderInfo.setAddress(address);
 				orderInfo.setUser(user);
-				orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + RandomString.make(7));
+				orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + (RandomString.make(7)).toUpperCase());
 				orderInfo.setOrderStatus(OrderConstants.PLACED);
 				orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
 				orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);

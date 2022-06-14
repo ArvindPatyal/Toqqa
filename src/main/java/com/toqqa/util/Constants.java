@@ -25,6 +25,6 @@ public class Constants {
     
 	public static final String MSG_NO_BUSINESS_LOGO = "There is no business logo found for sme.";
 
-	public static final String ORDER_CONSTANT = "OR-";
+	public static final String ORDER_CONSTANT = "ORD-";
 
 }
