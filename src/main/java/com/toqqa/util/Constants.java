@@ -5,14 +5,14 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constants {
-	
+
 	public static final int MIN_DISTANCE = 6000;
-	
+
 	public static final String MSG_DATA_PROCESSED = "Data processed successfully.";
-	
+
 	public static final String ERR_NO_CURRENT_ADDRESS = "No address has beeen set as a current address.";
-	
-	public static final String ERR_USER_NOT_SME = "Current.";
+
+	public static final String ERR_USER_NOT_SME = "Current user is not having role SME.";
     
     public static final String TOTAL_ORDER_AMOUNT_DELIVERED_QUERY_BY_DATE ="select sum(o.amount) from order_info o where o.sme_id =?1"
     		+ " and o.order_status='DELIVERED' and cast(created_date as DATE) between ?2 AND ?3";
@@ -25,5 +25,6 @@ public class Constants {
     
 	public static final String MSG_NO_BUSINESS_LOGO = "There is no business logo found for sme.";
 
+	public static final String ORDER_CONSTANT = "OR-";
 
 }
