@@ -114,7 +114,7 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 		map.put("Fashion", Arrays.asList("Men", "Women", "Children and Infants"));
 		map.put("Home & Lifestyle", Arrays.asList());
 		map.put("Health and Beauty", Arrays.asList("For Men", "For Women"));
-		map.put("Stationery, Gift Cards and Vouchers", Arrays.asList());
+		map.put("Stationary, Gift Cards and Vouchers", Arrays.asList());
 		map.put("Toys", Arrays.asList());
 		map.put("Financial Services", Arrays.asList());
 		map.put("Outdoor, Fitness and Sport", Arrays.asList());

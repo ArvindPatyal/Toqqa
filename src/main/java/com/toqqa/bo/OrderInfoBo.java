@@ -55,6 +55,6 @@ public class OrderInfoBo {
 		this.cancellationReason = orderInfo.getCancellationReason();
 		this.deliveryDate = orderInfo.getOrderStatus() == OrderConstants.DELIVERED ? orderInfo.getModificationDate()
 				: null;
-		this.orderTransactionId = orderInfo.getOrderTransactionId();
+		this.orderTransactionId = orderInfo.getOrderTransactionId()!=null? orderInfo.getOrderTransactionId() : "";
 	}
 }
