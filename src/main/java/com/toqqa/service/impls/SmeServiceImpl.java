@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.toqqa.bo.FileBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
@@ -52,6 +53,7 @@ import com.toqqa.service.SmeService;
 import com.toqqa.service.StorageService;
 import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -354,7 +356,8 @@ public class SmeServiceImpl implements SmeService {
 
 					if (distance <= Constants.MIN_DISTANCE) {
 						dtoList.add(new NearbySmeRespDto(smeObj.getUserId(), smeObj.getNameOfBusiness(),
-								smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),smeObj.getBusinessLogo()));
+								smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),
+								bindLogoUrl(smeObj.getBusinessLogo())));
 					}
 				}
 			}
@@ -363,6 +366,16 @@ public class SmeServiceImpl implements SmeService {
 		}
 
 		return dtoList;
+	}
+
+	private String bindLogoUrl(String logoString) {
+		FileBo urlObject = helper.prepareAttachmentResource(logoString);
+		String imageUrl = Constants.MSG_NO_BUSINESS_LOGO;
+		if (urlObject != null) {
+			imageUrl = urlObject.getImageUrl();
+
+		}
+		return imageUrl;
 	}
 
 	private int computeDistance(Double userLat, Double userLong, Double smeLat, Double smeLong) {
@@ -410,6 +423,8 @@ public class SmeServiceImpl implements SmeService {
 					OrderConstants.CONFIRMED.name(), startDate, endDate);
 			Optional<Integer> totalOrderOut = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
 					OrderConstants.OUT_FOR_DELIVERY.name(), startDate, endDate);
+			Optional<Integer> totalOrderDispatch= orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+					OrderConstants.READY_FOR_DISPATCH.name(), startDate, endDate);
 
 			responseObj = new SmeStatsResponseDto(totalOrderAmount.isPresent() ? totalOrderAmount.get() : 0,
 					totalOrderQty.isPresent() ? totalOrderQty.get() : 0,

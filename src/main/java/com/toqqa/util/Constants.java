@@ -22,5 +22,8 @@ public class Constants {
     
     public static final String TOTAL_ORDER_ITEM_COUNT_QUERY_BY_DATE = "select sum(i.quantity) from order_item i inner join order_info o on i.order_id = o.id where o.sme_id =?1 and o.order_status='DELIVERED'\n" + 
     		"and cast(created_date as DATE) between ?2 AND ?3";
+    
+	public static final String MSG_NO_BUSINESS_LOGO = "There is no business logo found for sme.";
+
 
 }
