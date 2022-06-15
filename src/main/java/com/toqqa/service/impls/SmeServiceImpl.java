@@ -1,12 +1,24 @@
 package com.toqqa.service.impls;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
+import com.toqqa.bo.FileBo;
+import com.toqqa.bo.ProductBo;
+import com.toqqa.bo.ProductCategoryBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.*;
+import com.toqqa.dto.NearbySmeRespDto;
+import com.toqqa.dto.SmeStatsResponseDto;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.InvalidAccessException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.*;
+import com.toqqa.repository.*;
+import com.toqqa.service.*;
+import com.toqqa.util.Constants;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -16,253 +28,218 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.FileBo;
-import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.constants.FolderConstants;
-import com.toqqa.constants.OrderConstants;
-import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.DeliveryAddress;
-import com.toqqa.domain.Product;
-import com.toqqa.domain.Role;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
-import com.toqqa.dto.NearbySmeRespDto;
-import com.toqqa.dto.SmeStatsResponseDto;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.InvalidAccessException;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.payload.ListResponse;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.ProductRequestFilter;
-import com.toqqa.payload.SmeRegistration;
-import com.toqqa.payload.SmeUpdate;
-import com.toqqa.repository.CategoryRepository;
-import com.toqqa.repository.FavouriteRepository;
-import com.toqqa.repository.ProductRepository;
-import com.toqqa.repository.RoleRepository;
-import com.toqqa.repository.SmeRepository;
-import com.toqqa.repository.SubcategoryRepository;
-import com.toqqa.repository.UserRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.FavouriteService;
-import com.toqqa.service.OrderInfoService;
-import com.toqqa.service.OrderItemService;
-import com.toqqa.service.ProductService;
-import com.toqqa.service.SmeService;
-import com.toqqa.service.StorageService;
-import com.toqqa.util.Constants;
-import com.toqqa.util.Helper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
 public class SmeServiceImpl implements SmeService {
 
-	@Autowired
-	private CategoryRepository categoryRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
-	@Autowired
-	private SubcategoryRepository subcategoryRepository;
+    @Autowired
+    private SubcategoryRepository subcategoryRepository;
 
-	@Autowired
-	private SmeRepository smeRepo;
+    @Autowired
+    private SmeRepository smeRepo;
 
-	@Autowired
-	private UserRepository userRepo;
+    @Autowired
+    private UserRepository userRepo;
 
-	@Autowired
-	private RoleRepository roleRepo;
+    @Autowired
+    private RoleRepository roleRepo;
 
-	@Autowired
-	private StorageService storageService;
+    @Autowired
+    private StorageService storageService;
 
-	@Autowired
-	private Helper helper;
+    @Autowired
+    private Helper helper;
 
-	@Value("${pageSize}")
-	private Integer pageSize;
+    @Value("${pageSize}")
+    private Integer pageSize;
 
-	@Autowired
-	@Lazy
-	private FavouriteService favouriteService;
+    @Autowired
+    @Lazy
+    private FavouriteService favouriteService;
 
-	@Autowired
-	private FavouriteRepository favouriteRepository;
+    @Autowired
+    private FavouriteRepository favouriteRepository;
 
-	@Autowired
-	private AuthenticationService authenticationService;
+    @Autowired
+    private AuthenticationService authenticationService;
 
-	@Autowired
-	ProductService productService;
+    @Autowired
+    ProductService productService;
 
-	@Autowired
-	private ProductRepository productRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
-	@Autowired
-	private DeliveryAddressServiceImpl deliveryAddressService;
+    @Autowired
+    private DeliveryAddressServiceImpl deliveryAddressService;
 
-	@Autowired
-	private OrderInfoService orderInfoService;
+    @Autowired
+    private OrderInfoService orderInfoService;
 
-	@Autowired
-	private OrderItemService orderItemService;
+    @Autowired
+    private OrderItemService orderItemService;
+    private List<Product> products;
 
-	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
-		log.info("Invoked :: SmeServiceImpl :: smeRegistration()");
-		if (!alreadySme(userId)) {
-			try {
-				Sme sme = new Sme();
-				sme.setNameOfBusiness(smeRegistration.getNameOfBusiness());
-				sme.setBusinessAddress(smeRegistration.getBusinessAddress());
-				sme.setState(smeRegistration.getState());
-				sme.setCountry(smeRegistration.getCountry());
-				sme.setTypeOfBusiness(smeRegistration.getTypeOfBusiness());
-				sme.setDeliveryRadius(smeRegistration.getDeliveryRadius());
-				sme.setDeliveryCharges(smeRegistration.getDeliveryCharge());
-				sme.setIsDeleted(false);
-				sme.setDescription(smeRegistration.getDescription());
-				sme.setCity(smeRegistration.getCity());
-				sme.setIsDeliverToCustomer(smeRegistration.getDeliverToCustomer());
-				sme.setIsRegisterWithGovt(smeRegistration.getIsRegisteredWithGovt());
-				sme.setLatitude(smeRegistration.getLatitude());
-				sme.setLongitude(smeRegistration.getLongitude());
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
+        log.info("Invoked :: SmeServiceImpl :: smeRegistration()");
+        if (!alreadySme(userId)) {
+            try {
+                Sme sme = new Sme();
+                sme.setNameOfBusiness(smeRegistration.getNameOfBusiness());
+                sme.setBusinessAddress(smeRegistration.getBusinessAddress());
+                sme.setState(smeRegistration.getState());
+                sme.setCountry(smeRegistration.getCountry());
+                sme.setTypeOfBusiness(smeRegistration.getTypeOfBusiness());
+                sme.setDeliveryRadius(smeRegistration.getDeliveryRadius());
+                sme.setDeliveryCharges(smeRegistration.getDeliveryCharge());
+                sme.setIsDeleted(false);
+                sme.setDescription(smeRegistration.getDescription());
+                sme.setCity(smeRegistration.getCity());
+                sme.setIsDeliverToCustomer(smeRegistration.getDeliverToCustomer());
+                sme.setIsRegisterWithGovt(smeRegistration.getIsRegisteredWithGovt());
+                sme.setLatitude(smeRegistration.getLatitude());
+                sme.setLongitude(smeRegistration.getLongitude());
 
-				if (smeRegistration.getStartTimeOfDelivery() != null
-						&& smeRegistration.getEndTimeOfDelivery() != null) {
-					sme.setStartTimeOfDelivery(new Date(smeRegistration.getStartTimeOfDelivery()));
-					sme.setEndTimeOfDelivery(new Date(smeRegistration.getEndTimeOfDelivery()));
-				}
+                if (smeRegistration.getStartTimeOfDelivery() != null
+                        && smeRegistration.getEndTimeOfDelivery() != null) {
+                    sme.setStartTimeOfDelivery(new Date(smeRegistration.getStartTimeOfDelivery()));
+                    sme.setEndTimeOfDelivery(new Date(smeRegistration.getEndTimeOfDelivery()));
+                }
 
-				sme.setUserId(userId);
-				sme.setBusinessCatagory(this.categoryRepository.findAllById(smeRegistration.getBusinessCategory()));
-				sme.setBusinessSubCatagory(
-						this.subcategoryRepository.findAllById(smeRegistration.getBusinessSubCategory()));
-				User user = this.userRepo.findById(userId).get();
-				List<Role> roles = new ArrayList<Role>();
-				roles.addAll(user.getRoles());
-				roles.add(this.roleRepo.findByRole(RoleConstants.SME.getValue()));
-				user.setRoles(roles);
-				user = this.userRepo.saveAndFlush(user);
+                sme.setUserId(userId);
+                sme.setBusinessCatagory(this.categoryRepository.findAllById(smeRegistration.getBusinessCategory()));
+                sme.setBusinessSubCatagory(
+                        this.subcategoryRepository.findAllById(smeRegistration.getBusinessSubCategory()));
+                User user = this.userRepo.findById(userId).get();
+                List<Role> roles = new ArrayList<Role>();
+                roles.addAll(user.getRoles());
+                roles.add(this.roleRepo.findByRole(RoleConstants.SME.getValue()));
+                user.setRoles(roles);
+                user = this.userRepo.saveAndFlush(user);
 
-				try {
-					if (smeRegistration.getIdProof() != null && !smeRegistration.getIdProof().isEmpty()) {
-						sme.setIdProof(this.storageService.uploadFileAsync(smeRegistration.getIdProof(), userId,
-								FolderConstants.DOCUMENTS.getValue()).get());
-					}
-					if (smeRegistration.getBusinessLogo() != null && !smeRegistration.getBusinessLogo().isEmpty()) {
-						sme.setBusinessLogo(this.storageService.uploadFileAsync(smeRegistration.getBusinessLogo(),
-								userId, FolderConstants.LOGO.getValue()).get());
-					}
-					if (smeRegistration.getRegDoc() != null && !smeRegistration.getRegDoc().isEmpty()) {
-						sme.setRegDoc(this.storageService.uploadFileAsync(smeRegistration.getRegDoc(), userId,
-								FolderConstants.DOCUMENTS.getValue()).get());
-					}
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-				}
+                try {
+                    if (smeRegistration.getIdProof() != null && !smeRegistration.getIdProof().isEmpty()) {
+                        sme.setIdProof(this.storageService.uploadFileAsync(smeRegistration.getIdProof(), userId,
+                                FolderConstants.DOCUMENTS.getValue()).get());
+                    }
+                    if (smeRegistration.getBusinessLogo() != null && !smeRegistration.getBusinessLogo().isEmpty()) {
+                        sme.setBusinessLogo(this.storageService.uploadFileAsync(smeRegistration.getBusinessLogo(),
+                                userId, FolderConstants.LOGO.getValue()).get());
+                    }
+                    if (smeRegistration.getRegDoc() != null && !smeRegistration.getRegDoc().isEmpty()) {
+                        sme.setRegDoc(this.storageService.uploadFileAsync(smeRegistration.getRegDoc(), userId,
+                                FolderConstants.DOCUMENTS.getValue()).get());
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
 
-				sme = this.smeRepo.saveAndFlush(sme);
-				SmeBo bo = new SmeBo(sme);
-				bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
-				bo.setIdProof(this.prepareResource(sme.getIdProof()));
-				bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-				return bo;
-			} catch (Exception e) {
-				log.error("unable to create sme", e);
-				this.userRepo.deleteById(userId);
-			}
-		}
-		throw new BadRequestException("user already sme");
-	}
+                sme = this.smeRepo.saveAndFlush(sme);
+                SmeBo bo = new SmeBo(sme);
+                bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
+                bo.setIdProof(this.prepareResource(sme.getIdProof()));
+                bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+                return bo;
+            } catch (Exception e) {
+                log.error("unable to create sme", e);
+                this.userRepo.deleteById(userId);
+            }
+        }
+        throw new BadRequestException("user already sme");
+    }
 
-	private Boolean alreadySme(String id) {
-		log.info("Invoked :: SmeServiceImpl :: alreadySme()");
-		User user = this.userRepo.findById(id).get();
-		return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
-	}
+    private Boolean alreadySme(String id) {
+        log.info("Invoked :: SmeServiceImpl :: alreadySme()");
+        User user = this.userRepo.findById(id).get();
+        return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.SME.getValue()));
+    }
 
-	private String prepareResource(String location) {
-		if (this.helper.notNullAndBlank(location)) {
-			return this.storageService.generatePresignedUrl(location);
-		}
-		return "";
-	}
+    private String prepareResource(String location) {
+        if (this.helper.notNullAndBlank(location)) {
+            return this.storageService.generatePresignedUrl(location);
+        }
+        return "";
+    }
 
-	@Override
-	public SmeBo smeUpdate(SmeUpdate smeUpdate) {
-		log.info("Invoked :: SmeServiceImpl :: smeUpdate()");
+    @Override
+    public SmeBo smeUpdate(SmeUpdate smeUpdate) {
+        log.info("Invoked :: SmeServiceImpl :: smeUpdate()");
 
-		Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
-		if (sme != null) {
-			sme.setNameOfBusiness(smeUpdate.getNameOfBusiness());
-			sme.setBusinessAddress(smeUpdate.getBusinessAddress());
-			sme.setState(smeUpdate.getState());
-			sme.setCountry(smeUpdate.getCountry());
-			sme.setTypeOfBusiness(smeUpdate.getTypeOfBusiness());
-			sme.setDeliveryRadius(smeUpdate.getDeliveryRadius());
-			sme.setDeliveryCharges(smeUpdate.getDeliveryCharge());
-			sme.setIsDeleted(false);
-			sme.setDescription(smeUpdate.getDescription());
-			sme.setCity(smeUpdate.getCity());
-			sme.setIsDeliverToCustomer(smeUpdate.getDeliverToCustomer());
-			sme.setIsRegisterWithGovt(smeUpdate.getIsRegisteredWithGovt());
-			sme.setLatitude(smeUpdate.getLatitude());
-			sme.setLongitude(smeUpdate.getLongitude());
-			if (smeUpdate.getStartTimeOfDelivery() != null && smeUpdate.getEndTimeOfDelivery() != null) {
-				sme.setStartTimeOfDelivery(new Date(smeUpdate.getStartTimeOfDelivery()));
-				sme.setEndTimeOfDelivery(new Date(smeUpdate.getEndTimeOfDelivery()));
-			}
-			sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
-			sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
+        Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
+        if (sme != null) {
+            sme.setNameOfBusiness(smeUpdate.getNameOfBusiness());
+            sme.setBusinessAddress(smeUpdate.getBusinessAddress());
+            sme.setState(smeUpdate.getState());
+            sme.setCountry(smeUpdate.getCountry());
+            sme.setTypeOfBusiness(smeUpdate.getTypeOfBusiness());
+            sme.setDeliveryRadius(smeUpdate.getDeliveryRadius());
+            sme.setDeliveryCharges(smeUpdate.getDeliveryCharge());
+            sme.setIsDeleted(false);
+            sme.setDescription(smeUpdate.getDescription());
+            sme.setCity(smeUpdate.getCity());
+            sme.setIsDeliverToCustomer(smeUpdate.getDeliverToCustomer());
+            sme.setIsRegisterWithGovt(smeUpdate.getIsRegisteredWithGovt());
+            sme.setLatitude(smeUpdate.getLatitude());
+            sme.setLongitude(smeUpdate.getLongitude());
+            if (smeUpdate.getStartTimeOfDelivery() != null && smeUpdate.getEndTimeOfDelivery() != null) {
+                sme.setStartTimeOfDelivery(new Date(smeUpdate.getStartTimeOfDelivery()));
+                sme.setEndTimeOfDelivery(new Date(smeUpdate.getEndTimeOfDelivery()));
+            }
+            sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
+            sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
 
-			try {
-				if (smeUpdate.getIdProof() != null && !smeUpdate.getIdProof().isEmpty()) {
-					sme.setIdProof(this.storageService.uploadFileAsync(smeUpdate.getIdProof(), sme.getUserId(),
-							FolderConstants.DOCUMENTS.getValue()).get());
-				}
-				if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
-					sme.setBusinessLogo(this.storageService.uploadFileAsync(smeUpdate.getBusinessLogo(),
-							sme.getUserId(), FolderConstants.LOGO.getValue()).get());
-				}
-				if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
-					sme.setRegDoc(this.storageService.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(),
-							FolderConstants.DOCUMENTS.getValue()).get());
-				}
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
+            try {
+                if (smeUpdate.getIdProof() != null && !smeUpdate.getIdProof().isEmpty()) {
+                    sme.setIdProof(this.storageService.uploadFileAsync(smeUpdate.getIdProof(), sme.getUserId(),
+                            FolderConstants.DOCUMENTS.getValue()).get());
+                }
+                if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
+                    sme.setBusinessLogo(this.storageService.uploadFileAsync(smeUpdate.getBusinessLogo(),
+                            sme.getUserId(), FolderConstants.LOGO.getValue()).get());
+                }
+                if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
+                    sme.setRegDoc(this.storageService.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(),
+                            FolderConstants.DOCUMENTS.getValue()).get());
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
 
-			sme = this.smeRepo.saveAndFlush(sme);
+            sme = this.smeRepo.saveAndFlush(sme);
 
-			SmeBo bo = new SmeBo(sme);
-			bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
-			bo.setIdProof(this.prepareResource(sme.getIdProof()));
-			bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-			return bo;
-		}
-		throw new BadRequestException("invalid sme id");
+            SmeBo bo = new SmeBo(sme);
+            bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
+            bo.setIdProof(this.prepareResource(sme.getIdProof()));
+            bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+            return bo;
+        }
+        throw new BadRequestException("invalid sme id");
 
-	}
+    }
 
-	@Override
-	public SmeBo fetchSme(String id) {
-		log.info("Invoked :: SmeServiceImpl :: fetchSme()");
-		Sme sme = this.smeRepo.findByUserId(id);
-		if (sme != null) {
-			SmeBo bo = new SmeBo(sme);
-			bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
-			bo.setIdProof(this.prepareResource(sme.getIdProof()));
-			bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
-			bo.setIsFavSme(this.favouriteService.isFavSme(bo,
-					this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
-			return bo;
-		}
-		throw new BadRequestException("no user found with id= " + id);
-	}
+    @Override
+    public SmeBo fetchSme(String id) {
+        log.info("Invoked :: SmeServiceImpl :: fetchSme()");
+        Sme sme = this.smeRepo.findByUserId(id);
+        if (sme != null) {
+            SmeBo bo = new SmeBo(sme);
+            bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
+            bo.setIdProof(this.prepareResource(sme.getIdProof()));
+            bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+            bo.setIsFavSme(this.favouriteService.isFavSme(bo,
+                    this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
+            return bo;
+        }
+        throw new BadRequestException("no user found with id= " + id);
+    }
 
 //    @Override
 //    public ListResponseWithCount<SmeBo> fetchSmeList(PaginationBo bo){
@@ -277,167 +254,181 @@ public class SmeServiceImpl implements SmeService {
 //        return new ListResponseWithCount<>(smeBoList,"",smes.getTotalElements(),bo.getPageNumber(),smes.getTotalPages());
 //    }
 
-	@Override
-	public ListResponse<SmeBo> fetchSmeListWithoutPagination() {
-		List<Sme> smeObjList = getAllSme(Boolean.FALSE);
-		List<SmeBo> smeBoList = new ArrayList<>();
-		smeObjList.forEach(sme -> {
-			SmeBo smeBo = new SmeBo(sme);
-			smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
-			smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,
-					this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
-			smeBoList.add(smeBo);
-		});
-		return new ListResponse<>(smeBoList, "");
-	}
+    @Override
+    public ListResponse<SmeBo> fetchSmeListWithoutPagination() {
+        List<Sme> smeObjList = getAllSme(Boolean.FALSE);
+        List<SmeBo> smeBoList = new ArrayList<>();
+        smeObjList.forEach(sme -> {
+            SmeBo smeBo = new SmeBo(sme);
+            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+            smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,
+                    this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
+            smeBoList.add(smeBo);
+        });
+        return new ListResponse<>(smeBoList, "");
+    }
 
-	@Override
-	public ListResponseWithCount fetchProductsList(ProductRequestFilter productRequestFilter) {
-		log.info("Inside get sme Product List");
-		String userId = this.authenticationService.currentUser().getId();
-		productRequestFilter.setSmeUserId(userId);
-		return this.fetchProducts(productRequestFilter);
-	}
+    @Override
+    public ListResponseWithCount fetchProductsList(ProductRequestFilter productRequestFilter) {
+        log.info("Inside get sme Product List");
+        String userId = this.authenticationService.currentUser().getId();
+        productRequestFilter.setSmeUserId(userId);
+        return this.fetchProducts(productRequestFilter);
+    }
 
-	@Override
-	public ListResponseWithCount fetchProducts(ProductRequestFilter productRequestFilter) {
-		log.info("Inside get product list");
-		Page<Product> products = null;
+    @Override
+    public ListResponseWithCount fetchProducts(ProductRequestFilter productRequestFilter) {
+        log.info("Inside get product list");
+        Page<Product> products = null;
 //        productRequestFilter.setUserId(this.authenticationService.currentUser().getId());
-		if (!this.helper.notNullAndHavingData(productRequestFilter.getProductCategoryIds())) {
-			products = this.productRepository.findByUser_IdAndIsDeleted(
-					PageRequest.of(productRequestFilter.getPageNumber(), pageSize), productRequestFilter.getSmeUserId(),
-					productRequestFilter.getIsInActive());
-			List<ProductBo> productList = new ArrayList<>();
-			products.forEach(product -> productList.add(this.productService.toProductBo(product)));
-			return new ListResponseWithCount(productList, "", products.getTotalElements(),
-					productRequestFilter.getPageNumber(), products.getTotalPages());
-		} else {
-			products = this.productRepository.findByProductCategories_IdInAndIsDeletedAndUser_Id(
-					PageRequest.of(productRequestFilter.getPageNumber(), pageSize),
-					productRequestFilter.getProductCategoryIds(), productRequestFilter.getIsInActive(),
-					productRequestFilter.getSmeUserId());
-			List<ProductBo> productBos = new ArrayList<>();
-			products.forEach(product -> {
-				productBos.add(this.productService.toProductBo(product));
-			});
-			return new ListResponseWithCount(productBos, "", products.getTotalElements(),
-					(productRequestFilter.getPageNumber()), (products.getTotalPages()));
-		}
+        if (!this.helper.notNullAndHavingData(productRequestFilter.getProductCategoryIds())) {
+            products = this.productRepository.findByUser_IdAndIsDeleted(
+                    PageRequest.of(productRequestFilter.getPageNumber(), pageSize), productRequestFilter.getSmeUserId(),
+                    productRequestFilter.getIsInActive());
+            List<ProductBo> productList = new ArrayList<>();
+            products.forEach(product -> productList.add(this.productService.toProductBo(product)));
+            return new ListResponseWithCount(productList, "", products.getTotalElements(),
+                    productRequestFilter.getPageNumber(), products.getTotalPages());
+        } else {
+            products = this.productRepository.findByProductCategories_IdInAndIsDeletedAndUser_Id(
+                    PageRequest.of(productRequestFilter.getPageNumber(), pageSize),
+                    productRequestFilter.getProductCategoryIds(), productRequestFilter.getIsInActive(),
+                    productRequestFilter.getSmeUserId());
+            List<ProductBo> productBos = new ArrayList<>();
+            products.forEach(product -> {
+                productBos.add(this.productService.toProductBo(product));
+            });
+            return new ListResponseWithCount(productBos, "", products.getTotalElements(),
+                    (productRequestFilter.getPageNumber()), (products.getTotalPages()));
+        }
 
-	}
+    }
 
-	@Override
-	public List<Sme> getAllSme(Boolean isDeleted) {
-		return smeRepo.findAll(isDeleted);
-	}
+    @Override
+    public List<Sme> getAllSme(Boolean isDeleted) {
+        return smeRepo.findAll(isDeleted);
+    }
 
-	@Override
-	public Sme getSmeByUserId(String userId) {
-		return smeRepo.findByUserId(userId);
-	}
+    @Override
+    public Sme getSmeByUserId(String userId) {
+        return smeRepo.findByUserId(userId);
+    }
 
-	@Override
-	public List<NearbySmeRespDto> getNearbySme() {
-		log.info("Invoked :: SmeServiceImpl :: getNearbySme()");
+    @Override
+    public List<NearbySmeRespDto> getNearbySme() {
+        log.info("Invoked :: SmeServiceImpl :: getNearbySme()");
 
-		Optional<DeliveryAddress> deliveryAddObj = deliveryAddressService
-				.getCurrentDelAddress(authenticationService.currentUser());
+        Optional<DeliveryAddress> deliveryAddObj = deliveryAddressService
+                .getCurrentDelAddress(authenticationService.currentUser());
 
-		List<NearbySmeRespDto> dtoList = new ArrayList<NearbySmeRespDto>(0);
+        List<NearbySmeRespDto> dtoList = new ArrayList<NearbySmeRespDto>(0);
 
-		if (deliveryAddObj.isPresent()) {
-			for (Sme smeObj : getAllSme(Boolean.FALSE)) {
-				if (deliveryAddObj.get().getLatitude() != null && deliveryAddObj.get().getLongitude() != null
-						&& smeObj.getLatitude() != null && smeObj.getLongitude() != null) {
+        if (deliveryAddObj.isPresent()) {
+            for (Sme smeObj : getAllSme(Boolean.FALSE)) {
+                if (deliveryAddObj.get().getLatitude() != null && deliveryAddObj.get().getLongitude() != null
+                        && smeObj.getLatitude() != null && smeObj.getLongitude() != null) {
 
-					int distance = computeDistance(deliveryAddObj.get().getLatitude(),
-							deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
+                    int distance = computeDistance(deliveryAddObj.get().getLatitude(),
+                            deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
 
-					if (distance <= Constants.MIN_DISTANCE) {
-						dtoList.add(new NearbySmeRespDto(smeObj.getUserId(), smeObj.getNameOfBusiness(),
-								smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),
-								bindLogoUrl(smeObj.getBusinessLogo())));
-					}
-				}
-			}
-		} else {
-			throw new ResourceNotFoundException(Constants.ERR_NO_CURRENT_ADDRESS);
-		}
+                    if (distance <= Constants.MIN_DISTANCE) {
+                        dtoList.add(new NearbySmeRespDto(smeObj.getUserId(), smeObj.getNameOfBusiness(),
+                                smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),
+                                bindLogoUrl(smeObj.getBusinessLogo())));
+                    }
+                }
+            }
+        } else {
+            throw new ResourceNotFoundException(Constants.ERR_NO_CURRENT_ADDRESS);
+        }
 
-		return dtoList;
-	}
+        return dtoList;
+    }
 
-	private String bindLogoUrl(String logoString) {
-		FileBo urlObject = helper.prepareAttachmentResource(logoString);
-		String imageUrl = Constants.MSG_NO_BUSINESS_LOGO;
-		if (urlObject != null) {
-			imageUrl = urlObject.getImageUrl();
+    private String bindLogoUrl(String logoString) {
+        FileBo urlObject = helper.prepareAttachmentResource(logoString);
+        String imageUrl = Constants.MSG_NO_BUSINESS_LOGO;
+        if (urlObject != null) {
+            imageUrl = urlObject.getImageUrl();
 
-		}
-		return imageUrl;
-	}
+        }
+        return imageUrl;
+    }
 
-	private int computeDistance(Double userLat, Double userLong, Double smeLat, Double smeLong) {
-		log.info("Invoked :: SmeServiceImpl :: computeDistance()");
+    private int computeDistance(Double userLat, Double userLong, Double smeLat, Double smeLong) {
+        log.info("Invoked :: SmeServiceImpl :: computeDistance()");
 
-		double theta = userLong - smeLong;
-		double distance = Math.sin(helper.deg2rad(userLat)) * Math.sin(helper.deg2rad(smeLat))
-				+ Math.cos(helper.deg2rad(userLat)) * Math.cos(helper.deg2rad(smeLat))
-						* Math.cos(helper.deg2rad(theta));
-		distance = Math.acos(distance);
-		distance = helper.rad2deg(distance);
-		distance = distance * 60 * 1.1515;
-		distance = distance * 1.609344;
-		return (int) distance;
-	}
+        double theta = userLong - smeLong;
+        double distance = Math.sin(helper.deg2rad(userLat)) * Math.sin(helper.deg2rad(smeLat))
+                + Math.cos(helper.deg2rad(userLat)) * Math.cos(helper.deg2rad(smeLat))
+                * Math.cos(helper.deg2rad(theta));
+        distance = Math.acos(distance);
+        distance = helper.rad2deg(distance);
+        distance = distance * 60 * 1.1515;
+        distance = distance * 1.609344;
+        return (int) distance;
+    }
 
-	@SuppressWarnings("unused")
-	@Override
-	public SmeStatsResponseDto getOverallStatsByDate(LocalDate startDate, LocalDate endDate) {
-		log.info("Invoked :: SmeServiceImpl :: getOverallStats() :: with params :: startDate=" + startDate
-				+ " :: endDate=" + endDate);
+    @SuppressWarnings("unused")
+    @Override
+    public SmeStatsResponseDto getOverallStatsByDate(LocalDate startDate, LocalDate endDate) {
+        log.info("Invoked :: SmeServiceImpl :: getOverallStats() :: with params :: startDate=" + startDate
+                + " :: endDate=" + endDate);
 
-		Sme smeUser = getSmeByUserId(authenticationService.currentUser().getId());
-		SmeStatsResponseDto responseObj = null;
+        Sme smeUser = getSmeByUserId(authenticationService.currentUser().getId());
+        SmeStatsResponseDto responseObj = null;
 
-		if (smeUser == null) {
-			throw new InvalidAccessException(Constants.ERR_USER_NOT_SME);
+        if (smeUser == null) {
+            throw new InvalidAccessException(Constants.ERR_USER_NOT_SME);
 
-		} else {
+        } else {
 
-			Optional<Integer> totalOrderAmount = orderInfoService.getDeliveredOrderCountBySmeAndDate(smeUser.getId(),
-					startDate, endDate);
+            Optional<Integer> totalOrderAmount = orderInfoService.getDeliveredOrderCountBySmeAndDate(smeUser.getId(),
+                    startDate, endDate);
 
-			Optional<Integer> totalOrderQty = orderItemService.getDeleviredQtyCountBySmeAndDate(smeUser.getId(),
-					startDate, endDate);
-			Optional<Integer> totalOrderDelivered = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.DELIVERED.name(), startDate, endDate);
-			Optional<Integer> totalOrderCancelled = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.CANCELLED.name(), startDate, endDate);
-			Optional<Integer> totalOrderPlaced = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.PLACED.name(), startDate, endDate);
-			Optional<Integer> totalOrderReceived = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.RECEIVED.name(), startDate, endDate);
-			Optional<Integer> totalOrderConfirmed = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.CONFIRMED.name(), startDate, endDate);
-			Optional<Integer> totalOrderOut = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.OUT_FOR_DELIVERY.name(), startDate, endDate);
-			Optional<Integer> totalOrderDispatch= orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-					OrderConstants.READY_FOR_DISPATCH.name(), startDate, endDate);
+            Optional<Integer> totalOrderQty = orderItemService.getDeleviredQtyCountBySmeAndDate(smeUser.getId(),
+                    startDate, endDate);
+            Optional<Integer> totalOrderDelivered = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.DELIVERED.name(), startDate, endDate);
+            Optional<Integer> totalOrderCancelled = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.CANCELLED.name(), startDate, endDate);
+            Optional<Integer> totalOrderPlaced = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.PLACED.name(), startDate, endDate);
+            Optional<Integer> totalOrderReceived = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.RECEIVED.name(), startDate, endDate);
+            Optional<Integer> totalOrderConfirmed = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.CONFIRMED.name(), startDate, endDate);
+            Optional<Integer> totalOrderOut = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.OUT_FOR_DELIVERY.name(), startDate, endDate);
+            Optional<Integer> totalOrderDispatch = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
+                    OrderConstants.READY_FOR_DISPATCH.name(), startDate, endDate);
 
-			responseObj = new SmeStatsResponseDto(totalOrderAmount.isPresent() ? totalOrderAmount.get() : 0,
-					totalOrderQty.isPresent() ? totalOrderQty.get() : 0,
-					totalOrderDelivered.isPresent() ? totalOrderDelivered.get() : 0,
-					totalOrderCancelled.isPresent() ? totalOrderCancelled.get() : 0,
-					totalOrderPlaced.isPresent() ? totalOrderPlaced.get() : 0,
-					totalOrderReceived.isPresent() ? totalOrderReceived.get() : 0,
-					totalOrderConfirmed.isPresent() ? totalOrderConfirmed.get() : 0,
-					totalOrderOut.isPresent() ? totalOrderOut.get() : 0,
-				    totalOrderDispatch.isPresent() ? totalOrderDispatch.get() : 0);
-		}
+            responseObj = new SmeStatsResponseDto(totalOrderAmount.isPresent() ? totalOrderAmount.get() : 0,
+                    totalOrderQty.isPresent() ? totalOrderQty.get() : 0,
+                    totalOrderDelivered.isPresent() ? totalOrderDelivered.get() : 0,
+                    totalOrderCancelled.isPresent() ? totalOrderCancelled.get() : 0,
+                    totalOrderPlaced.isPresent() ? totalOrderPlaced.get() : 0,
+                    totalOrderReceived.isPresent() ? totalOrderReceived.get() : 0,
+                    totalOrderConfirmed.isPresent() ? totalOrderConfirmed.get() : 0,
+                    totalOrderOut.isPresent() ? totalOrderOut.get() : 0,
+                    totalOrderDispatch.isPresent() ? totalOrderDispatch.get() : 0);
+        }
 
-		return responseObj;
-	}
+        return responseObj;
+    }
+
+    @Override
+    public ListResponse smeProductCategories() {
+        log.info("Invoked :: SmeServiceImpl :::smeProductCategories()");
+        User user = this.authenticationService.currentUser();
+        Map<String, String> productCategories = new HashMap<>();
+        this.productRepository.findByUser(user).forEach
+                (product -> product.getProductCategories().forEach
+                        (productCategory -> productCategories.put(productCategory.getId(), productCategory.getProductCategory())));
+        List<ProductCategoryBo> productCategoryBos = new ArrayList<>();
+        productCategories.forEach((id, name) ->
+                productCategoryBos.add(new ProductCategoryBo(id, name)));
+        return new ListResponse(productCategoryBos, "categories returned");
+    }
 
 }
