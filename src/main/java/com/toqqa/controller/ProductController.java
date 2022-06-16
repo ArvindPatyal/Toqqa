@@ -2,7 +2,9 @@ package com.toqqa.controller;
 
 import javax.validation.Valid;
 
+import com.toqqa.dto.UpdateSequenceNumberDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -37,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductController {
 
 	@Autowired
-	ProductService productService;
+	private ProductService productService;
 
 	@ApiOperation(value = "Add Product")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
@@ -113,6 +115,16 @@ public class ProductController {
 	public ListResponseWithCount<ProductBo> searchProducts(@RequestBody PaginationBo bo) {
 		log.info("Invoked:: ProductController:: searchProducts");
 		return this.productService.searchProducts(bo);
+	}
+
+	@ApiOperation(value = "Update Product sequence")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
+			@ApiResponse(code = 400, message = "Bad Request!") })
+//	@PreAuthorize("hasRole(ROLE_ADMIN)")
+	@PutMapping("/update_sequence")
+	public Response<Boolean> updateSequence(@RequestBody @Valid UpdateSequenceNumberDTO dto) {
+		log.info("Invoked:: ProductController:: updateProductImage");
+		return new Response<Boolean>(this.productService.updateSequenceNumber(dto),"sequence updated successfully!!");
 	}
 
 }

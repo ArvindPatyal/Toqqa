@@ -8,7 +8,9 @@ import com.toqqa.constants.FileType;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.OrderBy;
 import com.toqqa.domain.*;
+import com.toqqa.dto.UpdateSequenceNumberDTO;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.InternalServerException;
 import com.toqqa.payload.*;
 import com.toqqa.repository.*;
 import com.toqqa.service.*;
@@ -356,5 +358,17 @@ public class ProductServiceImpl implements ProductService {
 		productBo.setImages(this.helper.prepareProductAttachments(product.getAttachments()));
 
 		return productBo;
+	}
+
+	@Override
+	public Boolean updateSequenceNumber(UpdateSequenceNumberDTO dto) {
+		log.info("Invoked :: ProductServiceImpl :: updateSequenceNumber()");
+		Optional<Product> product = this.productRepo.findById(dto.getProductId());
+		if(product.isPresent()){
+			product.get().setSequenceNumber(dto.getSequenceNumber());
+			this.productRepo.saveAndFlush(product.get());
+			return true;
+		}
+		throw new InternalServerException("unable to update sequence!!");
 	}
 }

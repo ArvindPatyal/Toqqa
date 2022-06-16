@@ -4,6 +4,7 @@ import com.toqqa.bo.FileBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Product;
+import com.toqqa.dto.UpdateSequenceNumberDTO;
 import com.toqqa.payload.AddProduct;
 import com.toqqa.payload.FileUpload;
 import com.toqqa.payload.ListProductRequest;
@@ -35,5 +36,7 @@ public interface ProductService {
 	ListResponseWithCount<ProductBo> searchProducts(PaginationBo paginationbo);
 
 	ProductBo toProductBo(Product product);
+
+	Boolean updateSequenceNumber(UpdateSequenceNumberDTO dto);
 
 }

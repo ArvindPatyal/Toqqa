@@ -89,7 +89,7 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 
 	private void initProductcategories() {
 		List<String> productCategories = Arrays.asList("Dining", "Groceries and Food", "Cleaning Supplies", "Weavers",
-				"Jewellery", "Fashion", "Health and Beauty", "Home and Lifestyle", "Oonery, Gift Cards and Vouchers",
+				"Jewellery", "Fashion", "Health and Beauty", "Home and Lifestyle", "Stationary, Gift Cards and Vouchers",
 				"Toys", "Financial Services", "Outdoor, Fitness and Sport", "Other");
 		productCategories.forEach(productcategory -> {
 			if (this.productCategoryRepo.findByProductCategory(productcategory) == null) {

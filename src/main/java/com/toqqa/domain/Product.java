@@ -72,5 +72,7 @@ public class Product {
 	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY)    
 	private List<Attachment> attachments;
 
+	@Column(length = 500)
+	private Integer sequenceNumber;
 
 }
