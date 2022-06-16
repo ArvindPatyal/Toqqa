@@ -84,7 +84,6 @@ public class SmeServiceImpl implements SmeService {
 
     @Autowired
     private OrderItemService orderItemService;
-    private List<Product> products;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
