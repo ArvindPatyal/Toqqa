@@ -65,6 +65,8 @@ public class OrderInfo {
 
 	private String phone;
 
+	private String invoiceNumber;
+
 	@Column(length = 500)
 	private String cancellationReason;
 
