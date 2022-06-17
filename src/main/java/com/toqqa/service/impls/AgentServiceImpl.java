@@ -1,5 +1,14 @@
 package com.toqqa.service.impls;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.toqqa.bo.AgentBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
@@ -14,16 +23,11 @@ import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AgentService;
 import com.toqqa.service.StorageService;
+import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.utility.RandomString;
 
 @Service
 @Slf4j
@@ -51,15 +55,15 @@ public class AgentServiceImpl implements AgentService {
 			try {
 				Agent agent = new Agent();
 				agent.setUserId(userId);
+				agent.setAgentId(Constants.AGENT_CONSTANT + this.helper.numericString(6));
 				User user = this.userRepo.findById(userId).get();
 				List<Role> roles = new ArrayList<>();
 				roles.addAll(user.getRoles());
 				roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
 				user.setRoles(roles);
 				try {
-					agent.setIdProof(this.storageService
-							.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue())
-							.get());
+					agent.setIdProof(this.storageService.uploadFileAsync(agentRegistration.getIdProof(), userId,
+							FolderConstants.DOCUMENTS.getValue()).get());
 					agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(),
 							userId, FolderConstants.DOCUMENTS.getValue()).get());
 				} catch (InterruptedException | ExecutionException e) {
@@ -74,8 +78,7 @@ public class AgentServiceImpl implements AgentService {
 				bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
 				bo.setIdProof(this.prepareResource(agent.getIdProof()));
 				return bo;
-			}
-			catch (Exception e){
+			} catch (Exception e) {
 				log.error("Invoked :: AgentServiceImpl :: agentRegistration() :: Unable to create Agent", e);
 				this.userRepo.deleteById(userId);
 			}
@@ -83,9 +86,9 @@ public class AgentServiceImpl implements AgentService {
 		throw new BadRequestException("user already an agent");
 	}
 
-	private String prepareResource(String location){
+	private String prepareResource(String location) {
 		log.info("Invoked :: AgentServiceImpl :: prepareResource()");
-		if(this.helper.notNullAndBlank(location)){
+		if (this.helper.notNullAndBlank(location)) {
 			return this.storageService.generatePresignedUrl(location);
 		}
 		return "";
@@ -124,7 +127,7 @@ public class AgentServiceImpl implements AgentService {
 	public AgentBo fetchAgent(String id) {
 		log.info("Invoked :: AgentServiceImpl :: fetchAgent()");
 		Agent agent = this.agentRepo.findByUserId(id);
-		if (agent!=null) {
+		if (agent != null) {
 			AgentBo bo = new AgentBo(agent);
 			bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
 			bo.setIdProof(this.prepareResource(agent.getIdProof()));
