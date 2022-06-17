@@ -31,6 +31,8 @@ public class OrderInfoBo {
 	private Date deliveryDate;
 	private String orderTransactionId;
 
+	private String invoiceNumber;
+
 	private String invoiceUrl;
 
 	private SmeBo smeBo;
@@ -51,6 +53,7 @@ public class OrderInfoBo {
 		this.address = new DeliveryAddressBo(orderInfo.getAddress());
 		this.paymentType = orderInfo.getPaymentType().name();
 		this.shippingFee = orderInfo.getShippingFee();
+		this.invoiceNumber= orderInfo.getInvoiceNumber();
 		this.smeBo = smeBo;
 		this.cancellationReason = orderInfo.getCancellationReason();
 		this.deliveryDate = orderInfo.getOrderStatus() == OrderConstants.DELIVERED ? orderInfo.getModificationDate()

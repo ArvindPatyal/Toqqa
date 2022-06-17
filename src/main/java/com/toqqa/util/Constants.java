@@ -27,6 +27,9 @@ public class Constants {
 
 	public static final String ORDER_CONSTANT = "ORD-";
 
-	public static final String AGENT_CONSTANT = "AGT-";
+  public static final String AGENT_CONSTANT = "AGT-";
+
+	public static final String INVOICE_CONSTANT = "INV-";
+
 
 }
