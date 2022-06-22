@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -149,18 +148,24 @@ public class AgentServiceImpl implements AgentService {
         User user = this.authenticationService.currentUser();
         Role agentRole = this.roleRepo.findByRole(RoleConstants.AGENT.getValue());
         Role smeRole = this.roleRepo.findByRole(RoleConstants.SME.getValue());
+
         if (!user.getRoles().stream().anyMatch(role -> role.equals(agentRole))) {
             throw new BadRequestException("you are not an agent");
         }
+
         Agent agent = this.agentRepo.findByUserId(user.getId());
         List<User> userList = this.userRepo.findByAgentId(agent.getAgentId());
         List<AgentReferralBo> agentReferralBo = new ArrayList<>();
+
         for (User users : userList) {
             String userId = users.getId();
             UserBo userBo = new UserBo(users);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+            userBo.setCreatedAt(user.getCreatedAt());
+
             SmeBo smeBo = null;
             AgentBo agentBo = null;
+
             for (Role role : users.getRoles()) {
                 if (role.equals(smeRole)) {
                     Sme sme = this.smeRepo.findByUserId(userId);

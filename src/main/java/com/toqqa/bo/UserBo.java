@@ -5,6 +5,7 @@ import com.toqqa.domain.User;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -39,6 +40,8 @@ public class UserBo {
 
 	private String profilePicture;
 
+	private Date createdAt;
+
 	private List<String> roles = new ArrayList<>();
 
 	public UserBo(User user) {
@@ -54,6 +57,7 @@ public class UserBo {
 		this.country = user.getCountry();
 		this.agentId = user.getAgentId();
 		this.isDeleted = user.getIsDeleted();
+		this.createdAt = user.getCreatedAt();
 		this.profilePicture = user.getProfilePicture();
 		user.getRoles().forEach(role -> {
 			this.roles.add(role.getRole());
