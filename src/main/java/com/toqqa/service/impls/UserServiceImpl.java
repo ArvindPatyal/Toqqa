@@ -2,6 +2,7 @@ package com.toqqa.service.impls;
 
 import com.toqqa.bo.UserBo;
 import com.toqqa.config.JWTConfig;
+import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
@@ -10,6 +11,7 @@ import com.toqqa.payload.*;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
 import com.toqqa.service.DeliveryAddressService;
+import com.toqqa.service.StorageService;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
@@ -34,162 +36,176 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private RoleRepository roleRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
-	@Autowired
-	private Helper helper;
-	@Autowired
-	private JWTConfig jwtConfig;
+    @Autowired
+    private Helper helper;
+    @Autowired
+    private JWTConfig jwtConfig;
 
-	@Autowired
-	@Lazy
-	private AuthenticationManager manager;
+    @Autowired
+    private StorageService storageService;
 
-	@Autowired
-	@Lazy
-	private DeliveryAddressService deliveryAddressService;
+    @Autowired
+    @Lazy
+    private AuthenticationManager manager;
 
-	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public UserBo addUser(UserSignUp userSignUp) {
-		log.info("Invoked :: UserServiceImpl :: addUser()");
-		if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
-			throw new UserAlreadyExists("user with email/number already exists");
-		}
-		User user = new User();
-		user.setCity(userSignUp.getCity());
-		user.setCountry(userSignUp.getCountry());
-		user.setAgentId(userSignUp.getAgentId());
-		user.setIsDeleted(false);
-		user.setCreatedAt(new Date());
-		if(this.helper.notNullAndBlank(userSignUp.getEmail())){
-			if(!EmailValidator.getInstance().isValid(userSignUp.getEmail())){
-				throw new BadRequestException("invalid email value : "+userSignUp.getEmail());
-			}
-			user.setEmail(userSignUp.getEmail().toLowerCase());
-		}
-		user.setFirstName(userSignUp.getFirstName());
-		if(this.helper.notNullAndBlank(userSignUp.getPhone())) {
-			if(!this.helper.isValidNumber(userSignUp.getPhone())){
-				throw new BadRequestException("invalid phone number :"+userSignUp.getPhone());
-			}
-			user.setPhone(userSignUp.getPhone());
-		}
-		user.setLastName(userSignUp.getLastName());
-		user.setPostCode(userSignUp.getPostCode());
-		user.setState(userSignUp.getState());
-		user.setAddress(userSignUp.getAddress());
-		user.setLatitude(userSignUp.getLatitude());
-		user.setLongitude(userSignUp.getLongitude());
-		user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
-		user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
-		user = this.userRepository.saveAndFlush(user);
-		this.deliveryAddressService.create(user);
-		return new UserBo(user);
+    @Autowired
+    @Lazy
+    private DeliveryAddressService deliveryAddressService;
 
-	}
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserBo addUser(UserSignUp userSignUp) {
+        log.info("Invoked :: UserServiceImpl :: addUser()");
+        if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
+            throw new UserAlreadyExists("user with email/number already exists");
+        }
+        User user = new User();
+        user.setCity(userSignUp.getCity());
+        user.setCountry(userSignUp.getCountry());
+        user.setAgentId(userSignUp.getAgentId());
+        user.setIsDeleted(false);
+        user.setCreatedAt(new Date());
+        if (this.helper.notNullAndBlank(userSignUp.getEmail())) {
+            if (!EmailValidator.getInstance().isValid(userSignUp.getEmail())) {
+                throw new BadRequestException("invalid email value : " + userSignUp.getEmail());
+            }
+            user.setEmail(userSignUp.getEmail().toLowerCase());
+        }
+        user.setFirstName(userSignUp.getFirstName());
+        if (this.helper.notNullAndBlank(userSignUp.getPhone())) {
+            if (!this.helper.isValidNumber(userSignUp.getPhone())) {
+                throw new BadRequestException("invalid phone number :" + userSignUp.getPhone());
+            }
+            user.setPhone(userSignUp.getPhone());
+        }
+        user.setLastName(userSignUp.getLastName());
+        user.setPostCode(userSignUp.getPostCode());
+        user.setState(userSignUp.getState());
+        user.setAddress(userSignUp.getAddress());
+        user.setLatitude(userSignUp.getLatitude());
+        user.setLongitude(userSignUp.getLongitude());
+        user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
+        user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
+        user = this.userRepository.saveAndFlush(user);
+        this.deliveryAddressService.create(user);
+        return new UserBo(user);
 
-	@Override
-	public Boolean isUserExists(String email, String phone) {
-		log.info("Invoked :: UserServiceImpl :: isUserExists()");
-		User user = null;
-		if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
-			if(this.helper.notNullAndBlank(email)) {
-				user = this.userRepository.findByEmail(email);
-			}
-			if (user == null) {
-				user = this.userRepository.findByPhone(phone);
-			}
-			return user != null;
+    }
 
-		}
-		throw new BadRequestException("No email and phone found");
-	}
+    @Override
+    public Boolean isUserExists(String email, String phone) {
+        log.info("Invoked :: UserServiceImpl :: isUserExists()");
+        User user = null;
+        if (this.helper.notNullAndBlank(email) || this.helper.notNullAndBlank(phone)) {
+            if (this.helper.notNullAndBlank(email)) {
+                user = this.userRepository.findByEmail(email);
+            }
+            if (user == null) {
+                user = this.userRepository.findByPhone(phone);
+            }
+            return user != null;
 
-	@Override
-	public User findByEmailOrPhone(String username) {
-		log.info("Invoked :: UserServiceImpl :: findByEmailOrPhone()");
-		return this.userRepository.findByEmailOrPhone(username, username);
-	}// find user by emailid or phone
+        }
+        throw new BadRequestException("No email and phone found");
+    }
 
-	@Override
-	public LoginResponse signIn(LoginRequest bo) {
-		log.info("Invoked :: UserServiceImpl :: signIn()");
-		try {
-			Authentication authentication = this.manager
-					.authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse(
-					this.jwtConfig.generateToken(bo.getUsername()));
-			authentication = SecurityContextHolder.getContext().getAuthentication();
-			UserBo user = new UserBo(
-					this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
-			return new LoginResponse(jwtAuthenticationResponse, user);
-		} catch (Exception e) {
-			throw new BadCredentialsException("invalid login credentials");
-		}
+    @Override
+    public User findByEmailOrPhone(String username) {
+        log.info("Invoked :: UserServiceImpl :: findByEmailOrPhone()");
+        return this.userRepository.findByEmailOrPhone(username, username);
+    }// find user by emailid or phone
 
-	}// send auth token
+    @Override
+    public LoginResponse signIn(LoginRequest bo) {
+        log.info("Invoked :: UserServiceImpl :: signIn()");
+        try {
+            Authentication authentication = this.manager
+                    .authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse(
+                    this.jwtConfig.generateToken(bo.getUsername()));
+            authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserBo user = new UserBo(
+                    this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
+            return new LoginResponse(jwtAuthenticationResponse, user);
+        } catch (Exception e) {
+            throw new BadCredentialsException("invalid login credentials");
+        }
 
-	@Override
-	public UserBo fetchUser(String id) {
-		log.info("Invoked :: UserServiceImpl :: fetchUser()");
-		Optional<User> user = this.userRepository.findById(id);
-		if (user.isPresent()) {
-			return new UserBo(user.get());
-		}
-		throw new BadRequestException("no user found with id= " + id);
-	}
+    }// send auth token
 
-	@Override
-	public UserDetails loadUserByUsername(String userName) {
-		log.info("Invoked :: UserServiceImpl :: loadUserByUsername()");
-		User user = userRepository.findByEmailOrPhone(userName, userName);
-		if (user != null && !user.getIsDeleted()) {
-			List<GrantedAuthority> authorities = user.getRoles().stream()
-					.map(role -> new SimpleGrantedAuthority(role.getRole())).collect(Collectors.toList());
-			return new org.springframework.security.core.userdetails.User(userName, user.getPassword(), authorities);
+    @Override
+    public UserBo fetchUser(String id) {
+        log.info("Invoked :: UserServiceImpl :: fetchUser()");
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isPresent()) {
+            return new UserBo(user.get());
+        }
+        throw new BadRequestException("no user found with id= " + id);
+    }
 
-		} else {
-			throw new UsernameNotFoundException("user not found");
-		}
+    @Override
+    public UserDetails loadUserByUsername(String userName) {
+        log.info("Invoked :: UserServiceImpl :: loadUserByUsername()");
+        User user = userRepository.findByEmailOrPhone(userName, userName);
+        if (user != null && !user.getIsDeleted()) {
+            List<GrantedAuthority> authorities = user.getRoles().stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getRole())).collect(Collectors.toList());
+            return new org.springframework.security.core.userdetails.User(userName, user.getPassword(), authorities);
 
-	}// verify user by email/username
+        } else {
+            throw new UsernameNotFoundException("user not found");
+        }
 
-	@Override
-	public UserBo updateUser(UpdateUser updateUser) {
+    }// verify user by email/username
 
-		log.info("Invoked :: UserServiceImpl :: updateUser()");
+    @Override
+    public UserBo updateUser(UpdateUser updateUser) {
 
-		User user = this.userRepository.findById(updateUser.getUserId()).get();
-		user.setCity(updateUser.getCity());
-		user.setCountry(updateUser.getCountry());
-		user.setAgentId(updateUser.getAgentId());
-		user.setIsDeleted(false);
-		if (this.helper.notNullAndBlank(updateUser.getEmail())) {
-			if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
-				throw new BadRequestException("invalid email value : " + updateUser.getEmail());
-			}
-			user.setEmail(updateUser.getEmail());
-		}
-		user.setFirstName(updateUser.getFirstName());
+        log.info("Invoked :: UserServiceImpl :: updateUser()");
+
+        User user = this.userRepository.findById(updateUser.getUserId()).get();
+        user.setCity(updateUser.getCity());
+        user.setCountry(updateUser.getCountry());
+        user.setIsDeleted(false);
+        if (this.helper.notNullAndBlank(updateUser.getEmail())) {
+            if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
+                throw new BadRequestException("invalid email value : " + updateUser.getEmail());
+            }
+            user.setEmail(updateUser.getEmail());
+        }
+        user.setFirstName(updateUser.getFirstName());
+        try {
+            if (updateUser.getProfilePicture() != null && !updateUser.getProfilePicture().isEmpty()) {
+                user.setProfilePicture(this.storageService
+                        .uploadFileAsync(updateUser.getProfilePicture(), user.getId(), FolderConstants.PROFILE_PICTURE.getValue())
+                        .get());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
 //		user.setPhone(this.helper.notNullAndBlank(updateUser.getPhone()) ? updateUser.getPhone() : null);
-		user.setLastName(updateUser.getLastName());
-		user.setPostCode(updateUser.getPostCode());
-		user.setState(updateUser.getState());
-		user.setAddress(updateUser.getAddress());
-		user.setPassword(new BCryptPasswordEncoder().encode(updateUser.getPassword()));
-		user = this.userRepository.saveAndFlush(user);
-		return new UserBo(user);
+        user.setLastName(updateUser.getLastName());
+        user.setPostCode(updateUser.getPostCode());
+        user.setState(updateUser.getState());
+        user.setAddress(updateUser.getAddress());
+        user.setPassword(new BCryptPasswordEncoder().encode(updateUser.getPassword()));
+        user = this.userRepository.saveAndFlush(user);
+        UserBo bo = new UserBo(user);
+        bo.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
+        return bo;
 
-	}
+    }
 }

@@ -2,7 +2,7 @@ package com.toqqa.constants;
 
 public enum FolderConstants {
 
-    DOCUMENTS("documents"), LOGO("logo"), PRODUCTS("products"), BANNER("banner"), INVOICE("invoice");
+    DOCUMENTS("documents"), LOGO("logo"), PRODUCTS("products"), BANNER("banner"), INVOICE("invoice"), PROFILE_PICTURE("profile_picture");
 
     private final String value;
 
@@ -13,5 +13,5 @@ public enum FolderConstants {
     public String getValue() {
         return value;
 
-	}
+    }
 }
