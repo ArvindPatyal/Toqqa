@@ -5,6 +5,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class UpdateUser {
@@ -42,7 +43,7 @@ public class UpdateUser {
 	@NotBlank
 	private String country;
 
-	private String agentId;
+//	private String agentId;
 
 	@NotNull
 	@NotBlank
@@ -51,4 +52,6 @@ public class UpdateUser {
 	@NotNull
 	@NotBlank
 	private String userId;
+
+	private MultipartFile profilePicture;
 }

@@ -3,11 +3,7 @@ package com.toqqa.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.toqqa.bo.UserBo;
 import com.toqqa.payload.Response;
@@ -54,7 +50,7 @@ public class UserController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
 			@ApiResponse(code = 400, message = "Bad Request") })
 	@PutMapping("/updateuser")
-	public Response<UserBo> updateUser(@RequestBody @Valid UpdateUser updateUser) {
+	public Response<UserBo> updateUser(@ModelAttribute @Valid UpdateUser updateUser) {
 		log.info("Invoked:: UserController:: updateUser");
 		return new Response<UserBo>(this.userService.updateUser(updateUser), "success");
 	}
