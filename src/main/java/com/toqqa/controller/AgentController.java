@@ -43,7 +43,7 @@ public class AgentController {
     @ApiOperation(value = "Returns users joined by reference")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/referralList")
+    @PostMapping(value = "/referralList")
     public Response fetchAgentReferralList(@RequestBody @Valid AgentPayload agentPayload) {
         log.info("Invoked :: AgentController :: fetchAgentReferenceList()");
         return this.agentService.fetchAgentReferralList(agentPayload);
