@@ -19,60 +19,64 @@ import java.util.List;
 @AllArgsConstructor
 public class Product {
 
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-	private String id;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    private String id;
 
-	private String productName;
+    private String productName;
 
-	private String description;
+    private String description;
 
-	private Long unitsInStock;
+    private Long unitsInStock;
 
-	private Double pricePerUnit;
+    private Double pricePerUnit;
 
-	private Double discount;
+    private Double discount;
 
-	private Integer maximumUnitsInOneOrder;
+    private Integer maximumUnitsInOneOrder;
 
-	private Integer minimumUnitsInOneOrder;
+    private Integer minimumUnitsInOneOrder;
 
-	private Date expiryDate;
+    private Date expiryDate;
 
-	private String countryOfOrigin;
+    private String countryOfOrigin;
 
-	private String manufacturerName;
-	
-	private Boolean isDeleted;
-	
-	private Date manufacturingDate;
-	
-	private String banner;
+    private String manufacturerName;
 
-	@CreationTimestamp
-	private Date createdAt;
+    private Boolean isDeleted;
 
-	private Boolean deliveredInSpecifiedRadius;
+    private Date manufacturingDate;
 
-	private Boolean delieveredOutsideSpecifiedRadius;
+    private String banner;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
+    @CreationTimestamp
+    private Date createdAt;
 
-	@ManyToMany
-	@JoinTable(name = "products_categories", inverseJoinColumns = @JoinColumn(name = "product_category_id"), joinColumns = @JoinColumn(name = "product_id"))
-	private List<ProductCategory> productCategories;
+    private Boolean deliveredInSpecifiedRadius;
 
-	@ManyToMany
-	@JoinTable(name = "product_subcategories", inverseJoinColumns = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
-	private List<ProductSubCategory> productSubCategories;
+    private Boolean delieveredOutsideSpecifiedRadius;
 
-	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY)    
-	private List<Attachment> attachments;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-	@Column(length = 500)
-	private Integer sequenceNumber;
+    @ManyToMany
+    @JoinTable(name = "products_categories", inverseJoinColumns = @JoinColumn(name = "product_category_id"), joinColumns = @JoinColumn(name = "product_id"))
+    private List<ProductCategory> productCategories;
+
+    @ManyToMany
+    @JoinTable(name = "product_subcategories", inverseJoinColumns = @JoinColumn(name = "product_subcategory_id"), joinColumns = @JoinColumn(name = "product_id"))
+    private List<ProductSubCategory> productSubCategories;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<Attachment> attachments;
+
+    @Column(length = 500)
+    private Integer sequenceNumber;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "product")
+    private List<ProductRating> productRatings;
+
 
 }

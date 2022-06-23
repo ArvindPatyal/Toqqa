@@ -25,6 +25,8 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 	Page<OrderInfo> findBySmeIdAndOrderStatusIn(Pageable pageRequest, String smeId, List<OrderConstants> orderStatus);
 
 	OrderInfo findByIdAndUser(String id, User user);
+
+	List<OrderInfo> findByUser_IdAndOrderStatus(String userId,OrderConstants orderStatus);
 	
 	@Query(value = Constants.TOTAL_ORDER_AMOUNT_DELIVERED_QUERY_BY_DATE ,nativeQuery = true)
 	Optional<Integer> findDelOrderAmountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate);
