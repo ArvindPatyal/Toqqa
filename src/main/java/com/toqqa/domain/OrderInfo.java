@@ -21,7 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.constants.PaymentConstants;
 
 import lombok.AllArgsConstructor;
@@ -71,7 +71,7 @@ public class OrderInfo {
 	private String cancellationReason;
 
 	@Enumerated(EnumType.STRING)
-	private OrderConstants orderStatus;
+	private OrderStatus orderStatus;
 
 	private double shippingFee;
 

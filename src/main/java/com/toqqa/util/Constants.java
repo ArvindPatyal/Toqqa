@@ -31,5 +31,8 @@ public class Constants {
 
 	public static final String INVOICE_CONSTANT = "INV-";
 
+	public static final String FEEDBACK_CONSTANT = "TOQQA Feedback/Complaints";
+
+	public  static  final  String ORDER_EMAIL_CONSTANT = "TOQQA Email";
 
 }

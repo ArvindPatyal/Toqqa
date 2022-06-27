@@ -3,7 +3,7 @@ package com.toqqa.bo;
 import java.util.Date;
 import java.util.List;
 
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.domain.OrderInfo;
 
 import lombok.AllArgsConstructor;
@@ -56,7 +56,7 @@ public class OrderInfoBo {
 		this.invoiceNumber= orderInfo.getInvoiceNumber();
 		this.smeBo = smeBo;
 		this.cancellationReason = orderInfo.getCancellationReason();
-		this.deliveryDate = orderInfo.getOrderStatus() == OrderConstants.DELIVERED ? orderInfo.getModificationDate()
+		this.deliveryDate = orderInfo.getOrderStatus() == OrderStatus.DELIVERED ? orderInfo.getModificationDate()
 				: null;
 		this.orderTransactionId = orderInfo.getOrderTransactionId()!=null? orderInfo.getOrderTransactionId() : "";
 	}

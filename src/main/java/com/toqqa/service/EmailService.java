@@ -2,11 +2,10 @@ package com.toqqa.service;
 
 import com.toqqa.bo.EmailBo;
 import com.toqqa.domain.OrderInfo;
+import com.toqqa.domain.User;
+import com.toqqa.dto.EmailRequestDto;
 
 public interface EmailService {
 
-	public Boolean sendEmail(EmailBo emailBo) throws Exception;
-
-	void sendOrderEmail(OrderInfo orderInfo);
-
+    void sendEmail(EmailRequestDto emailRequestDto);
 }

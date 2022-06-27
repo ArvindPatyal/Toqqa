@@ -5,7 +5,7 @@ import com.toqqa.bo.ProductBo;
 import com.toqqa.bo.ProductCategoryBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.NearbySmeRespDto;
@@ -388,19 +388,19 @@ public class SmeServiceImpl implements SmeService {
             Optional<Integer> totalOrderQty = orderItemService.getDeleviredQtyCountBySmeAndDate(smeUser.getId(),
                     startDate, endDate);
             Optional<Integer> totalOrderDelivered = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.DELIVERED.name(), startDate, endDate);
+                    OrderStatus.DELIVERED.name(), startDate, endDate);
             Optional<Integer> totalOrderCancelled = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.CANCELLED.name(), startDate, endDate);
+                    OrderStatus.CANCELLED.name(), startDate, endDate);
             Optional<Integer> totalOrderPlaced = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.PLACED.name(), startDate, endDate);
+                    OrderStatus.PLACED.name(), startDate, endDate);
             Optional<Integer> totalOrderReceived = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.RECEIVED.name(), startDate, endDate);
+                    OrderStatus.RECEIVED.name(), startDate, endDate);
             Optional<Integer> totalOrderConfirmed = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.CONFIRMED.name(), startDate, endDate);
+                    OrderStatus.CONFIRMED.name(), startDate, endDate);
             Optional<Integer> totalOrderOut = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.OUT_FOR_DELIVERY.name(), startDate, endDate);
+                    OrderStatus.OUT_FOR_DELIVERY.name(), startDate, endDate);
             Optional<Integer> totalOrderDispatch = orderInfoService.getOrderCountBySmeAndDateAndStatus(smeUser.getId(),
-                    OrderConstants.READY_FOR_DISPATCH.name(), startDate, endDate);
+                    OrderStatus.READY_FOR_DISPATCH.name(), startDate, endDate);
 
             responseObj = new SmeStatsResponseDto(totalOrderAmount.isPresent() ? totalOrderAmount.get() : 0,
                     totalOrderQty.isPresent() ? totalOrderQty.get() : 0,

@@ -1,8 +1,12 @@
 package com.toqqa.service.impls;
 
 import com.toqqa.bo.EmailBo;
-import com.toqqa.domain.OrderInfo;
+import com.toqqa.domain.User;
+import com.toqqa.dto.EmailRequestDto;
+import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.EmailService;
+import com.toqqa.util.Constants;
+import com.toqqa.util.EmailProps;
 import com.toqqa.util.EmailUtility;
 import freemarker.template.Configuration;
 import lombok.extern.slf4j.Slf4j;
@@ -17,43 +21,57 @@ import java.util.Map;
 @Slf4j
 public class EmailServiceImpl implements EmailService {
 
-	@Autowired
-	private EmailUtility emailUtil;
+    @Autowired
+    private EmailUtility emailUtil;
 
-	@Autowired
-	private Configuration freemarkerConfiguration;
+    @Autowired
+    private Configuration freemarkerConfiguration;
 
-	@Override
-	public Boolean sendEmail(EmailBo emailBo) throws Exception {
+    @Autowired
+    private EmailProps emailProps;
 
-		return true;
-	}
+    @Autowired
+    private AuthenticationService authenticationService;
 
-	@Override
-	public void sendOrderEmail(OrderInfo orderInfo) {
-		log.info("Invoked :: EmailServiceImpl :: sendOrderEmail()");
-		EmailBo bo = new EmailBo();
+    @Override
+    public void sendEmail(EmailRequestDto emailRequestDto) {
+        log.info("Invoked :: EmailServiceImpl :: sendOrderEmail()");
+        User user = this.authenticationService.currentUser();
+        EmailBo emailBo = new EmailBo();
+        StringWriter writer = new StringWriter();
+        Map<String, Object> model = new HashMap<>();
 
-		StringWriter writer = new StringWriter();
-		Map<String, Object> model = new HashMap<>();
+        model.put("title", emailRequestDto.getSubject());
+        model.put("description", emailRequestDto.getBody());
+        model.put("name", user.getFirstName() + " " + user.getLastName());
+        model.put("email", user.getEmail() != null ? user.getEmail() : "");
+        model.put("phoneNumber", user.getPhone());
 
-		model.put("name", orderInfo.getFirstName());
+        if (emailRequestDto.isOrder() == false) {
+            try {
+                freemarkerConfiguration.getTemplate("feedbackEmail.ftlh").process(model, writer);
+                emailBo.setMailContent(writer.getBuffer().toString());
+                this.emailUtil.feedbackEmail(emailBo);
 
-		bo.setMailTo(orderInfo.getEmail());
+            } catch (Exception e) {
+                e.printStackTrace();
 
-		bo.setMailSubject("welcome to freemarker email ");
+            }
+        }
 
-		try {
-			freemarkerConfiguration.getTemplate("orderEmail.ftlh").process(model, writer);
+        if (emailRequestDto.isOrder() == true) {
+           emailBo.setMailTo(user.getEmail() != null ? user.getEmail() : "");
+            emailBo.setMailSubject(Constants.ORDER_EMAIL_CONSTANT);
+            try {
+                freemarkerConfiguration.getTemplate("orderEmail.ftlh").process(model, writer);
 
-			bo.setMailContent(writer.getBuffer().toString());
-			this.emailUtil.processEmail(bo);
+                emailBo.setMailContent(writer.getBuffer().toString());
+                this.emailUtil.orderEmail(emailBo);
 
-		} catch (Exception e) {
-			e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
 
-		}
-
-	}
-
+            }
+        }
+    }
 }

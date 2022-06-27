@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.domain.OrderInfo;
 import com.toqqa.domain.User;
 import com.toqqa.util.Constants;
@@ -22,11 +22,11 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 
 	Page<OrderInfo> findByUser(Pageable pageRequest, User user);
 
-	Page<OrderInfo> findBySmeIdAndOrderStatusIn(Pageable pageRequest, String smeId, List<OrderConstants> orderStatus);
+	Page<OrderInfo> findBySmeIdAndOrderStatusIn(Pageable pageRequest, String smeId, List<OrderStatus> orderStatus);
 
 	OrderInfo findByIdAndUser(String id, User user);
 
-	List<OrderInfo> findByUser_IdAndOrderStatus(String userId,OrderConstants orderStatus);
+	List<OrderInfo> findByUser_IdAndOrderStatus(String userId,OrderStatus orderStatus);
 	
 	@Query(value = Constants.TOTAL_ORDER_AMOUNT_DELIVERED_QUERY_BY_DATE ,nativeQuery = true)
 	Optional<Integer> findDelOrderAmountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate);

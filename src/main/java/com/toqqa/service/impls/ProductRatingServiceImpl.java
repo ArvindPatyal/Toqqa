@@ -3,7 +3,7 @@ package com.toqqa.service.impls;
 import com.toqqa.bo.ProductRatingBo;
 import com.toqqa.bo.RatingReviewBo;
 import com.toqqa.bo.RatingStatsBo;
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.domain.*;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ProductRatingPayload;
@@ -47,7 +47,7 @@ public class ProductRatingServiceImpl implements ProductRatingService {
         User user = this.authenticationService.currentUser();
         if (this.productRatingRepository.findByProductIdAndUser(productRatingPayload.getProductId(), user) == null) {
             List<OrderItem> orderItems = new ArrayList<>();
-            List<OrderInfo> orderInfos = this.orderInfoRepository.findByUser_IdAndOrderStatus(user.getId(), OrderConstants.DELIVERED);
+            List<OrderInfo> orderInfos = this.orderInfoRepository.findByUser_IdAndOrderStatus(user.getId(), OrderStatus.DELIVERED);
             if (orderInfos.isEmpty()) {
                 throw new BadRequestException("you have not ordered anything yet or order is yet to be delivered");
             }

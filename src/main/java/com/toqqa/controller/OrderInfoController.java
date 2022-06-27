@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.PaginationBo;
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderCancelPayload;
@@ -99,11 +99,6 @@ public class OrderInfoController {
 	@PostMapping("/updateStatus")
 	public Response orderStatus(@RequestBody @Valid OrderStatusUpdatePayload orderStatusUpdatePayload) {
 		log.info("Invoked:: OrderInfoController:: orderStatus");
-		try {
-			OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant());
-		} catch (Exception e) {
-			throw new BadRequestException("invalid order constant " + orderStatusUpdatePayload.getOrderConstant());
-		}
 		return this.orderInfoService.updateOrderStatus(orderStatusUpdatePayload);
 	}
 }

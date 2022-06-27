@@ -3,7 +3,7 @@ package com.toqqa.service.impls;
 import com.toqqa.bo.RatingReviewBo;
 import com.toqqa.bo.RatingStatsBo;
 import com.toqqa.bo.SellerRatingBo;
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.domain.OrderInfo;
 import com.toqqa.domain.SellerRating;
 import com.toqqa.domain.Sme;
@@ -51,7 +51,7 @@ public class SellerRatingServiceImpl implements SellerRatingService {
         User user = this.authenticationService.currentUser();
         if (this.sellerRatingRepository.findBySmeIdAndUser_Id(sellerRatingPayload.getSmeId(), user.getId()) == null) {
             List<Sme> smeList = new ArrayList<>();
-            List<OrderInfo> orderInfos = this.orderInfoRepository.findByUser_IdAndOrderStatus(user.getId(), OrderConstants.DELIVERED);
+            List<OrderInfo> orderInfos = this.orderInfoRepository.findByUser_IdAndOrderStatus(user.getId(), OrderStatus.DELIVERED);
             if (orderInfos==null) {
                 throw new BadRequestException("you have not ordered anything yet or order is yet to be delivered");
             }
