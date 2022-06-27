@@ -89,12 +89,12 @@ public class ApplicationStartupEvent implements CommandLineRunner {
 
 	private void initProductcategories() {
 		List<String> productCategories = Arrays.asList("Dining", "Groceries and Food", "Cleaning Supplies", "Weavers",
-				"Jewellery", "Fashion", "Health and Beauty", "Home and Lifestyle", "Stationary, Gift Cards and Vouchers",
+				"Jewellery", "Fashion", "Health and Beauty", "Home and Lifestyle", "Stationery, Gift Cards and Vouchers",
 				"Toys", "Financial Services", "Outdoor, Fitness and Sport", "Other");
-		productCategories.forEach(productcategory -> {
-			if (this.productCategoryRepo.findByProductCategory(productcategory) == null) {
+		productCategories.forEach(productCategory -> {
+			if (this.productCategoryRepo.findByProductCategory(productCategory) == null) {
 				ProductCategory pc = new ProductCategory();
-				pc.setProductCategory(productcategory);
+				pc.setProductCategory(productCategory);
 				this.productCategoryRepo.saveAndFlush(pc);
 			}
 		});

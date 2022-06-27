@@ -25,7 +25,6 @@ public class ProductRating {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
-    @NotNull
     private Integer stars;
     @Length(min = 0, max = 1000)
     private String reviewComment;

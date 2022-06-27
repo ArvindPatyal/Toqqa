@@ -67,6 +67,8 @@ public class ProductBo {
 
     private Integer sequenceNumber;
 
+    private ProductRatingBo productRatingBo;
+
     public ProductBo(Product product, List<FileBo> images) {
         this.id = product.getId();
         this.productName = product.getProductName();
