@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import com.toqqa.bo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -18,11 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.OrderInfoBo;
-import com.toqqa.bo.OrderItemBo;
-import com.toqqa.bo.PaginationBo;
-import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.OrderConstants;
 import com.toqqa.constants.PaymentConstants;
 import com.toqqa.domain.*;
