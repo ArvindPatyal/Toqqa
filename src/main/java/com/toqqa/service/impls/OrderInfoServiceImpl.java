@@ -1,7 +1,11 @@
 package com.toqqa.service.impls;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -105,7 +109,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 				orderInfo.setAddress(address);
 				orderInfo.setUser(user);
 				String random = RandomString.make(7).toUpperCase();
-				orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT+random);
+				orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT + random);
 				orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + random);
 				orderInfo.setOrderStatus(OrderConstants.PLACED);
 				orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
@@ -154,6 +158,8 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 	private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
 		log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
 		List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
+		List<Product> products = new ArrayList<>();
+
 		for (OrderItemPayload item : orderItems) {
 			OrderItem orderItem = new OrderItem();
 			Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
@@ -168,9 +174,17 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 						- (product.getPricePerUnit() * product.getDiscount() * orderItem.getQuantity()) / 100);
 				orderItem = this.orderItemRepo.saveAndFlush(orderItem);
 				orderItemsList.add(orderItem);
+				if (orderItem.getQuantity() <= product.getUnitsInStock()) {
+					product.setUnitsInStock(product.getUnitsInStock() - item.getQuantity());
+					products.add(product);
+				} else {
+					throw new BadRequestException("order quantity exceeds maximum unit with this product::"
+							+ product.getProductName() + "::Quantity left in Stock::" + product.getUnitsInStock());
+				}
 			} else {
 				throw new BadRequestException("invalid product id " + item.getProductId());
 			}
+			this.productRepo.saveAllAndFlush(products);
 		}
 		return orderItemsList;
 	}
