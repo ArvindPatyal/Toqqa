@@ -44,6 +44,8 @@ public class SmeBo {
 
 	private Integer totalReviews;
 
+	private SellerRatingBo sellerRatingBo;
+
 	private Boolean isFavSme=false;
 
 	public SmeBo(Sme sme) {

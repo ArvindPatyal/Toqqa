@@ -65,13 +65,13 @@ public class SellerRatingServiceImpl implements SellerRatingService {
             SellerRating sellerRating = new SellerRating();
             sellerRating.setSellerRating(sellerRatingPayload.getStars());
             sellerRating.setSme(sme);
-            if (sellerRating.getReviewComment() != null) {
-                sellerRating.setReviewComment(sellerRating.getReviewComment());
+            if (sellerRatingPayload.getReviewComment() != null) {
+                sellerRating.setReviewComment(sellerRatingPayload.getReviewComment());
             }
             sellerRating.setReviewComment(sellerRating.getReviewComment());
             sellerRating.setUser(user);
             sellerRating = this.sellerRatingRepository.saveAndFlush(sellerRating);
-            return new Response(new SellerRatingBo(sellerRating), "Product rated Successfully");
+            return new Response(new SellerRatingBo(sellerRating), "Seller rated Successfully");
         } else {
             throw new BadRequestException("Already reviewed this Seller");
         }
