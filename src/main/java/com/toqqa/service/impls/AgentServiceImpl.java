@@ -137,9 +137,10 @@ public class AgentServiceImpl implements AgentService {
             AgentBo bo = new AgentBo(agent);
             bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
             bo.setIdProof(this.prepareResource(agent.getIdProof()));
+            bo.setAgentId(agent.getAgentId());
             return bo;
         }
-        throw new BadRequestException("no user found with id= " + id);
+        throw new BadRequestException("no Agent found with id= " + id);
     }
 
     @Override
