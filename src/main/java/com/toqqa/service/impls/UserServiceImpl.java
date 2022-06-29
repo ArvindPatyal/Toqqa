@@ -6,10 +6,12 @@ import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.*;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
+import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.DeliveryAddressService;
 import com.toqqa.service.StorageService;
 import com.toqqa.service.UserService;
@@ -63,6 +65,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     @Lazy
     private DeliveryAddressService deliveryAddressService;
+
+    @Autowired
+    @Lazy
+    private AuthenticationService authenticationService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -173,35 +179,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserBo updateUser(UpdateUser updateUser) {
-
         log.info("Invoked :: UserServiceImpl :: updateUser()");
-
-        User user = this.userRepository.findById(updateUser.getUserId()).get();
-        user.setCity(updateUser.getCity());
-        user.setCountry(updateUser.getCountry());
-        user.setIsDeleted(false);
-        if (this.helper.notNullAndBlank(updateUser.getEmail())) {
-            if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
-                throw new BadRequestException("invalid email value : " + updateUser.getEmail());
-            }
-            user.setEmail(updateUser.getEmail());
-        }
+        User user = this.authenticationService.currentUser();
         user.setFirstName(updateUser.getFirstName());
-        try {
-            if (updateUser.getProfilePicture() != null && !updateUser.getProfilePicture().isEmpty()) {
-                user.setProfilePicture(this.storageService
-                        .uploadFileAsync(updateUser.getProfilePicture(), user.getId(), FolderConstants.PROFILE_PICTURE.getValue())
-                        .get());
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-//		user.setPhone(this.helper.notNullAndBlank(updateUser.getPhone()) ? updateUser.getPhone() : null);
         user.setLastName(updateUser.getLastName());
-        user.setPostCode(updateUser.getPostCode());
-        user.setState(updateUser.getState());
-        user.setAddress(updateUser.getAddress());
-        user.setPassword(new BCryptPasswordEncoder().encode(updateUser.getPassword()));
+        if (updateUser.getProfilePicture() != null && !updateUser.getProfilePicture().isEmpty()) {
+            try {
+                user.setProfilePicture(this.storageService.uploadFileAsync(updateUser.getProfilePicture(),
+                        user.getId(),
+                        FolderConstants.PROFILE_PICTURE.getValue()).get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new ResourceCreateUpdateException("Cannot update Profile Picture");
+            }
+        }
         user = this.userRepository.saveAndFlush(user);
         UserBo bo = new UserBo(user);
         bo.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));

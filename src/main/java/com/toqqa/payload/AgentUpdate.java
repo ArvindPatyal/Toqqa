@@ -1,20 +1,19 @@
 package com.toqqa.payload;
 
-import javax.validation.constraints.NotNull;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.Data;
-
-@Data
+@Getter
+@Setter
 public class AgentUpdate {
 
-	@NotNull
-	private MultipartFile agentDocuments;
 
-	@NotNull
-	private MultipartFile idProof;
+    private MultipartFile agentDocuments;
 
-	@NotNull
-	private String agentId;
+    /*private MultipartFile idProof;*/
+
+    private MultipartFile agentProfilePicture;
+
+
 }

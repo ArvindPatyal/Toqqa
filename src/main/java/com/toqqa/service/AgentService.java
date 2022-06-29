@@ -8,7 +8,7 @@ import com.toqqa.payload.Response;
 
 public interface AgentService {
 
-    AgentBo agentRegistration(AgentRegistration agentRegistration, String userId);
+    AgentBo agentRegistration(AgentRegistration agentRegistration, String userId,boolean isNewUser);
 
     AgentBo agentUpdate(AgentUpdate payload);
 
@@ -16,4 +16,5 @@ public interface AgentService {
 
     Response fetchAgentReferralList(AgentPayload agentPayload);
 
+    AgentBo becomeAnAgent(AgentRegistration agentRegistration);
 }

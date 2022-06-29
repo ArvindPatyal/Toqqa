@@ -87,7 +87,7 @@ public class SmeServiceImpl implements SmeService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId) {
+    public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId, boolean isNewUser) {
         log.info("Invoked :: SmeServiceImpl :: smeRegistration()");
         if (!alreadySme(userId)) {
             try {
@@ -149,11 +149,15 @@ public class SmeServiceImpl implements SmeService {
                 return bo;
             } catch (Exception e) {
                 log.error("unable to create sme", e);
-                this.userRepo.deleteById(userId);
+                if (isNewUser == true) {
+                    this.userRepo.deleteById(userId);
+                }
+
             }
         }
         throw new BadRequestException("user already sme");
     }
+
 
     private Boolean alreadySme(String id) {
         log.info("Invoked :: SmeServiceImpl :: alreadySme()");
@@ -171,8 +175,8 @@ public class SmeServiceImpl implements SmeService {
     @Override
     public SmeBo smeUpdate(SmeUpdate smeUpdate) {
         log.info("Invoked :: SmeServiceImpl :: smeUpdate()");
-
-        Sme sme = this.smeRepo.findById(smeUpdate.getSmeId()).get();
+        User user = this.authenticationService.currentUser();
+        Sme sme = this.smeRepo.findByUserId(user.getId());
         if (sme != null) {
             sme.setNameOfBusiness(smeUpdate.getNameOfBusiness());
             sme.setBusinessAddress(smeUpdate.getBusinessAddress());
@@ -181,11 +185,9 @@ public class SmeServiceImpl implements SmeService {
             sme.setTypeOfBusiness(smeUpdate.getTypeOfBusiness());
             sme.setDeliveryRadius(smeUpdate.getDeliveryRadius());
             sme.setDeliveryCharges(smeUpdate.getDeliveryCharge());
-            sme.setIsDeleted(false);
             sme.setDescription(smeUpdate.getDescription());
             sme.setCity(smeUpdate.getCity());
             sme.setIsDeliverToCustomer(smeUpdate.getDeliverToCustomer());
-            sme.setIsRegisterWithGovt(smeUpdate.getIsRegisteredWithGovt());
             sme.setLatitude(smeUpdate.getLatitude());
             sme.setLongitude(smeUpdate.getLongitude());
             if (smeUpdate.getStartTimeOfDelivery() != null && smeUpdate.getEndTimeOfDelivery() != null) {
@@ -194,33 +196,29 @@ public class SmeServiceImpl implements SmeService {
             }
             sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
             sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
-
             try {
-                if (smeUpdate.getIdProof() != null && !smeUpdate.getIdProof().isEmpty()) {
-                    sme.setIdProof(this.storageService.uploadFileAsync(smeUpdate.getIdProof(), sme.getUserId(),
-                            FolderConstants.DOCUMENTS.getValue()).get());
-                }
                 if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
                     sme.setBusinessLogo(this.storageService.uploadFileAsync(smeUpdate.getBusinessLogo(),
                             sme.getUserId(), FolderConstants.LOGO.getValue()).get());
                 }
-                if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
-                    sme.setRegDoc(this.storageService.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(),
-                            FolderConstants.DOCUMENTS.getValue()).get());
+                if (sme.getRegDoc() == null) {
+                    if (smeUpdate.getRegDoc() != null && !smeUpdate.getRegDoc().isEmpty()) {
+                        sme.setRegDoc(this.storageService.uploadFileAsync(smeUpdate.getRegDoc(), sme.getUserId(),
+                                FolderConstants.DOCUMENTS.getValue()).get());
+                    }
+
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
-
             sme = this.smeRepo.saveAndFlush(sme);
-
             SmeBo bo = new SmeBo(sme);
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
             bo.setIdProof(this.prepareResource(sme.getIdProof()));
             bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
             return bo;
         }
-        throw new BadRequestException("invalid sme id");
+        throw new BadRequestException("User is not a Sme");
 
     }
 
@@ -331,9 +329,13 @@ public class SmeServiceImpl implements SmeService {
                             deliveryAddObj.get().getLongitude(), smeObj.getLatitude(), smeObj.getLongitude());
 
                     if (distance <= Constants.MIN_DISTANCE) {
+                        List<Integer> integers = new ArrayList<>();
+                        smeObj.getSellerRatings().forEach(sellerRating -> integers.add(sellerRating.getSellerRating()));
+                        OptionalDouble average = integers.stream().mapToDouble(value -> value).average();
                         dtoList.add(new NearbySmeRespDto(smeObj.getUserId(), smeObj.getNameOfBusiness(),
                                 smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),
-                                bindLogoUrl(smeObj.getBusinessLogo())));
+                                bindLogoUrl(smeObj.getBusinessLogo()),
+                                average.isPresent() ? average.getAsDouble() : 0.0));
                     }
                 }
             }
@@ -428,6 +430,13 @@ public class SmeServiceImpl implements SmeService {
         productCategories.forEach((id, name) ->
                 productCategoryBos.add(new ProductCategoryBo(id, name)));
         return new ListResponse(productCategoryBos, "categories returned");
+    }
+
+    @Override
+    public SmeBo becomeASme(SmeRegistration smeRegistration) {
+        log.info("Invoked :: SmeServiceImpl :: becomeASme()");
+        User user = this.authenticationService.currentUser();
+        return this.smeRegistration(smeRegistration, user.getId(), false);
     }
 
 }
