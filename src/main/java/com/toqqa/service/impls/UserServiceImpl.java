@@ -145,6 +145,7 @@ public class UserServiceImpl implements UserService {
             authentication = SecurityContextHolder.getContext().getAuthentication();
             UserBo user = new UserBo(
                     this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
+            user.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
             return new LoginResponse(jwtAuthenticationResponse, user);
         } catch (Exception e) {
             throw new BadCredentialsException("invalid login credentials");
