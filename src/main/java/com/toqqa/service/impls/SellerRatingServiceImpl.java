@@ -12,6 +12,7 @@ import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.RatingUpdatePayload;
 import com.toqqa.payload.Response;
 import com.toqqa.payload.SellerRatingPayload;
+import com.toqqa.payload.SellerRatings;
 import com.toqqa.repository.OrderInfoRepository;
 import com.toqqa.repository.SellerRatingRepository;
 import com.toqqa.repository.SmeRepository;
@@ -22,10 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -52,7 +50,7 @@ public class SellerRatingServiceImpl implements SellerRatingService {
         if (this.sellerRatingRepository.findBySmeIdAndUser_Id(sellerRatingPayload.getSmeId(), user.getId()) == null) {
             List<Sme> smeList = new ArrayList<>();
             List<OrderInfo> orderInfos = this.orderInfoRepository.findByUser_IdAndOrderStatus(user.getId(), OrderConstants.DELIVERED);
-            if (orderInfos==null) {
+            if (orderInfos == null) {
                 throw new BadRequestException("you have not ordered anything yet or order is yet to be delivered");
             }
 
@@ -78,9 +76,9 @@ public class SellerRatingServiceImpl implements SellerRatingService {
     }
 
     @Override
-    public Response sellerRatings(String sellerId) {
+    public Response sellerRatings(SellerRatings getSellerRatings) {
         log.info("Invoked :: SellerRatingServiceImpl :: sellerRatings()");
-        Optional<Sme> optionalSme = this.smeRepository.findById(sellerId);
+        Optional<Sme> optionalSme = this.smeRepository.findById(getSellerRatings.getSellerId());
         if (!optionalSme.isPresent()) {
             throw new BadRequestException("Enter a valid product id");
         }
@@ -103,18 +101,31 @@ public class SellerRatingServiceImpl implements SellerRatingService {
                         sellerRating.getSellerRating(),
                         sellerRating.getReviewComment(),
                         sellerRating.getDateOfRatingCreation(),
-                        sellerRating.getDateOfRatingUpdation()
+                        sellerRating.getDateOfRatingUpdation(),
+                        sellerRating.getUser().getId()
                 ));
             });
-            Double sumOfRatings = Double.valueOf(ratings.stream().mapToInt(Integer::intValue).sum());
             ratingReviewBos.removeIf(ratingReviewBo -> ratingReviewBo.getReviewComment() == null);
+            ratingReviewBos.sort(Comparator.comparing(RatingReviewBo::getDateOfRatingUpdate).reversed());
             ratingStatsBo.setTotalReviewComments(ratingReviewBos.size());
-            ratingStatsBo.setAverageRating(sumOfRatings / totalRatings);
+
+
+            Optional<RatingReviewBo> optionalRatingReviewBo = ratingReviewBos.stream().filter(ratingReviewBo1 -> ratingReviewBo1.getUserId().equals(getSellerRatings.getUserId())).findFirst();
+            if (optionalRatingReviewBo.isPresent()) {
+                RatingReviewBo ratingReviewBo = optionalRatingReviewBo.get();
+                ratingReviewBos.remove(ratingReviewBo);
+                ratingReviewBos.add(0, ratingReviewBo);
+            }
+
+            OptionalDouble average = ratings.stream().mapToDouble(value -> value).average();
+            ratingStatsBo.setAverageRating(average.isPresent() ? average.getAsDouble() : 0.0);
+
             ratingStatsBo.setFiveStars(Collections.frequency(ratings, 5));
             ratingStatsBo.setFourStars(Collections.frequency(ratings, 4));
             ratingStatsBo.setThreeStars(Collections.frequency(ratings, 3));
             ratingStatsBo.setTwoStars(Collections.frequency(ratings, 2));
             ratingStatsBo.setOneStar(Collections.frequency(ratings, 1));
+
             ratingStatsBo.setTotalRatings(totalRatings);
             ratingStatsBo.setRatingReviewBos(ratingReviewBos);
             return new Response(ratingStatsBo, "ratings returned");

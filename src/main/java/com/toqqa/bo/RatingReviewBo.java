@@ -19,4 +19,5 @@ public class RatingReviewBo {
     private String reviewComment;
     private Date dateOfRating;
     private Date dateOfRatingUpdate;
+    private String userId;
 }

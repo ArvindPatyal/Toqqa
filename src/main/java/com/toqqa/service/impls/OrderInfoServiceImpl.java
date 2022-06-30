@@ -1,24 +1,6 @@
 package com.toqqa.service.impls;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import com.toqqa.bo.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.toqqa.constants.OrderConstants;
 import com.toqqa.constants.PaymentConstants;
 import com.toqqa.domain.*;
@@ -30,6 +12,7 @@ import com.toqqa.service.InvoiceService;
 import com.toqqa.service.OrderInfoService;
 import com.toqqa.service.ProductService;
 import com.toqqa.util.Constants;
+import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,40 +61,43 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     @Autowired
     private SellerRatingRepository sellerRatingRepository;
 
-	@Override
-	public Response<?> placeOrder(OrderPayload orderPayload) {
-		log.info("Invoked :: OrderInfoServiceImpl :: placeOrder()");
-		User user = this.authenticationService.currentUser();
-		Set<String> sellerIds = new HashSet<>();
-		orderPayload.getItems().forEach(orderItemPayload -> sellerIds.add(orderItemPayload.getSellerUserId()));
-		Optional<DeliveryAddress> optionalAddress = this.addressRepo.findById(orderPayload.getAddressId());
-		if (optionalAddress.isPresent()) {
-			DeliveryAddress address = optionalAddress.get();
-			sellerIds.forEach(s -> {
-				List<OrderItemPayload> orderItems = orderPayload.getItems().stream()
-						.filter(orderItemPayload -> orderItemPayload.getSellerUserId().equals(s))
-						.collect(Collectors.toList());
-				AtomicReference<Double> orderAmount = new AtomicReference<>(0.0);
-				AtomicReference<Double> shippingFee = new AtomicReference<>(0.0);
-				orderItems.forEach(orderItemPayload -> {
-					shippingFee.set(orderItemPayload.getShippingFee());
-				});
-				Sme sme = this.smeRepository.findByUserId(s);
-				OrderInfo orderInfo = new OrderInfo();
-				orderInfo.setSme(sme);
-				orderInfo.setEmail(orderPayload.getEmail());
-				orderInfo.setPhone(orderPayload.getPhone());
-				orderInfo.setFirstName(orderPayload.getFirstName());
-				orderInfo.setLastName(orderPayload.getLastName());
-				orderInfo.setShippingFee(shippingFee.get());
-				orderInfo.setAddress(address);
-				orderInfo.setUser(user);
-				String random = RandomString.make(7).toUpperCase();
-				orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT + random);
-				orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + random);
-				orderInfo.setOrderStatus(OrderConstants.PLACED);
-				orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
-				orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
+    @Autowired
+    private Helper helper;
+
+    @Override
+    public Response<?> placeOrder(OrderPayload orderPayload) {
+        log.info("Invoked :: OrderInfoServiceImpl :: placeOrder()");
+        User user = this.authenticationService.currentUser();
+        Set<String> sellerIds = new HashSet<>();
+        orderPayload.getItems().forEach(orderItemPayload -> sellerIds.add(orderItemPayload.getSellerUserId()));
+        Optional<DeliveryAddress> optionalAddress = this.addressRepo.findById(orderPayload.getAddressId());
+        if (optionalAddress.isPresent()) {
+            DeliveryAddress address = optionalAddress.get();
+            sellerIds.forEach(s -> {
+                List<OrderItemPayload> orderItems = orderPayload.getItems().stream()
+                        .filter(orderItemPayload -> orderItemPayload.getSellerUserId().equals(s))
+                        .collect(Collectors.toList());
+                AtomicReference<Double> orderAmount = new AtomicReference<>(0.0);
+                AtomicReference<Double> shippingFee = new AtomicReference<>(0.0);
+                orderItems.forEach(orderItemPayload -> {
+                    shippingFee.set(orderItemPayload.getShippingFee());
+                });
+                Sme sme = this.smeRepository.findByUserId(s);
+                OrderInfo orderInfo = new OrderInfo();
+                orderInfo.setSme(sme);
+                orderInfo.setEmail(orderPayload.getEmail());
+                orderInfo.setPhone(orderPayload.getPhone());
+                orderInfo.setFirstName(orderPayload.getFirstName());
+                orderInfo.setLastName(orderPayload.getLastName());
+                orderInfo.setShippingFee(shippingFee.get());
+                orderInfo.setAddress(address);
+                orderInfo.setUser(user);
+                String random = RandomString.make(7).toUpperCase();
+                orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT + random);
+                orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + random);
+                orderInfo.setOrderStatus(OrderConstants.PLACED);
+                orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
+                orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
 
                 List<OrderItem> orderItemList = this.persistOrderItems(orderItems, orderInfo);
                 orderInfo.setOrderItems(orderItemList);
@@ -153,39 +139,39 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         }
     }
 
-	private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
-		log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
-		List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
-		List<Product> products = new ArrayList<>();
+    private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
+        log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
+        List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
+        List<Product> products = new ArrayList<>();
 
-		for (OrderItemPayload item : orderItems) {
-			OrderItem orderItem = new OrderItem();
-			Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
-			if (optionalProduct.isPresent()) {
-				Product product = optionalProduct.get();
-				orderItem.setDiscount(product.getDiscount());
-				orderItem.setPricePerUnit(product.getPricePerUnit());
-				orderItem.setProduct(product);
-				orderItem.setQuantity(item.getQuantity());
-				orderItem.setOrderInfo(order);
-				orderItem.setPrice((product.getPricePerUnit() * item.getQuantity())
-						- (product.getPricePerUnit() * product.getDiscount() * orderItem.getQuantity()) / 100);
-				orderItem = this.orderItemRepo.saveAndFlush(orderItem);
-				orderItemsList.add(orderItem);
-				if (orderItem.getQuantity() <= product.getUnitsInStock()) {
-					product.setUnitsInStock(product.getUnitsInStock() - item.getQuantity());
-					products.add(product);
-				} else {
-					throw new BadRequestException("order quantity exceeds maximum unit with this product::"
-							+ product.getProductName() + "::Quantity left in Stock::" + product.getUnitsInStock());
-				}
-			} else {
-				throw new BadRequestException("invalid product id " + item.getProductId());
-			}
-			this.productRepo.saveAllAndFlush(products);
-		}
-		return orderItemsList;
-	}
+        for (OrderItemPayload item : orderItems) {
+            OrderItem orderItem = new OrderItem();
+            Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
+            if (optionalProduct.isPresent()) {
+                Product product = optionalProduct.get();
+                orderItem.setDiscount(product.getDiscount());
+                orderItem.setPricePerUnit(product.getPricePerUnit());
+                orderItem.setProduct(product);
+                orderItem.setQuantity(item.getQuantity());
+                orderItem.setOrderInfo(order);
+                orderItem.setPrice((product.getPricePerUnit() * item.getQuantity())
+                        - (product.getPricePerUnit() * product.getDiscount() * orderItem.getQuantity()) / 100);
+                orderItem = this.orderItemRepo.saveAndFlush(orderItem);
+                orderItemsList.add(orderItem);
+                if (orderItem.getQuantity() <= product.getUnitsInStock()) {
+                    product.setUnitsInStock(product.getUnitsInStock() - item.getQuantity());
+                    products.add(product);
+                } else {
+                    throw new BadRequestException("order quantity exceeds maximum unit with this product::"
+                            + product.getProductName() + "::Quantity left in Stock::" + product.getUnitsInStock());
+                }
+            } else {
+                throw new BadRequestException("invalid product id " + item.getProductId());
+            }
+            this.productRepo.saveAllAndFlush(products);
+        }
+        return orderItemsList;
+    }
 
     @Override
     public List<OrderItemBo> fetchOrderItems(OrderInfo orderInfo) {
@@ -218,9 +204,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         if (orderInfo.isPresent()) {
             Sme sme = orderInfo.get().getSme();
             SmeBo smeBo = new SmeBo(sme);
-            if (orderInfo.get().getOrderStatus()==OrderConstants.DELIVERED){
+            if (orderInfo.get().getOrderStatus() == OrderConstants.DELIVERED) {
                 SellerRating sellerRating = this.sellerRatingRepository.findBySmeIdAndUser_Id(smeBo.getId(), user.getId());
-                if (sellerRating!=null){
+                if (sellerRating != null) {
                     smeBo.setSellerRatingBo(new SellerRatingBo(sellerRating));
                 }
             }
@@ -246,9 +232,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         allOrders.forEach(orderInfo -> {
             Sme sme = orderInfo.getSme();
             SmeBo smeBo = new SmeBo(sme);
-            if (orderInfo.getOrderStatus()==OrderConstants.DELIVERED){
+            smeBo.setBusinessLogo(this.helper.prepareResource(sme.getBusinessLogo()));
+            if (orderInfo.getOrderStatus() == OrderConstants.DELIVERED) {
                 SellerRating sellerRating = this.sellerRatingRepository.findBySmeIdAndUser_Id(smeBo.getId(), user.getId());
-                if (sellerRating!=null){
+                if (sellerRating != null) {
                     smeBo.setSellerRatingBo(new SellerRatingBo(sellerRating));
                 }
             }

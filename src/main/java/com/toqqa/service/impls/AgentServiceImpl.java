@@ -11,6 +11,7 @@ import com.toqqa.domain.Role;
 import com.toqqa.domain.Sme;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.payload.AgentPayload;
 import com.toqqa.payload.AgentRegistration;
 import com.toqqa.payload.AgentUpdate;
@@ -60,7 +61,7 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId) {
+    public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId,boolean isNewUser) {
         log.info("Invoked :: AgentServiceImpl :: agentRegistration()");
         if (!this.alreadyAgent(userId)) {
             try {
@@ -76,58 +77,68 @@ public class AgentServiceImpl implements AgentService {
                     agent.setIdProof(this.storageService.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
                     agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(), userId, FolderConstants.DOCUMENTS.getValue()).get());
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    throw new ResourceCreateUpdateException("Cannot upload IdProof OR Documents");
                 }
-
-                this.userRepo.saveAndFlush(user);
-
                 agent = this.agentRepo.saveAndFlush(agent);
-
+                this.userRepo.saveAndFlush(user);
                 AgentBo bo = new AgentBo(agent);
-                bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-                bo.setIdProof(this.prepareResource(agent.getIdProof()));
+                bo.setAgentDocuments(this.helper.prepareResource(agent.getAgentDocuments()));
+                bo.setIdProof(this.helper.prepareResource(agent.getIdProof()));
                 return bo;
             } catch (Exception e) {
                 log.error("Invoked :: AgentServiceImpl :: agentRegistration() :: Unable to create Agent", e);
-                this.userRepo.deleteById(userId);
+                if (isNewUser == true) {
+                    this.userRepo.deleteById(userId);
+                }
             }
         }
         throw new BadRequestException("user already an agent");
     }
 
-    private String prepareResource(String location) {
-        log.info("Invoked :: AgentServiceImpl :: prepareResource()");
-        if (this.helper.notNullAndBlank(location)) {
-            return this.storageService.generatePresignedUrl(location);
-        }
-        return "";
-    }
 
     private Boolean alreadyAgent(String id) {
-        log.info("Invoked :: AgentServiceImpl :: alreadyAgent");
+        log.info("Invoked :: AgentServiceImpl :: alreadyAgent()");
         User user = this.userRepo.findById(id).get();
         return user.getRoles().stream().anyMatch(role -> role.getRole().equals(RoleConstants.AGENT.getValue()));
     }
 
     @Override
-    public AgentBo agentUpdate(AgentUpdate payload) {
+    public AgentBo agentUpdate(AgentUpdate agentUpdatePayload) {
         log.info("Invoked :: AgentServiceImpl :: agentUpdate()");
-        Agent agent = this.agentRepo.findById(payload.getAgentId()).get();
-
-        try {
-            agent.setAgentDocuments(this.storageService.uploadFileAsync(payload.getAgentDocuments(), agent.getUserId(), FolderConstants.DOCUMENTS.getValue()).get());
-            agent.setIdProof(this.storageService.uploadFileAsync(payload.getIdProof(), agent.getUserId(), FolderConstants.DOCUMENTS.getValue()).get());
-        } catch (InterruptedException | ExecutionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        User user = this.authenticationService.currentUser();
+        Agent agent = this.agentRepo.findByUserId(user.getId());
+        if(agent==null){
+            throw  new BadRequestException("You are not an agent");
         }
-
+        if (agentUpdatePayload.getAgentDocuments()!=null) {
+            try {
+                agent.setAgentDocuments(this.storageService.uploadFileAsync(agentUpdatePayload.getAgentDocuments(), agent.getUserId(), FolderConstants.DOCUMENTS.getValue()).get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new ResourceCreateUpdateException("Cannot update agent,document operations failed");
+            }
+        }
+       /* if (agentUpdatePayload.getIdProof().isEmpty() && agentUpdatePayload.getIdProof() == null) {
+            try {
+                agent.setIdProof(this.storageService.uploadFileAsync(agentUpdatePayload.getIdProof(), agent.getUserId(), FolderConstants.DOCUMENTS.getValue()).get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new ResourceCreateUpdateException("Cannot update agent,idProof  operations failed");
+            }
+        }*/
+        if (agentUpdatePayload.getAgentProfilePicture()!=null) {
+            try {
+                agent.setAgentProfilePicture(this.storageService.uploadFileAsync(agentUpdatePayload.getAgentProfilePicture(), agent.getUserId(), FolderConstants.PROFILE_PICTURE.getValue()).get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new ResourceCreateUpdateException("Cannot update agent,profilePicture  operations failed");
+            }
+        }
         agent = this.agentRepo.saveAndFlush(agent);
         AgentBo bo = new AgentBo(agent);
-        bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-        bo.setIdProof(this.prepareResource(agent.getIdProof()));
+        bo.setAgentDocuments(this.helper.prepareResource(agent.getAgentDocuments()));
+        bo.setIdProof(this.helper.prepareResource(agent.getIdProof()));
+        bo.setProfilePicture(this.helper.prepareResource(agent.getAgentProfilePicture()));
         return bo;
     }
+
 
     @Override
     public AgentBo fetchAgent(String id) {
@@ -135,8 +146,8 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = this.agentRepo.findByUserId(id);
         if (agent != null) {
             AgentBo bo = new AgentBo(agent);
-            bo.setAgentDocuments(this.prepareResource(agent.getAgentDocuments()));
-            bo.setIdProof(this.prepareResource(agent.getIdProof()));
+            bo.setAgentDocuments(this.helper.prepareResource(agent.getAgentDocuments()));
+            bo.setIdProof(this.helper.prepareResource(agent.getIdProof()));
             bo.setAgentId(agent.getAgentId());
             return bo;
         }
@@ -187,6 +198,13 @@ public class AgentServiceImpl implements AgentService {
             agentReferralBo.add(new AgentReferralBo(userBo, smeBo, agentBo));
         }
         return new Response(agentReferralBo, "Agent Referral List Returned");
+    }
+
+    @Override
+    public AgentBo becomeAnAgent(AgentRegistration agentRegistration) {
+        log.info("Invoked :: AgentServiceImpl ::becomeAnAgent()");
+        User user = this.authenticationService.currentUser();
+        return this.agentRegistration(agentRegistration, user.getId(),false);
     }
 }
 
