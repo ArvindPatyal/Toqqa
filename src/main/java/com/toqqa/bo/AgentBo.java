@@ -2,7 +2,10 @@ package com.toqqa.bo;
 
 import com.toqqa.domain.Agent;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -18,11 +21,16 @@ public class AgentBo {
 
 	private String userId;
 
+	private String agentId;
+	private String profilePicture;
+
 	public AgentBo(Agent agent) {
 		this.id = agent.getId();
 		this.agentDocuments = agent.getAgentDocuments();
 		this.idProof = agent.getIdProof();
 		this.userId = agent.getUserId();
+		this.agentId = agent.getAgentId() != null ? agent.getAgentId() : "";
+		this.profilePicture= agent.getAgentProfilePicture();
 	}
 
 }

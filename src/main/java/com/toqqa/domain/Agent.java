@@ -6,18 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 @Table
 public class Agent {
 
@@ -26,12 +21,15 @@ public class Agent {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    @NotNull
     private String agentDocuments;
 
-    @NotNull
     private String idProof;
 
     private String userId;
+
+    private String agentProfilePicture;
+
+    @Column(unique = true)
+    private String agentId;
 
 }

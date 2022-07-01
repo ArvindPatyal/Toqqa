@@ -39,6 +39,13 @@ public class SmeBo {
 	private String userId;
 	private Double latitude;
     private Double longitude;
+
+	private double averageRating;
+
+	private Integer totalReviews;
+
+	private SellerRatingBo sellerRatingBo;
+
 	private Boolean isFavSme=false;
 
 	public SmeBo(Sme sme) {

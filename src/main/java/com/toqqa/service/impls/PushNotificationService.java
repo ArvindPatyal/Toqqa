@@ -13,34 +13,46 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.toqqa.dto.PushNotificationRequestDto;
+import com.toqqa.util.Constants;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class PushNotificationService {
 
+	public PushNotificationRequestDto bindNotificationObject(String orderNo, String body, String token) {
+		log.info("Invoked :: PushNotificationService :: bindNotificationObject()");
 
+		// temporarily hardcoded till the time tokens are not saved in DB.
+		token = "eHaKM0EiQNGxtOTrS6HnZE:APA91bEaEP64Lm0NKrumlestf8JcWS77HyFU_cdivHAn2g3mH-CHm4C1a3F6UY51bAbFcaYLe_4BM2huDBAhrdLd9Bnk02nJV7GdasCob0qKJFvU4QUMyMYEhtFqOXs72zxR5LumM-He";
+		PushNotificationRequestDto notficationObject = new PushNotificationRequestDto();
+		notficationObject.setTitle(Constants.CUSTOMER_NOTIFICAYION_TITLE);
+		notficationObject.setMessage(String.format(Constants.CUSTOMER_NOTIFICAYION_MESSAGE, orderNo, body));
+		notficationObject.setToken(token);
+		return notficationObject;
+	}
 
 	public void sendPushNotificationToToken(PushNotificationRequestDto request) {
-		
-		request.setTitle("");
-		request.setMessage("");
-		request.setToken("");
+		log.info("Invoked :: PushNotificationService :: sendPushNotificationToToken() :: request" + request);
+
 		try {
-			sendMessageToToken(request);
+			String response = sendMessageToToken(request);
+			log.info("Response :: PushNotificationService :: sendPushNotificationToToken() ::" + response);
+
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Exception in :: PushNotificationService :: sendPushNotificationToToken()"
+					+ e.getLocalizedMessage());
 		}
 	}
 
-	public void sendMessageToToken(PushNotificationRequestDto request) throws InterruptedException, ExecutionException {
+	public String sendMessageToToken(PushNotificationRequestDto request) throws InterruptedException, ExecutionException {
 		Message message = getPreconfiguredMessageToToken(request);
-//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//        //String jsonOutput = gson.toJson(message);
-		String response = sendAndGetResponse(message);
+		return sendAndGetResponse(message);
 	}
 
 	private Message getPreconfiguredMessageToToken(PushNotificationRequestDto request) {
-		System.out.println("token==" + request.getToken());
 		return getPreconfiguredMessageBuilder(request).setToken(request.getToken()).build();
 	}
 
