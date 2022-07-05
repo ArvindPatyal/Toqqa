@@ -322,32 +322,31 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             throw new BadRequestException("Enter a valid order Id");
         }
     }
-
-    @Override
-    public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
-        log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
-        Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
-        if (optionalOrderInfo.isPresent()) {
-            OrderInfo orderInfo = optionalOrderInfo.get();
-            User user = this.authenticationService.currentUser();
-            Sme sme = this.smeRepository.findByUserId(user.getId());
-            if (sme.getId() == orderInfo.getSme().getId()) {
-                if (orderInfo.getOrderStatus().ordinal() + 1 == (orderStatusUpdatePayload.getOrderStatus().ordinal())) {
-                    orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
-                    orderInfo.setOrderStatus(orderStatusUpdatePayload.getOrderStatus());
-                    this.orderInfoRepo.saveAndFlush(orderInfo);
-                    pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload, orderInfo.getUser());
-                    return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
-                } else {
-                    throw new BadRequestException("Cannot update orderStatus");
-                }
+@Override
+public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
+    log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
+    Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
+    if (optionalOrderInfo.isPresent()) {
+        OrderInfo orderInfo = optionalOrderInfo.get();
+        User user = this.authenticationService.currentUser();
+        Sme sme = this.smeRepository.findByUserId(user.getId());
+        if (sme!= null && sme.getId() == orderInfo.getSme().getId()) {
+            if (orderInfo.getOrderStatus().ordinal() + 1 == (orderStatusUpdatePayload.getOrderStatus().ordinal())) {
+                orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
+                this.orderInfoRepo.saveAndFlush(orderInfo);
+                pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload, orderInfo.getUser());
+                return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
             } else {
-                throw new BadRequestException("You are not an SME Or associated with this order");
+                throw new BadRequestException("Cannot update orderStatus");
             }
         } else {
-            throw new ResourceNotFoundException("Enter a valid order Id");
+            throw new BadRequestException("You are not an SME Or associated with this order");
         }
+    } else {
+        throw new ResourceNotFoundException("Enter a valid order Id");
     }
+
+}
 
     @Override
     public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate) {
