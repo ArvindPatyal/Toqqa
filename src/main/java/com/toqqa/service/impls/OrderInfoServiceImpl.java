@@ -92,6 +92,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 orderInfo.setUser(user);
                 String random = RandomString.make(7).toUpperCase();
                 orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT + random);
+                orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT + random);
                 orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + random);
                 orderInfo.setOrderStatus(OrderStatus.PLACED);
                 orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
@@ -123,8 +124,8 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     }
 
     @Override
-    public Response<?> updateOrder(OrderCancelPayload cancelPayload) {
-        log.info("Invoked :: OrderInfoServiceImpl :: updateOrder()");
+    public Response<?> cancelOrder(OrderCancelPayload cancelPayload) {
+        log.info("Invoked :: OrderInfoServiceImpl :: cancelOrder()");
         Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(cancelPayload.getOrderId());
         if (optionalOrderInfo.isPresent()) {
             OrderInfo orderInfo = optionalOrderInfo.get();
@@ -133,20 +134,28 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             }
             orderInfo.setOrderStatus(OrderStatus.CANCELLED);
             orderInfo.setCancellationReason(cancelPayload.getCancellationReason());
+
             orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
+
+            orderInfo.getOrderItems().forEach(orderItem -> {
+                Product product = orderItem.getProduct();
+                product.setUnitsInStock(product.getUnitsInStock() + orderItem.getQuantity());
+
+                this.productRepo.saveAndFlush(product);
+            });
 
             return new Response<>(true, "Order cancelled successfully ");
         } else {
             throw new BadRequestException(
                     "Order not found with id" + cancelPayload.getOrderId() + " Enter a valid orderId");
         }
+
     }
 
     private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
         log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
         List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
         List<Product> products = new ArrayList<>();
-
         for (OrderItemPayload item : orderItems) {
             OrderItem orderItem = new OrderItem();
             Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
