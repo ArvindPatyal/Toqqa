@@ -1,7 +1,13 @@
 package com.toqqa.service.impls;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.threeten.bp.Duration;
 
@@ -12,7 +18,14 @@ import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.toqqa.bo.OrderInfoBo;
+import com.toqqa.bo.OrderItemBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.domain.Device;
+import com.toqqa.domain.User;
 import com.toqqa.dto.PushNotificationRequestDto;
+import com.toqqa.payload.OrderStatusUpdatePayload;
+import com.toqqa.service.UserService;
 import com.toqqa.util.Constants;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,25 +34,95 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PushNotificationService {
 
-	public PushNotificationRequestDto bindNotificationObject(String orderNo, String body, String token) {
-		log.info("Invoked :: PushNotificationService :: bindNotificationObject()");
+	@Autowired
+	private DeviceService deviceService;
 
-		// temporarily hardcoded till the time tokens are not saved in DB.
-		token = "eHaKM0EiQNGxtOTrS6HnZE:APA91bEaEP64Lm0NKrumlestf8JcWS77HyFU_cdivHAn2g3mH-CHm4C1a3F6UY51bAbFcaYLe_4BM2huDBAhrdLd9Bnk02nJV7GdasCob0qKJFvU4QUMyMYEhtFqOXs72zxR5LumM-He";
+	@Autowired
+	private UserService userService;
+	
+	@Async
+	public void sendNotificationToCustomer(OrderStatusUpdatePayload orderStatusUpdatePayload, User user) {
+		log.info("Invoked :: PushNotificationService :: sendNotificationToCustomer()");
+
+		for (Device deviceObj : deviceService.getAllByUser(user)) {
+			sendPushNotificationToToken(bindNotificationObject(Constants.CUSTOMER_NOTIFICATION_TITLE,
+					String.format(Constants.CUSTOMER_NOTIFICATION_MESSAGE, orderStatusUpdatePayload.getOrderConstant()),
+					deviceObj.getToken()));
+		}
+	}
+
+	@Async
+	public void sendNotificationToSmeForOrder(OrderInfoBo orderInfoObj) {
+		log.info("Invoked :: PushNotificationService :: sendNotificationToSmeForOrder()");
+
+		Map<String, String> resultMap = new HashMap<>();
+		List<Device> deviceTokenList = new ArrayList<>();
+
+		for (OrderItemBo orderItemObj : orderInfoObj.getOrderItemBo()) {
+			SmeBo smeObj = orderItemObj.getProduct().getSellerDetails();
+			if (resultMap.containsKey(smeObj.getUserId())) {
+				String value = resultMap.get(smeObj.getUserId());
+				value = value + " and " + orderItemObj.getProduct().getProductName();
+				resultMap.put(smeObj.getUserId(), value);
+			} else {
+				resultMap.put(smeObj.getUserId(), orderItemObj.getProduct().getProductName());
+				deviceTokenList = deviceService.getAllByUser(userService.getById(smeObj.getUserId()));
+			}
+		}
+		sendNotficationData(deviceTokenList, resultMap, Constants.SELLER_NOTIFICATION_TITLE, Constants.SELLER_NOTIFICATION_MESSAGE);
+	}
+
+	@Async
+	public void sendNotificationToSmeForProduct(OrderInfoBo orderInfoObj) {
+		log.info("Invoked :: PushNotificationService :: sendNotificationToSmeForProduct()");
+
+		Map<String, String> resultMap = new HashMap<>();
+		List<Device> deviceTokenList = new ArrayList<>();
+
+		for (OrderItemBo orderItemObj : orderInfoObj.getOrderItemBo()) {
+			SmeBo smeObj = orderItemObj.getProduct().getSellerDetails();
+			if (orderItemObj.getProduct().getUnitsInStock() < Constants.PRODUCT_LOW_COUNT) {
+
+				if (resultMap.containsKey(smeObj.getUserId())) {
+					String value = resultMap.get(smeObj.getUserId());
+					value = value + " and " + orderItemObj.getProduct().getProductName();
+					resultMap.put(smeObj.getUserId(), value);
+				} else {
+					resultMap.put(smeObj.getUserId(), orderItemObj.getProduct().getProductName());
+					deviceTokenList = deviceService.getAllByUser(userService.getById(smeObj.getUserId()));
+				}
+			}
+		}
+		sendNotficationData(deviceTokenList, resultMap, Constants.SELLER__PRODUCT_NOTIFICATION_TITLE, Constants.SELLER_PRODUCT_NOTIFICATION_MESSAGE);
+	}
+
+	private void sendNotficationData(List<Device> deviceTokenList, Map<String, String> resultMap, String title,
+			String notficationBody) {
+
+		for (Map.Entry<String, String> entry : resultMap.entrySet()) {
+			deviceTokenList = deviceService.getAllByUser(userService.getById(entry.getKey()));
+			for (Device deviceObj : deviceTokenList) {
+				sendPushNotificationToToken(bindNotificationObject(title,
+						String.format(notficationBody, entry.getValue()), deviceObj.getToken()));
+			}
+
+		}
+	}
+	
+	private PushNotificationRequestDto bindNotificationObject(String title, String messageBody, String token) {
 		PushNotificationRequestDto notficationObject = new PushNotificationRequestDto();
-		notficationObject.setTitle(Constants.CUSTOMER_NOTIFICAYION_TITLE);
-		notficationObject.setMessage(String.format(Constants.CUSTOMER_NOTIFICAYION_MESSAGE, orderNo, body));
+		notficationObject.setTitle(title);
+		notficationObject.setMessage(String.format(messageBody));
 		notficationObject.setToken(token);
 		return notficationObject;
 	}
-
-	public void sendPushNotificationToToken(PushNotificationRequestDto request) {
-		log.info("Invoked :: PushNotificationService :: sendPushNotificationToToken() :: request" + request);
+	
+	private void sendPushNotificationToToken(PushNotificationRequestDto request) {
+		log.info("Invoked :: PushNotificationService :: sendPushNotificationToToken() :: request:: " + request);
 
 		try {
 			String response = sendMessageToToken(request);
 			log.info("Response :: PushNotificationService :: sendPushNotificationToToken() ::" + response);
-
 
 		} catch (Exception e) {
 			log.error("Exception in :: PushNotificationService :: sendPushNotificationToToken()"
@@ -47,7 +130,8 @@ public class PushNotificationService {
 		}
 	}
 
-	public String sendMessageToToken(PushNotificationRequestDto request) throws InterruptedException, ExecutionException {
+	private String sendMessageToToken(PushNotificationRequestDto request)
+			throws InterruptedException, ExecutionException {
 		Message message = getPreconfiguredMessageToToken(request);
 		return sendAndGetResponse(message);
 	}

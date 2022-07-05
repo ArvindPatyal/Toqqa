@@ -1,11 +1,12 @@
 package com.toqqa.repository;
 
-import com.toqqa.domain.Cart;
-import com.toqqa.domain.User;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.toqqa.domain.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
@@ -17,5 +18,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 	User findByEmailOrPhone(String email, String phone);
 
 	List<User> findByAgentId(String agentId);
+	
+	Optional<User> findById(String id);
 
 }

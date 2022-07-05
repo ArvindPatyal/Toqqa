@@ -1,21 +1,14 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.*;
-import com.toqqa.constants.OrderConstants;
-import com.toqqa.constants.PaymentConstants;
-import com.toqqa.domain.*;
-import com.toqqa.dto.PushNotificationRequestDto;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.payload.*;
-import com.toqqa.repository.*;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.InvoiceService;
-import com.toqqa.service.OrderInfoService;
-import com.toqqa.service.ProductService;
-import com.toqqa.util.Constants;
-import com.toqqa.util.Helper;
-import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.utility.RandomString;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -25,10 +18,48 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import com.toqqa.bo.OrderInfoBo;
+import com.toqqa.bo.OrderItemBo;
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.ProductBo;
+import com.toqqa.bo.ProductRatingBo;
+import com.toqqa.bo.SellerRatingBo;
+import com.toqqa.bo.SmeBo;
+import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.PaymentConstants;
+import com.toqqa.domain.DeliveryAddress;
+import com.toqqa.domain.OrderInfo;
+import com.toqqa.domain.OrderItem;
+import com.toqqa.domain.Product;
+import com.toqqa.domain.ProductRating;
+import com.toqqa.domain.SellerRating;
+import com.toqqa.domain.Sme;
+import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.OrderCancelPayload;
+import com.toqqa.payload.OrderItemPayload;
+import com.toqqa.payload.OrderPayload;
+import com.toqqa.payload.OrderStatusUpdatePayload;
+import com.toqqa.payload.Response;
+import com.toqqa.payload.ToggleOrdersStatus;
+import com.toqqa.repository.CartRepository;
+import com.toqqa.repository.DeliveryAddressRepository;
+import com.toqqa.repository.OrderInfoRepository;
+import com.toqqa.repository.OrderItemRepository;
+import com.toqqa.repository.ProductRatingRepository;
+import com.toqqa.repository.ProductRepository;
+import com.toqqa.repository.SellerRatingRepository;
+import com.toqqa.repository.SmeRepository;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.InvoiceService;
+import com.toqqa.service.OrderInfoService;
+import com.toqqa.service.ProductService;
+import com.toqqa.util.Constants;
+import com.toqqa.util.Helper;
+
+import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.utility.RandomString;
 
 @Service
 @Slf4j
@@ -77,14 +108,18 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         Optional<DeliveryAddress> optionalAddress = this.addressRepo.findById(orderPayload.getAddressId());
         if (optionalAddress.isPresent()) {
             DeliveryAddress address = optionalAddress.get();
+            
             sellerIds.forEach(s -> {
                 List<OrderItemPayload> orderItems = orderPayload.getItems().stream()
                         .filter(orderItemPayload -> orderItemPayload.getSellerUserId().equals(s))
                         .collect(Collectors.toList());
+                
                 AtomicReference<Double> orderAmount = new AtomicReference<>(0.0);
                 AtomicReference<Double> shippingFee = new AtomicReference<>(0.0);
+                
                 orderItems.forEach(orderItemPayload -> {
                     shippingFee.set(orderItemPayload.getShippingFee());
+
                 });
                 Sme sme = this.smeRepository.findByUserId(s);
                 OrderInfo orderInfo = new OrderInfo();
@@ -102,7 +137,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 orderInfo.setOrderStatus(OrderConstants.PLACED);
                 orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
                 orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
-
                 List<OrderItem> orderItemList = this.persistOrderItems(orderItems, orderInfo);
                 orderInfo.setOrderItems(orderItemList);
                 orderItemList.forEach(orderItem -> orderAmount.set(orderAmount.get() + orderItem.getPrice()));
@@ -111,6 +145,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 SmeBo smeBo = new SmeBo(sme);
                 OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
                 this.invoiceService.generateInvoice(bo, user);
+                pushNotificationService.sendNotificationToSmeForOrder(bo);
+                pushNotificationService.sendNotificationToSmeForProduct(bo);
+
+                
                 /*
                  * if (orderInfo.getEmail() != null) {
                  * this.emailService.sendOrderEmail(orderInfo); }
@@ -149,6 +187,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         List<Product> products = new ArrayList<>();
 
         for (OrderItemPayload item : orderItems) {
+        	System.out.println("===="+item.getProductId());
             OrderItem orderItem = new OrderItem();
             Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
             if (optionalProduct.isPresent()) {
@@ -321,9 +360,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             } else {
                 orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
                 this.orderInfoRepo.saveAndFlush(orderInfo);
-                pushNotificationService.sendPushNotificationToToken(
-                		pushNotificationService.bindNotificationObject(orderStatusUpdatePayload.getOrderId(), 
-                				orderStatusUpdatePayload.getOrderConstant(),""));
+                
+                pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload,orderInfo.getUser());
+              
+               
                 
                 return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
             }
@@ -345,5 +385,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         return orderInfoRepo.findOrderCountBySmeAndDateAndStatus(smeId, orderStatus, startDate, endDate);
 
     }
+    
+    
 
 }
