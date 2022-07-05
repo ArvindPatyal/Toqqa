@@ -1,5 +1,17 @@
 package com.toqqa.service.impls;
 
+
+import com.toqqa.bo.*;
+import com.toqqa.constants.OrderStatus;
+import com.toqqa.constants.PaymentConstants;
+import com.toqqa.domain.*;
+import com.toqqa.dto.EmailRequestDto;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.*;
+import com.toqqa.repository.*;
+import com.toqqa.service.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,6 +67,7 @@ import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.InvoiceService;
 import com.toqqa.service.OrderInfoService;
 import com.toqqa.service.ProductService;
+
 import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
 
@@ -94,10 +107,14 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     private SellerRatingRepository sellerRatingRepository;
 
     @Autowired
+    private EmailService emailService;
+    
+    @Autowired
     private Helper helper;
     
     @Autowired
     private PushNotificationService pushNotificationService;
+
 
     @Override
     public Response<?> placeOrder(OrderPayload orderPayload) {
@@ -134,7 +151,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 String random = RandomString.make(7).toUpperCase();
                 orderInfo.setInvoiceNumber(Constants.INVOICE_CONSTANT + random);
                 orderInfo.setOrderTransactionId(Constants.ORDER_CONSTANT + random);
-                orderInfo.setOrderStatus(OrderConstants.PLACED);
+                orderInfo.setOrderStatus(OrderStatus.PLACED);
                 orderInfo.setPaymentType(PaymentConstants.CASH_ON_DELIVERY);
                 orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
                 List<OrderItem> orderItemList = this.persistOrderItems(orderItems, orderInfo);
@@ -145,14 +162,17 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 SmeBo smeBo = new SmeBo(sme);
                 OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
                 this.invoiceService.generateInvoice(bo, user);
+                
+                if (orderInfo.getEmail() != null) {
+                    EmailRequestDto emailRequestDto = new EmailRequestDto();
+                    Map<String, Object> dataMap = new HashMap<>();
+                    dataMap.put("data", orderInfo);
+                    emailRequestDto.setData(dataMap);
+                    emailRequestDto.setOrder(true);
+                    this.emailService.sendEmail(emailRequestDto);
+                }
                 pushNotificationService.sendNotificationToSmeForOrder(bo);
                 pushNotificationService.sendNotificationToSmeForProduct(bo);
-
-                
-                /*
-                 * if (orderInfo.getEmail() != null) {
-                 * this.emailService.sendOrderEmail(orderInfo); }
-                 */
             });
         } else {
             throw new BadRequestException("Invalid address id");
@@ -162,32 +182,39 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     }
 
     @Override
-    public Response<?> updateOrder(OrderCancelPayload cancelPayload) {
-        log.info("Invoked :: OrderInfoServiceImpl :: updateOrder()");
+    public Response<?> cancelOrder(OrderCancelPayload cancelPayload) {
+        log.info("Invoked :: OrderInfoServiceImpl :: cancelOrder()");
         Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(cancelPayload.getOrderId());
         if (optionalOrderInfo.isPresent()) {
             OrderInfo orderInfo = optionalOrderInfo.get();
-            if (orderInfo.getOrderStatus().ordinal() >= OrderConstants.READY_FOR_DISPATCH.ordinal()) {
+            if (orderInfo.getOrderStatus().ordinal() >= OrderStatus.READY_FOR_DISPATCH.ordinal()) {
                 throw new BadRequestException("Order cannot be cancelled");
             }
-            orderInfo.setOrderStatus(OrderConstants.CANCELLED);
+            orderInfo.setOrderStatus(OrderStatus.CANCELLED);
             orderInfo.setCancellationReason(cancelPayload.getCancellationReason());
+
             orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
+
+            orderInfo.getOrderItems().forEach(orderItem -> {
+                Product product = orderItem.getProduct();
+                product.setUnitsInStock(product.getUnitsInStock() + orderItem.getQuantity());
+
+                this.productRepo.saveAndFlush(product);
+            });
 
             return new Response<>(true, "Order cancelled successfully ");
         } else {
             throw new BadRequestException(
                     "Order not found with id" + cancelPayload.getOrderId() + " Enter a valid orderId");
         }
+
     }
 
     private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
         log.info("Invoked :: OrderInfoServiceImpl :: persistOrderItems()");
         List<OrderItem> orderItemsList = new ArrayList<OrderItem>();
         List<Product> products = new ArrayList<>();
-
         for (OrderItemPayload item : orderItems) {
-        	System.out.println("===="+item.getProductId());
             OrderItem orderItem = new OrderItem();
             Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
             if (optionalProduct.isPresent()) {
@@ -227,7 +254,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             ProductBo productBo = this.productService.toProductBo(orderItem.getProduct());
             productBo.setPricePerUnit(orderItem.getPricePerUnit());
             productBo.setDiscount(orderItem.getDiscount());
-            if (orderInfo.getOrderStatus() == OrderConstants.DELIVERED) {
+            if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
                 ProductRating productRating = this.productRatingRepository.findByProductIdAndUser(orderItem.getProduct().getId(), user);
                 if (productRating != null) {
                     productBo.setProductRatingBo(new ProductRatingBo(productRating));
@@ -247,7 +274,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         if (orderInfo.isPresent()) {
             Sme sme = orderInfo.get().getSme();
             SmeBo smeBo = new SmeBo(sme);
-            if (orderInfo.get().getOrderStatus() == OrderConstants.DELIVERED) {
+            if (orderInfo.get().getOrderStatus() == OrderStatus.DELIVERED) {
                 SellerRating sellerRating = this.sellerRatingRepository.findBySmeIdAndUser_Id(smeBo.getId(), user.getId());
                 if (sellerRating != null) {
                     smeBo.setSellerRatingBo(new SellerRatingBo(sellerRating));
@@ -275,8 +302,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         allOrders.forEach(orderInfo -> {
             Sme sme = orderInfo.getSme();
             SmeBo smeBo = new SmeBo(sme);
+  
             smeBo.setBusinessLogo(this.helper.prepareResource(sme.getBusinessLogo()));
-            if (orderInfo.getOrderStatus() == OrderConstants.DELIVERED) {
+             if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
                 SellerRating sellerRating = this.sellerRatingRepository.findBySmeIdAndUser_Id(smeBo.getId(), user.getId());
                 if (sellerRating != null) {
                     smeBo.setSellerRatingBo(new SellerRatingBo(sellerRating));
@@ -289,12 +317,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         return new ListResponseWithCount<OrderInfoBo>(bos, " ", allOrders.getTotalElements(),
                 paginationBo.getPageNumber(), allOrders.getTotalPages());
     }
-
-    /*
-     * @Override public String orderInvoice(String id) { String userId =
-     * this.authenticationService.currentUser().getId(); return
-     * this.invoiceService.fetchInvoice(id, userId); }
-     */
 
     @Override
     public ListResponseWithCount<OrderInfoBo> list(ToggleOrdersStatus toggleOrdersStatus) {
@@ -350,25 +372,23 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
         log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
         Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
-
         if (optionalOrderInfo.isPresent()) {
             OrderInfo orderInfo = optionalOrderInfo.get();
-            if ((OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()).ordinal() <= orderInfo
-                    .getOrderStatus().ordinal())) {
-                throw new BadRequestException("Cannot reverse orderStatus");
-
-            } else {
-                orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
-                this.orderInfoRepo.saveAndFlush(orderInfo);
-                
-                pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload,orderInfo.getUser());
-              
-               
-                
-                return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
-            }
+            User user = this.authenticationService.currentUser();
+            Sme sme = this.smeRepository.findByUserId(user.getId());
+            if (sme.getId() == orderInfo.getSme().getId()) {
+                if (orderInfo.getOrderStatus().ordinal() + 1 == (orderStatusUpdatePayload.getOrderStatus().ordinal())) {
+                    orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
+                    orderInfo.setOrderStatus(OrderConstants.valueOf(orderStatusUpdatePayload.getOrderConstant()));
+                    this.orderInfoRepo.saveAndFlush(orderInfo);
+                    pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload,orderInfo.getUser());
+                    return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
+                } else {
+                    throw new BadRequestException("Cannot update orderStatus");
+                }
+            
         } else {
-            throw new BadRequestException("Enter a valid order Id");
+            throw new ResourceNotFoundException("Enter a valid order Id");
         }
 
     }

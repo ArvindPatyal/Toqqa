@@ -5,7 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import com.toqqa.bo.PaginationBo;
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,5 +19,5 @@ import lombok.Setter;
 public class ToggleOrdersStatus extends PaginationBo {
 
 	@NotNull
-	private List<OrderConstants> orderStatus;
+	private List<OrderStatus> orderStatus;
 }

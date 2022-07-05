@@ -3,7 +3,7 @@ package com.toqqa.payload;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import com.toqqa.constants.OrderConstants;
+import com.toqqa.constants.OrderStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +19,6 @@ public class OrderStatusUpdatePayload {
 	@NotNull
 	@NotBlank
 	private String orderId;
-	@NotNull
-	@NotBlank
-	private String orderConstant;
+
+	private OrderStatus orderStatus;
 }
