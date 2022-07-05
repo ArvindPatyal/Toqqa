@@ -1,20 +1,12 @@
 package com.toqqa.service.impls;
 
-import com.toqqa.bo.UserBo;
-import com.toqqa.config.JWTConfig;
-import com.toqqa.constants.FolderConstants;
-import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.User;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.UserAlreadyExists;
-import com.toqqa.payload.*;
-import com.toqqa.repository.RoleRepository;
-import com.toqqa.repository.UserRepository;
-import com.toqqa.service.DeliveryAddressService;
-import com.toqqa.service.StorageService;
-import com.toqqa.service.UserService;
-import com.toqqa.util.Helper;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -32,12 +24,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+import com.toqqa.bo.UserBo;
+import com.toqqa.config.JWTConfig;
+import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceCreateUpdateException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.exception.UserAlreadyExists;
+import com.toqqa.payload.JwtAuthenticationResponse;
+import com.toqqa.payload.LoginRequest;
+import com.toqqa.payload.LoginResponse;
+import com.toqqa.payload.UpdateUser;
+import com.toqqa.payload.UserSignUp;
+import com.toqqa.repository.RoleRepository;
+import com.toqqa.repository.UserRepository;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.DeliveryAddressService;
+import com.toqqa.service.StorageService;
+import com.toqqa.service.UserService;
+import com.toqqa.util.Helper;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -63,6 +72,13 @@ public class UserServiceImpl implements UserService {
     @Autowired
     @Lazy
     private DeliveryAddressService deliveryAddressService;
+
+    @Autowired
+    @Lazy
+    private AuthenticationService authenticationService;
+    
+    @Autowired
+    private DeviceService deviceService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -128,19 +144,23 @@ public class UserServiceImpl implements UserService {
     }// find user by emailid or phone
 
     @Override
-    public LoginResponse signIn(LoginRequest bo) {
+    public LoginResponse signIn(LoginRequest request) {
         log.info("Invoked :: UserServiceImpl :: signIn()");
         try {
             Authentication authentication = this.manager
-                    .authenticate(new UsernamePasswordAuthenticationToken(bo.getUsername(), bo.getPassword()));
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse(
-                    this.jwtConfig.generateToken(bo.getUsername()));
+                    this.jwtConfig.generateToken(request.getUsername()));
             authentication = SecurityContextHolder.getContext().getAuthentication();
-            UserBo user = new UserBo(
-                    this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName()));
-            return new LoginResponse(jwtAuthenticationResponse, user);
+            User user =  this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
+            user.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
+            UserBo userBoObj = new UserBo(user);
+            deviceService.addDevice(user,request.getDeviceToken());
+
+            return new LoginResponse(jwtAuthenticationResponse, userBoObj);
         } catch (Exception e) {
+        	log.error("Exception in :: UserServiceImpl :: signIn() ::"+e.getLocalizedMessage());
             throw new BadCredentialsException("invalid login credentials");
         }
 
@@ -173,39 +193,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserBo updateUser(UpdateUser updateUser) {
-
         log.info("Invoked :: UserServiceImpl :: updateUser()");
-
-        User user = this.userRepository.findById(updateUser.getUserId()).get();
-        user.setCity(updateUser.getCity());
-        user.setCountry(updateUser.getCountry());
-        user.setIsDeleted(false);
-        if (this.helper.notNullAndBlank(updateUser.getEmail())) {
-            if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
-                throw new BadRequestException("invalid email value : " + updateUser.getEmail());
-            }
-            user.setEmail(updateUser.getEmail());
-        }
+        User user = this.authenticationService.currentUser();
         user.setFirstName(updateUser.getFirstName());
-        try {
-            if (updateUser.getProfilePicture() != null && !updateUser.getProfilePicture().isEmpty()) {
-                user.setProfilePicture(this.storageService
-                        .uploadFileAsync(updateUser.getProfilePicture(), user.getId(), FolderConstants.PROFILE_PICTURE.getValue())
-                        .get());
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-//		user.setPhone(this.helper.notNullAndBlank(updateUser.getPhone()) ? updateUser.getPhone() : null);
         user.setLastName(updateUser.getLastName());
-        user.setPostCode(updateUser.getPostCode());
-        user.setState(updateUser.getState());
-        user.setAddress(updateUser.getAddress());
-        user.setPassword(new BCryptPasswordEncoder().encode(updateUser.getPassword()));
+        if (updateUser.getProfilePicture() != null && !updateUser.getProfilePicture().isEmpty()) {
+            try {
+                user.setProfilePicture(this.storageService.uploadFileAsync(updateUser.getProfilePicture(),
+                        user.getId(),
+                        FolderConstants.PROFILE_PICTURE.getValue()).get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new ResourceCreateUpdateException("Cannot update Profile Picture");
+            }
+        }
         user = this.userRepository.saveAndFlush(user);
         UserBo bo = new UserBo(user);
         bo.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
         return bo;
 
+    }
+    
+    
+    @Override
+    public User getById(String id) {
+    	Optional<User> userObj = userRepository.findById(id);
+    	if(userObj.isPresent()) {
+    		return userObj.get();
+    	}
+    	else {
+    		throw new ResourceNotFoundException("Resource doesnt exist");
+
+    	}
     }
 }

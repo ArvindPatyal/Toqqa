@@ -21,5 +21,7 @@ public interface UserService extends UserDetailsService {
 	UserBo fetchUser(String id);
 
 	UserBo updateUser(UpdateUser updateUser);
+	
+	User getById(String id);
 
 }

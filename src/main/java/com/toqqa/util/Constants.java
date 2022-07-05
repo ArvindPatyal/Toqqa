@@ -27,9 +27,24 @@ public class Constants {
 
 	public static final String ORDER_CONSTANT = "ORD-";
 
-  public static final String AGENT_CONSTANT = "AGT-";
+	public static final String AGENT_CONSTANT = "AGT-";
 
 	public static final String INVOICE_CONSTANT = "INV-";
+	
+	public static final String CUSTOMER_NOTIFICATION_TITLE = "Order";
+
+	public static final String CUSTOMER_NOTIFICATION_MESSAGE = "Your order is %s ";
+	
+	public static final String SELLER_NOTIFICATION_TITLE = "Order";
+
+	public static final String SELLER_NOTIFICATION_MESSAGE = "A new order has been placed with product %s ";
+	
+	public static final String SELLER__PRODUCT_NOTIFICATION_TITLE = "Product";
+
+	public static final String SELLER_PRODUCT_NOTIFICATION_MESSAGE = "Product with low quantity are %s ";
+	
+	public static final int PRODUCT_LOW_COUNT = 5;
+
 
 	public static final String FEEDBACK_CONSTANT = "TOQQA Feedback/Complaints";
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 
 public interface SmeService {
-    SmeBo smeRegistration(SmeRegistration smeRegistration, String userId);
+    SmeBo smeRegistration(SmeRegistration smeRegistration, String userId, boolean isNewUser);
 
     SmeBo smeUpdate(SmeUpdate smeUpdate);
 
@@ -33,5 +33,7 @@ public interface SmeService {
     SmeStatsResponseDto getOverallStatsByDate(LocalDate startDate, LocalDate endDate);
 
     ListResponse smeProductCategories();
+
+    SmeBo becomeASme(SmeRegistration smeRegistration);
 
 }

@@ -3,18 +3,30 @@ package com.toqqa.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.toqqa.bo.UserBo;
+import com.toqqa.dto.PushNotificationRequestDto;
+import com.toqqa.payload.AgentRegistration;
 import com.toqqa.payload.Response;
+import com.toqqa.payload.SmeRegistration;
 import com.toqqa.payload.UpdateUser;
+import com.toqqa.service.AgentService;
 import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.SmeService;
 import com.toqqa.service.UserService;
+import com.toqqa.service.impls.PushNotificationService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -27,6 +39,17 @@ public class UserController {
 
 	@Autowired
 	private AuthenticationService authenticationService;
+	
+
+	@Autowired
+	private PushNotificationService pushNotificationService;
+
+	@Autowired
+	private SmeService smeService;
+
+	@Autowired
+	private AgentService agentService;
+
 
 	@ApiOperation(value = "Returns User data by given id")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
@@ -54,4 +77,24 @@ public class UserController {
 		log.info("Invoked:: UserController:: updateUser");
 		return new Response<UserBo>(this.userService.updateUser(updateUser), "success");
 	}
+
+
+	@ApiOperation(value = "Become a Sme")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@PostMapping("/register_seller")
+	public Response registerAsSeller(@ModelAttribute @Valid SmeRegistration smeRegistration) {
+		log.info("Invoked:: UserController:: registerAsSeller()");
+		return new Response(this.smeService.becomeASme(smeRegistration), "success");
+	}
+
+	@ApiOperation(value = "Become an Agent")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
+			@ApiResponse(code = 400, message = "Bad Request") })
+	@PostMapping("/register_agent")
+	public Response registerAsAgent(@ModelAttribute @Valid AgentRegistration agentRegistration) {
+		log.info("Invoked:: UserController:: registerAsSeller()");
+		return new Response(this.agentService.becomeAnAgent(agentRegistration), "success");
+	}
+
 }

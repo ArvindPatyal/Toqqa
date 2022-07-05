@@ -1,72 +1,60 @@
 package com.toqqa.payload;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
+import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.Data;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 public class SmeUpdate {
 
-	@NotNull
-	private String smeId;
 
-	@NotNull
-	private String nameOfBusiness;
+    @NotNull
+    private String nameOfBusiness;
 
-	@NotNull
-	private String businessAddress;
+    @NotNull
+    private String businessAddress;
 
-	@NotNull
-	private String city;
+    @NotNull
+    private String city;
 
-	@NotNull
-	private String state;
+    @NotNull
+    private String state;
 
-	@NotNull
-	private String country;
+    @NotNull
+    private String country;
 
-	@NotNull
-	private MultipartFile businessLogo;
+    @NotNull
+    private MultipartFile businessLogo;
 
-	@NotNull
-	private List<String> businessCategory;
+    @NotNull
+    private List<String> businessCategory;
 
-	@NotNull
-	private List<String> businessSubCategory;
+    @NotNull
+    private List<String> businessSubCategory;
 
-	private String description;
+    private String description;
 
-	@NotNull
-	private String typeOfBusiness;
+    @NotNull
+    private String typeOfBusiness;
 
-	@NotNull
-	private Boolean deliverToCustomer;
+    @NotNull
+    private Boolean deliverToCustomer;
 
-	private Double deliveryRadius;
+    private Double deliveryRadius;
 
-	@NotNull
-	private Double deliveryCharge;
+    @NotNull
+    private Double deliveryCharge;
 
-	private Long startTimeOfDelivery;
 
-	private Long endTimeOfDelivery;
+    private Long startTimeOfDelivery;
 
-	@NotNull
-	private Boolean isRegisteredWithGovt;
+    private Long endTimeOfDelivery;
 
-//	@NotNull
-	private MultipartFile regDoc;
-
-	@NotNull
-	private MultipartFile idProof;
-
-	@NotNull
-	private Double latitude;
-
-	@NotNull
-	private Double longitude;
+    private MultipartFile regDoc;
+    @NotNull
+    private Double latitude;
+    @NotNull
+    private Double longitude;
 }

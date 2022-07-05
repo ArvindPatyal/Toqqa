@@ -1,9 +1,6 @@
 package com.toqqa.controller;
 
-import com.toqqa.payload.ProductRatingPayload;
-import com.toqqa.payload.RatingUpdatePayload;
-import com.toqqa.payload.Response;
-import com.toqqa.payload.SellerRatingPayload;
+import com.toqqa.payload.*;
 import com.toqqa.service.ProductRatingService;
 import com.toqqa.service.SellerRatingService;
 import io.swagger.annotations.ApiOperation;
@@ -49,20 +46,20 @@ public class RatingController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/product/{productId}")
-    public Response productRatings(@PathVariable String productId) {
+    @PostMapping(value = "/product/ratings")
+    public Response productRatings(@RequestBody @Valid ProductRatings productRatings) {
         log.info("Invoked :: RatingController :: ratingDetails()");
-        return this.productRatingService.productRatings(productId);
+        return this.productRatingService.productRatings(productRatings);
     }
 
     @ApiOperation(value = "Ratings of a specific seller by smeId")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/seller/{sellerId}")
-    public Response sellerRatings(@PathVariable String sellerId) {
+    @PostMapping(value = "/seller/ratings")
+    public Response sellerRatings(@RequestBody @Valid SellerRatings sellerRatings) {
         log.info("Invoked :: RatingController :: sellerRatings()");
-        return this.sellerRatingService.sellerRatings(sellerId);
+        return this.sellerRatingService.sellerRatings(sellerRatings);
     }
 
     @ApiOperation(value = "delete a single rating for a product via ratingId")

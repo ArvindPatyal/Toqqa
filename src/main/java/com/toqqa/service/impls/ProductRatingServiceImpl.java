@@ -7,6 +7,7 @@ import com.toqqa.constants.OrderStatus;
 import com.toqqa.domain.*;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.ProductRatingPayload;
+import com.toqqa.payload.ProductRatings;
 import com.toqqa.payload.RatingUpdatePayload;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.OrderInfoRepository;
@@ -20,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -74,14 +72,15 @@ public class ProductRatingServiceImpl implements ProductRatingService {
     }
 
     @Override
-    public Response productRatings(String productId) {
+    public Response productRatings(ProductRatings getProductRatings) {
         log.info("Invoked :: ProductRatingServiceImpl :: ratingDetails()");
-        Optional<Product> optionalProduct = this.productRepository.findById(productId);
+        Optional<Product> optionalProduct = this.productRepository.findById(getProductRatings.getProductId());
         if (!optionalProduct.isPresent()) {
             throw new BadRequestException("Enter a valid product id");
         }
         Product product = optionalProduct.get();
         List<ProductRating> productRatings = product.getProductRatings();
+
         if (!productRatings.isEmpty()) {
             RatingStatsBo ratingStatsBo = new RatingStatsBo();
             List<RatingReviewBo> ratingReviewBos = new ArrayList<>();
@@ -100,18 +99,32 @@ public class ProductRatingServiceImpl implements ProductRatingService {
                         productRating.getStars(),
                         productRating.getReviewComment(),
                         productRating.getDateOfRatingCreation(),
-                        productRating.getDateOfRatingUpdation()
+                        productRating.getDateOfRatingUpdation(),
+                        productRating.getUser().getId()
                 ));
             });
-            Double sumOfRatings = Double.valueOf(ratings.stream().mapToInt(Integer::intValue).sum());
+
             ratingReviewBos.removeIf(ratingReviewBo -> ratingReviewBo.getReviewComment() == null);
+            ratingReviewBos.sort(Comparator.comparing(RatingReviewBo::getDateOfRatingUpdate).reversed());
             ratingStatsBo.setTotalReviewComments(ratingReviewBos.size());
-            ratingStatsBo.setAverageRating(sumOfRatings / totalRatings);
+
+
+            Optional<RatingReviewBo> optionalRatingReviewBo = ratingReviewBos.stream().filter(ratingReviewBo1 -> ratingReviewBo1.getUserId().equals(getProductRatings.getUserId())).findFirst();
+            if (optionalRatingReviewBo.isPresent()) {
+                RatingReviewBo ratingReviewBo = optionalRatingReviewBo.get();
+                ratingReviewBos.remove(ratingReviewBo);
+                ratingReviewBos.add(0, ratingReviewBo);
+            }
+
+            OptionalDouble average = ratings.stream().mapToDouble(value -> value).average();
+            ratingStatsBo.setAverageRating(average.isPresent() ? average.getAsDouble() : 0.0);
+
             ratingStatsBo.setFiveStars(Collections.frequency(ratings, 5));
             ratingStatsBo.setFourStars(Collections.frequency(ratings, 4));
             ratingStatsBo.setThreeStars(Collections.frequency(ratings, 3));
             ratingStatsBo.setTwoStars(Collections.frequency(ratings, 2));
             ratingStatsBo.setOneStar(Collections.frequency(ratings, 1));
+
             ratingStatsBo.setTotalRatings(totalRatings);
             ratingStatsBo.setRatingReviewBos(ratingReviewBos);
             return new Response(ratingStatsBo, "ratings returned");

@@ -357,10 +357,10 @@ public class ProductServiceImpl implements ProductService {
                     ratings.add(sellerRating.getSellerRating());
                     reviews.add(sellerRating.getReviewComment());
                 });
-                Double totalRatings = Double.valueOf(ratings.size());
+                OptionalDouble average = ratings.stream().mapToDouble(value -> value).average();
                 reviews.removeAll(Collections.singletonList(null));
                 smeBo.setTotalReviews(reviews.size());
-                smeBo.setAverageRating(ratings.stream().mapToInt(Integer::intValue).sum() / totalRatings);
+                smeBo.setAverageRating(average.isPresent() ? average.getAsDouble() : 0.0);
             }
             productBo.setSellerDetails(smeBo);
         }
@@ -373,10 +373,10 @@ public class ProductServiceImpl implements ProductService {
                 ratings.add(productRating.getStars());
                 reviews.add(productRating.getReviewComment());
             });
-            Double totalRatings = Double.valueOf(ratings.size());
+            OptionalDouble average = ratings.stream().mapToDouble(value -> value).average();
             reviews.removeAll(Collections.singletonList(null));
             productBo.setTotalReviews(reviews.size());
-            productBo.setAverageRating(ratings.stream().mapToInt(Integer::intValue).sum() / totalRatings);
+            productBo.setAverageRating(average.isPresent() ? average.getAsDouble() : 0.0);
         }
 
 

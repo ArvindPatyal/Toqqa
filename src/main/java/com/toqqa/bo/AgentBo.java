@@ -22,6 +22,7 @@ public class AgentBo {
 	private String userId;
 
 	private String agentId;
+	private String profilePicture;
 
 	public AgentBo(Agent agent) {
 		this.id = agent.getId();
@@ -29,6 +30,7 @@ public class AgentBo {
 		this.idProof = agent.getIdProof();
 		this.userId = agent.getUserId();
 		this.agentId = agent.getAgentId() != null ? agent.getAgentId() : "";
+		this.profilePicture= agent.getAgentProfilePicture();
 	}
 
 }
