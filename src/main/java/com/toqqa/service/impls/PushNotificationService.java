@@ -46,7 +46,7 @@ public class PushNotificationService {
 
 		for (Device deviceObj : deviceService.getAllByUser(user)) {
 			sendPushNotificationToToken(bindNotificationObject(Constants.CUSTOMER_NOTIFICATION_TITLE,
-					String.format(Constants.CUSTOMER_NOTIFICATION_MESSAGE, orderStatusUpdatePayload.getOrderConstant()),
+					String.format(Constants.CUSTOMER_NOTIFICATION_MESSAGE, orderStatusUpdatePayload.getOrderStatus()),
 					deviceObj.getToken()));
 		}
 	}
