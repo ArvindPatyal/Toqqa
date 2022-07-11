@@ -1,9 +1,11 @@
 package com.toqqa.controller;
 
-import com.toqqa.dto.OrderInfoDto;
+import com.toqqa.bo.UserBo;
 import com.toqqa.dto.UserRequestDto;
+import com.toqqa.dto.UsersDto;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
+import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AdminService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -21,6 +23,8 @@ import javax.validation.Valid;
 @RequestMapping(value = "api/admin")
 public class AdminController {
 
+    @Autowired
+    private UserRepository userRepository;
     private AdminService adminService;
 
     @Autowired
@@ -45,13 +49,12 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+-toggleUser()");
         return this.adminService.toggleUser(id);
     }
-    @ApiOperation(value = "check orders placed in a specific time period or by status")
+    @ApiOperation(value = "check user register in a specific time period")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping(value = "/orders")
-    public Response orders(@RequestBody @Valid OrderInfoDto orderInfoDto){
-        log.info("Invoked -+- AdminController -+- orders()");
-        return this.adminService.orders(orderInfoDto);
+    @PostMapping(value = "/findUsersByDate")
+    public ListResponseWithCount<UserBo> listUsersByDate (@RequestBody @Valid UsersDto usersDto) {
+        log.info("Invoked -+- AdminController -+- getUserStatsByDate()");
+        return this.adminService.listUsersByDate(usersDto);
     }
-
 }

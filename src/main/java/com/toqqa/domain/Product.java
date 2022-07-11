@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -26,6 +27,8 @@ public class Product {
 
     private String productName;
 
+
+    @Length(min = 1, max = 300)
     private String description;
 
     private Long unitsInStock;
@@ -75,7 +78,7 @@ public class Product {
     @Column(length = 500)
     private Integer sequenceNumber;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "product")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
     private List<ProductRating> productRatings;
 
 

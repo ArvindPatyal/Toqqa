@@ -4,9 +4,12 @@ import com.toqqa.bo.AgentBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.bo.UserBo;
 import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.*;
-import com.toqqa.dto.OrderInfoDto;
+import com.toqqa.domain.Agent;
+import com.toqqa.domain.Role;
+import com.toqqa.domain.Sme;
+import com.toqqa.domain.User;
 import com.toqqa.dto.UserRequestDto;
+import com.toqqa.dto.UsersDto;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
@@ -40,13 +43,13 @@ public class AdminService {
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
-                        SmeRepository smeRepository,OrderInfoRepository orderInfoRepository) {
+                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
         this.agentRepository = agentRepository;
         this.smeRepository = smeRepository;
-        this.orderInfoRepository=orderInfoRepository;
+        this.orderInfoRepository = orderInfoRepository;
     }
 
     public ListResponseWithCount users(UserRequestDto userRequestDto) {
@@ -110,10 +113,21 @@ public class AdminService {
         throw new ResourceNotFoundException(AdminConstants.NO_USER_FOUND_WITH_ID + userId);
     }
 
-
-    public Response orders(OrderInfoDto orderInfoDto) {
-        log.info("Invoked -+- AdminService -+- orders()");
-//        List<OrderInfo>  orderInfos = this.orderInfoRepository.
-        return null;
+    public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
+        Page<User> users = this.userRepository.findByCreatedDate(PageRequest.of(usersDto.getPageNumber(), pageSize), usersDto.getStartDate(), usersDto.getEndDate());
+        List<UserBo> userBos = new ArrayList<>();
+        Role agent = this.roleRepository.findByRole(RoleConstants.AGENT.getValue());
+        Role sme = this.roleRepository.findByRole(RoleConstants.SME.getValue());
+        users.forEach(user -> {
+            UserBo userBo = new UserBo(user);
+            if (user.getRoles().contains(agent)) {
+                userBo.setAgentBo(this.toAgentBo(user.getId()));
+            }
+            if (user.getRoles().contains(sme)) {
+                userBo.setSmeBo(this.toSmeBo(user.getId()));
+            }
+            userBos.add(userBo);
+        });
+        return new ListResponseWithCount<>(userBos, "List All Users", users.getTotalElements(), usersDto.getPageNumber(), users.getTotalPages());
     }
 }

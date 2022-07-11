@@ -13,6 +13,7 @@ public class AdminConstants {
     public static final String TOGGLE_USER_STATUS_CHANGED = "User status changes";
     public static final String NO_USER_FOUND_WITH_ID = "No User found with id : ";
     public static final String LIST_OF_USERS_RETURNED = "List of users Returned";
+    public  static  final String TOTAL_USERS_COUNT_QUERY_BY_DATE = "select * from user_info  where cast(created_at as Date) between ?1 AND ?2";
 
 
 }
