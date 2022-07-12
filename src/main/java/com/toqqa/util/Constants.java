@@ -45,9 +45,11 @@ public class Constants {
 	
 	public static final int PRODUCT_LOW_COUNT = 5;
 
-
 	public static final String FEEDBACK_CONSTANT = "TOQQA Feedback/Complaints";
 
 	public  static  final  String ORDER_EMAIL_CONSTANT = "TOQQA Email";
+	
+	public  static  final  String MSG_NO_RESCOURCE = "Resource doesnt exist";
+
 
 }
