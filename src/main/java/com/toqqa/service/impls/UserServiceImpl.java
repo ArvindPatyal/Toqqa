@@ -1,12 +1,25 @@
 package com.toqqa.service.impls;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
+import com.toqqa.bo.UserBo;
+import com.toqqa.config.JWTConfig;
+import com.toqqa.constants.FolderConstants;
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.Device;
+import com.toqqa.domain.User;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceCreateUpdateException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.exception.UserAlreadyExists;
+import com.toqqa.payload.*;
+import com.toqqa.repository.DeviceRepository;
+import com.toqqa.repository.RoleRepository;
+import com.toqqa.repository.UserRepository;
+import com.toqqa.service.AuthenticationService;
+import com.toqqa.service.DeliveryAddressService;
+import com.toqqa.service.StorageService;
+import com.toqqa.service.UserService;
+import com.toqqa.util.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -24,29 +37,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toqqa.bo.UserBo;
-import com.toqqa.config.JWTConfig;
-import com.toqqa.constants.FolderConstants;
-import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.User;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceCreateUpdateException;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.exception.UserAlreadyExists;
-import com.toqqa.payload.JwtAuthenticationResponse;
-import com.toqqa.payload.LoginRequest;
-import com.toqqa.payload.LoginResponse;
-import com.toqqa.payload.UpdateUser;
-import com.toqqa.payload.UserSignUp;
-import com.toqqa.repository.RoleRepository;
-import com.toqqa.repository.UserRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.DeliveryAddressService;
-import com.toqqa.service.StorageService;
-import com.toqqa.service.UserService;
-import com.toqqa.util.Helper;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -76,9 +72,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     @Lazy
     private AuthenticationService authenticationService;
-    
+
     @Autowired
     private DeviceService deviceService;
+
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -153,18 +152,31 @@ public class UserServiceImpl implements UserService {
             JwtAuthenticationResponse jwtAuthenticationResponse = new JwtAuthenticationResponse(
                     this.jwtConfig.generateToken(request.getUsername()));
             authentication = SecurityContextHolder.getContext().getAuthentication();
-            User user =  this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
+            User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
             user.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
             UserBo userBoObj = new UserBo(user);
-            deviceService.addDevice(user,request.getDeviceToken());
+
+            this.token(user, request);
 
             return new LoginResponse(jwtAuthenticationResponse, userBoObj);
         } catch (Exception e) {
-        	log.error("Exception in :: UserServiceImpl :: signIn() ::"+e.getLocalizedMessage());
+            log.error("Exception in :: UserServiceImpl :: signIn() ::" + e.getLocalizedMessage());
             throw new BadCredentialsException("invalid login credentials");
         }
 
-    }// send auth token
+    }
+
+    private void token(User user, LoginRequest loginRequest) {
+        Optional<Device> optionalDevice = this.deviceService.getByToken(loginRequest.getDeviceToken());
+        if (optionalDevice.isPresent()) {
+            Device device = optionalDevice.get();
+            device.setUser(user);
+            this.deviceRepository.saveAndFlush(device);
+        } else {
+            deviceService.addDevice(user, loginRequest.getDeviceToken());
+        }
+
+    }
 
     @Override
     public UserBo fetchUser(String id) {
@@ -197,6 +209,19 @@ public class UserServiceImpl implements UserService {
         User user = this.authenticationService.currentUser();
         user.setFirstName(updateUser.getFirstName());
         user.setLastName(updateUser.getLastName());
+        if(helper.notNullAndBlank(updateUser.getEmail())){
+            if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
+                throw new BadRequestException("invalid email value : " + updateUser.getEmail());
+            }else{
+                 if(this.userRepository.findByEmail(updateUser.getEmail())==null){
+                     user.setEmail(updateUser.getEmail());
+                 }else {
+                     throw new BadRequestException("Email is already in use");
+                 }
+
+            }
+        }
+
         if (updateUser.getProfilePicture() != null && !updateUser.getProfilePicture().isEmpty()) {
             try {
                 user.setProfilePicture(this.storageService.uploadFileAsync(updateUser.getProfilePicture(),
@@ -212,17 +237,16 @@ public class UserServiceImpl implements UserService {
         return bo;
 
     }
-    
-    
+
+
     @Override
     public User getById(String id) {
-    	Optional<User> userObj = userRepository.findById(id);
-    	if(userObj.isPresent()) {
-    		return userObj.get();
-    	}
-    	else {
-    		throw new ResourceNotFoundException("Resource doesnt exist");
+        Optional<User> userObj = userRepository.findById(id);
+        if (userObj.isPresent()) {
+            return userObj.get();
+        } else {
+            throw new ResourceNotFoundException("Resource doesnt exist");
 
-    	}
+        }
     }
 }
