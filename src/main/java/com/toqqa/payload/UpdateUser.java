@@ -18,4 +18,6 @@ public class UpdateUser {
     private String lastName;
 
     private MultipartFile profilePicture;
+
+    private  String email;
 }
