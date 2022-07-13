@@ -43,7 +43,8 @@ public class UserBo {
 	private Date createdAt;
 
 	private List<String> roles = new ArrayList<>();
-
+	private SmeBo smeBo;
+	private AgentBo agentBo;
 	public UserBo(User user) {
 		this.id = user.getId();
 		this.firstName = user.getFirstName();

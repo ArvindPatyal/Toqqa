@@ -7,6 +7,7 @@ import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
@@ -27,6 +28,7 @@ public class AddProduct {
 	private List<MultipartFile> images;
 
 	@NotNull
+	@Length(min = 1, max = 300)
 	private String description;
 
 	/*
