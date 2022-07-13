@@ -1,17 +1,14 @@
 package com.toqqa.service;
 
-import com.toqqa.bo.AgentBo;
-import com.toqqa.bo.SmeBo;
-import com.toqqa.bo.UserBo;
+import com.toqqa.bo.*;
 import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.Agent;
-import com.toqqa.domain.Role;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
+import com.toqqa.domain.*;
 import com.toqqa.dto.UserRequestDto;
 import com.toqqa.dto.UsersDto;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponseWithCount;
+import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.*;
 import com.toqqa.util.AdminConstants;
@@ -40,16 +37,23 @@ public class AdminService {
     private final SmeRepository smeRepository;
     private final OrderInfoRepository orderInfoRepository;
 
+    private final ProductRepository productRepository;
+
+    private final OrderItemRepository orderItemRepository;
+
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
-                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository) {
+                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository, OrderItemRepository orderItemRepository,
+                        ProductRepository productRepository) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
         this.agentRepository = agentRepository;
         this.smeRepository = smeRepository;
         this.orderInfoRepository = orderInfoRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.productRepository = productRepository;
     }
 
     public ListResponseWithCount users(UserRequestDto userRequestDto) {
@@ -114,6 +118,7 @@ public class AdminService {
     }
 
     public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
+
         Page<User> users = this.userRepository.findByCreatedDate(PageRequest.of(usersDto.getPageNumber(), pageSize), usersDto.getStartDate(), usersDto.getEndDate());
         List<UserBo> userBos = new ArrayList<>();
         Role agent = this.roleRepository.findByRole(RoleConstants.AGENT.getValue());
@@ -129,5 +134,27 @@ public class AdminService {
             userBos.add(userBo);
         });
         return new ListResponseWithCount<>(userBos, "List All Users", users.getTotalElements(), usersDto.getPageNumber(), users.getTotalPages());
+    }
+
+    public ListResponseWithCount<OrderInfoBo> listOrdersByDate(OrderDto orderDto) {
+
+        Page<OrderInfo> orders = this.orderInfoRepository.findByModificationDate(PageRequest.of(orderDto.getPageNumber(), pageSize), orderDto.getStartDate(), orderDto.getEndDate());
+        List<OrderInfoBo> orderInfoBos = new ArrayList<>();
+        orders.forEach(info -> {
+            List<OrderItem> orderItem = info.getOrderItems();
+            List<OrderItemBo> orderItemBo = new ArrayList<>();
+            orderItem.forEach(item -> {
+                ProductBo productBo = new ProductBo(item.getProduct());
+                productBo.setBanner(this.helper.prepareAttachmentResource(item.getProduct().getBanner()));
+                orderItemBo.add(new OrderItemBo(item, productBo));
+            });
+            SmeBo smeBo = new SmeBo(info.getSme());
+            smeBo.setBusinessLogo(this.helper.prepareResource(info.getSme().getBusinessLogo()));
+            smeBo.setIdProof(this.helper.prepareResource(info.getSme().getIdProof()));
+            smeBo.setRegDoc(this.helper.prepareResource(info.getSme().getRegDoc()));
+            OrderInfoBo orderInfoBo = new OrderInfoBo(info, orderItemBo, smeBo);
+            orderInfoBos.add(orderInfoBo);
+        });
+        return new ListResponseWithCount<>(orderInfoBos, "List All Orders", orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
     }
 }

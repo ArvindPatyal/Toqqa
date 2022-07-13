@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.toqqa.util.AdminConstants;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,5 +35,7 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 	@Query(value = Constants.ORDER_COUNT_QUERY_BY_DATE_AND_STATUS, nativeQuery = true)
 	Optional<Integer> findOrderCountBySmeAndDateAndStatus(String smeId, String orderStatus, LocalDate startDate, LocalDate endDate);
 
+	@Query(value = AdminConstants.TOTAL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
+	Page<OrderInfo> findByModificationDate(Pageable pageRequest, LocalDate startDate, LocalDate endDate);
 
 }

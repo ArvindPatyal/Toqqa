@@ -15,5 +15,6 @@ public class AdminConstants {
     public static final String LIST_OF_USERS_RETURNED = "List of users Returned";
     public  static  final String TOTAL_USERS_COUNT_QUERY_BY_DATE = "select * from user_info  where cast(created_at as Date) between ?1 AND ?2";
 
+    public  static  final String TOTAL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info  where cast(modification_date as Date) between ?1 AND ?2";
 
 }

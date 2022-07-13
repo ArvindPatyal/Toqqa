@@ -1,23 +1,24 @@
-package com.toqqa.dto;
+package com.toqqa.payload;
 
+import com.toqqa.constants.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.Sort;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
-public class UsersDto {
+public class OrderDto {
 
     @NotNull
     private Integer pageNumber = 0;
 
     private LocalDate endDate = LocalDate.now();
 
-    private LocalDate startDate = endDate.minus(1, ChronoUnit.MONTHS);
+    private LocalDate startDate = endDate.minus(1, ChronoUnit.DAYS);
+
+   // private List<OrderStatus> orderStatus;
 }
