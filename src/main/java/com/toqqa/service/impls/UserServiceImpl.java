@@ -153,8 +153,8 @@ public class UserServiceImpl implements UserService {
                     this.jwtConfig.generateToken(request.getUsername()));
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
-            user.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
             UserBo userBoObj = new UserBo(user);
+            userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
 
             this.token(user, request);
 
