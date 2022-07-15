@@ -121,7 +121,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         product.setAttachments(attachments);
-        product.setAttachments(attachments);
         product = this.productRepo.saveAndFlush(product);
 
         ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));

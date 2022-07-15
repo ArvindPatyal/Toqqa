@@ -25,13 +25,13 @@ public class SmeUpdate {
     @NotNull
     private String country;
 
-    @NotNull
+
     private MultipartFile businessLogo;
 
     @NotNull
     private List<String> businessCategory;
 
-    @NotNull
+
     private List<String> businessSubCategory;
 
     private String description;

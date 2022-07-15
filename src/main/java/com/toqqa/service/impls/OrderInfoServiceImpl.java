@@ -248,10 +248,11 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderList()");
         User user = this.authenticationService.currentUser();
         Page<OrderInfo> allOrders = null;
+        Sort sort = Sort.by("createdDate").descending();
         if (authenticationService.isAdmin()) {
-            allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize));
+            allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize,sort));
         } else {
-            allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize), user);
+            allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize,sort), user);
         }
         List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
         allOrders.forEach(orderInfo -> {

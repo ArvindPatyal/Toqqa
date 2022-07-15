@@ -195,7 +195,9 @@ public class SmeServiceImpl implements SmeService {
                 sme.setEndTimeOfDelivery(new Date(smeUpdate.getEndTimeOfDelivery()));
             }
             sme.setBusinessCatagory(this.categoryRepository.findAllById(smeUpdate.getBusinessCategory()));
-            sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
+            if (smeUpdate.getBusinessSubCategory() != null) {
+                sme.setBusinessSubCatagory(this.subcategoryRepository.findAllById(smeUpdate.getBusinessSubCategory()));
+            }
             try {
                 if (smeUpdate.getBusinessLogo() != null && !smeUpdate.getBusinessLogo().isEmpty()) {
                     sme.setBusinessLogo(this.storageService.uploadFileAsync(smeUpdate.getBusinessLogo(),
