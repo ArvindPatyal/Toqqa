@@ -1,0 +1,16 @@
+package com.toqqa.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+
+@Getter
+@Setter
+public class AdminFilterDto {
+
+    private LocalDate endDate;
+
+    private LocalDate startDate;
+
+}

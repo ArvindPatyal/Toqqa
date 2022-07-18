@@ -3,9 +3,8 @@ package com.toqqa.service;
 import com.toqqa.bo.*;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.*;
+import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
-import com.toqqa.dto.UsersDto;
-import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -117,7 +117,33 @@ public class AdminService {
         throw new ResourceNotFoundException(AdminConstants.NO_USER_FOUND_WITH_ID + userId);
     }
 
-    public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
+
+    public Response recentOrders() {
+        log.info("Invoked -+- AdminService -+- recentOrders()");
+        List<OrderInfo> orders = this.orderInfoRepository.findFirst4ByOrderByCreatedDateDesc();
+        return orders.equals(null) ? new Response(null, AdminConstants.NO_RECENT_ORDERS_FOUND) :
+                new Response(orders.stream().map(
+                        orderInfo -> new OrderInfoBo(orderInfo,
+                                orderInfo.getOrderItems().stream().map(
+                                        orderItem -> {
+                                            ProductBo productBo = new ProductBo(orderItem.getProduct());
+                                            productBo.setImages(this.helper.prepareProductAttachments(orderItem.getProduct().getAttachments()));
+                                            return new OrderItemBo(orderItem, productBo);
+                                        }
+                                ).collect(Collectors.toList()),
+                                null)).collect(Collectors.toList()), AdminConstants.RECENT_ORDERS_RETURNED);
+    }
+
+    public Response statsByDate(AdminFilterDto adminFilterDto) {
+        log.info("Invoked -+- AdminService -+- statsByDate");
+        return new Response(new StatsBo(
+                this.orderInfoRepository.findTotalAmountByDate(adminFilterDto.getStartDate(), adminFilterDto.getEndDate()).orElse(0.0),
+                (long) this.userRepository.findByCreatedDate(adminFilterDto.getStartDate(), adminFilterDto.getEndDate()).size(),
+                (long) this.orderInfoRepository.findByCreatedDate(adminFilterDto.getStartDate(), adminFilterDto.getEndDate()).size()),
+                AdminConstants.DASHBOARD_STATS);
+    }
+
+   /* public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
 
         Page<User> users = this.userRepository.findByCreatedDate(PageRequest.of(usersDto.getPageNumber(), pageSize), usersDto.getStartDate(), usersDto.getEndDate());
         List<UserBo> userBos = new ArrayList<>();
@@ -134,7 +160,7 @@ public class AdminService {
             userBos.add(userBo);
         });
         return new ListResponseWithCount<>(userBos, "List All Users", users.getTotalElements(), usersDto.getPageNumber(), users.getTotalPages());
-    }
+    }*/
 
     public ListResponseWithCount<OrderInfoBo> listOrdersByDate(OrderDto orderDto) {
 
