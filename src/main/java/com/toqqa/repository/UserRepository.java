@@ -25,4 +25,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query(value = AdminConstants.TOTAL_USERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
     List<User> findByCreatedDate(LocalDate startDate, LocalDate endDate);
+
+    List<User> findFirst4ByOrderByCreatedAtDesc();
+
 }

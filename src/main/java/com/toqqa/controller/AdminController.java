@@ -6,7 +6,6 @@ import com.toqqa.dto.UserRequestDto;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
-import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AdminService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -24,9 +23,7 @@ import javax.validation.Valid;
 @RequestMapping(value = "api/admin")
 public class AdminController {
 
-    @Autowired
-    private UserRepository userRepository;
-    private AdminService adminService;
+    private final AdminService adminService;
 
     @Autowired
     public AdminController(AdminService adminService) {
@@ -40,6 +37,15 @@ public class AdminController {
     public ListResponseWithCount users(@RequestBody @Valid UserRequestDto userRequestDto) {
         log.info("Invoked -+- AdminController -+- users()");
         return this.adminService.users(userRequestDto);
+    }
+
+    @ApiOperation(value = "Top 4 new users")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/new_users")
+    public Response newUsers() {
+        log.info("Invoked -+- AdminController -+- newUsers()");
+        return this.adminService.newUsers();
     }
 
     @ApiOperation(value = "Enable or Disable a user")
@@ -59,6 +65,42 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- recentOrders()");
         return this.adminService.recentOrders();
     }
+
+    @ApiOperation(value = "check new users, orders and sale status in a specific time period")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @PostMapping(value = "/stats")
+    public Response statsByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
+        log.info("Invoked -+- AdminController -+- statsByDate()");
+        return this.adminService.statsByDate(adminFilterDto);
+    }
+
+    @ApiOperation(value = "Recent 4 approval requests")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/new_approval_requests")
+    public Response newApprovalRequests() {
+        log.info("Invoked -+- AdminController -+- newApprovalRequests");
+        return this.adminService.newApprovalRequests();
+    }
+
+    @ApiOperation(value = "Approval requests")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/approval_requests")
+    public Response approvalRequests() {
+        log.info("Invoked -+- AdminController -+- approvalRequests");
+        return this.adminService.approvalRequests();
+    }
+
+    /*TODO @ApiOperation(value = "Approve verification request")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @PutMapping(value = "/approve")
+    public Response approve() {
+        log.info("Invoked -+- AdminController -+- approvalRequests");
+        return this.adminService.approve();
+    }*/
 
 
 //    @ApiOperation(value = "check user register in a specific time period")
@@ -80,12 +122,4 @@ public class AdminController {
     }
 
 
-    @ApiOperation(value = "check new users, orders and sale status in a specific time period")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping(value = "/stats")
-    public Response statsByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
-        log.info("Invoked -+- AdminController -+- statsByDate()");
-        return this.adminService.statsByDate(adminFilterDto);
-    }
 }
