@@ -35,6 +35,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Value("${pageSize}")
     private Integer pageSize;
+    @Value("${bulk.product.minimum.quantity}")
+    private Integer bulkProductQuantity;
 
     @Autowired
     private ProductService productService;
@@ -48,39 +50,41 @@ public class CustomerServiceImpl implements CustomerService {
 
         Page<Product> products = null;
         Sort sort = null;
-        if (bo.getSortKey() != null && bo.getSortOrder() != null) {
-            if (!Objects.equals(bo.getSortOrder(), "ASC") || !Objects.equals(bo.getSortOrder(), "DESC")) {
-                bo.setSortOrder("ASC");
+        try {
+            if (bo.getSortOrder() != null) {
+                if (Objects.equals(bo.getSortOrder(), "ASC") || Objects.equals(bo.getSortOrder(), "DESC")) {
+                    bo.setSortOrder(bo.getSortOrder());
+                } else {
+                    bo.setSortOrder("ASC");
+                }
             }
-            try {
+            if (bo.getSortKey() != null) {
                 sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), bo.getSortKey());
-            } catch (Exception e) {
-                throw new BadRequestException("Enter a valid sortKey");
+            } else {
+                sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), "CreatedAt");
             }
-        } else {
-            sort = Sort.by(Sort.Direction.ASC, "createdAt");
+            if (helper.notNullAndHavingData(bo.getProductCategoryIds()) && bo.getShowBulkProducts()) {
+                products = this.productRepository
+                        .findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
+                                bo.getProductCategoryIds(), false, PageRequest.of(bo.getPageNumber(), pageSize, sort), 2);
+            } else if (bo.getShowBulkProducts()) {
+                products = this.productRepository.findByIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(false,
+                        PageRequest.of(bo.getPageNumber(), pageSize, sort), bulkProductQuantity);
+            } else if (helper.notNullAndHavingData(bo.getProductCategoryIds())) {
+                products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
+                        PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getProductCategoryIds(), false);
+            } else {
+                products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize, sort), false);
+            }
+            List<ProductBo> productBos = new ArrayList<>();
+            products.forEach(product -> {
+                productBos.add(this.productService.toProductBo(product));
+            });
+            return new ListResponseWithCount<ProductBo>(productBos, "", products.getTotalElements(), bo.getPageNumber(),
+                    products.getTotalPages());
+        } catch (Exception e) {
+            throw new BadRequestException("Enter a valid sortKey");
         }
-        if (helper.notNullAndHavingData(bo.getProductCategoryIds()) && bo.getShowBulkProducts()) {
-            products = this.productRepository
-                    .findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
-                            bo.getProductCategoryIds(), false, PageRequest.of(bo.getPageNumber(), pageSize, sort), 2);
-        } else if (bo.getShowBulkProducts()) {
-            products = this.productRepository.findByIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(false,
-                    PageRequest.of(bo.getPageNumber(), pageSize, sort), 2);
-        } else if (helper.notNullAndHavingData(bo.getProductCategoryIds())) {
-            products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
-                    PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getProductCategoryIds(), false);
-        } else {
-            products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize, sort), false);
-        }
-
-        List<ProductBo> productBos = new ArrayList<>();
-        products.forEach(product -> {
-            productBos.add(this.productService.toProductBo(product));
-        });
-        return new ListResponseWithCount<ProductBo>(productBos, "", products.getTotalElements(), bo.getPageNumber(),
-                products.getTotalPages());
-
     }
 
     @Override
