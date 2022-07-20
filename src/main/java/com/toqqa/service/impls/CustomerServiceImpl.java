@@ -57,6 +57,8 @@ public class CustomerServiceImpl implements CustomerService {
                 } else {
                     bo.setSortOrder("ASC");
                 }
+            } else {
+                bo.setSortOrder("ASC");
             }
             if (bo.getSortKey() != null) {
                 sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), bo.getSortKey());
