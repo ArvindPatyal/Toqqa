@@ -3,6 +3,7 @@ package com.toqqa.service.impls;
 import com.toqqa.bo.EmailBo;
 import com.toqqa.domain.User;
 import com.toqqa.dto.EmailRequestDto;
+import com.toqqa.dto.ResetTokenEmailDto;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.EmailService;
 import com.toqqa.util.Constants;
@@ -60,7 +61,7 @@ public class EmailServiceImpl implements EmailService {
         }
 
         if (emailRequestDto.isOrder() == true) {
-           emailBo.setMailTo(user.getEmail() != null ? user.getEmail() : "");
+            emailBo.setMailTo(user.getEmail() != null ? user.getEmail() : "");
             emailBo.setMailSubject(Constants.ORDER_EMAIL_CONSTANT);
             try {
                 freemarkerConfiguration.getTemplate("orderEmail.ftlh").process(model, writer);
@@ -72,6 +73,22 @@ public class EmailServiceImpl implements EmailService {
                 e.printStackTrace();
 
             }
+        }
+    }
+
+    @Override
+    public void resetToken(ResetTokenEmailDto resetTokenEmailDto) {
+        log.info("Invoked :: EmailServiceImpl :: forgotPassword()");
+        StringWriter writer = new StringWriter();
+        Map<String, Object> templateMap = new HashMap<>();
+        templateMap.put("user", resetTokenEmailDto.getUserName());
+        templateMap.put("tokenUrl", resetTokenEmailDto.getTokenUrl());
+        try {
+            freemarkerConfiguration.getTemplate("resetPassword.ftlh").process(templateMap, writer);
+            resetTokenEmailDto.setMailContent(writer.getBuffer().toString());
+            this.emailUtil.resetToken(resetTokenEmailDto);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
