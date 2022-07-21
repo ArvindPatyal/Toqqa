@@ -7,6 +7,7 @@ import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.OrderStatus;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.NearbySmeRespDto;
 import com.toqqa.dto.SmeStatsResponseDto;
@@ -85,6 +86,9 @@ public class SmeServiceImpl implements SmeService {
     @Autowired
     private OrderItemService orderItemService;
 
+    @Autowired
+    private VerificationStatusService statusService;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public SmeBo smeRegistration(SmeRegistration smeRegistration, String userId, boolean isNewUser) {
@@ -146,6 +150,13 @@ public class SmeServiceImpl implements SmeService {
                 bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
                 bo.setIdProof(this.prepareResource(sme.getIdProof()));
                 bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
+
+                VerificationStatus status = new VerificationStatus();
+                status.setStatus(VerificationStatusConstants.PENDING.name());
+                status.setUser(user);
+                status.setRole(RoleConstants.SME.getValue());
+                this.statusService.createVerificationStatus(status);
+
                 return bo;
             } catch (Exception e) {
                 log.error("unable to create sme", e);
