@@ -24,7 +24,7 @@ public class FeedBackController {
     private FeedbackService feedbackService;
 
     @ApiOperation(value = "add to favourites")
-    @PostMapping("/addFeedback")
+    @PostMapping("/add")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     public Response addFavourite(@RequestBody @Valid FeedbackPayload feedbackPayload) {

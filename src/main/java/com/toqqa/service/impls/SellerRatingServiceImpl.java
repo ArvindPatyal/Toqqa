@@ -18,6 +18,7 @@ import com.toqqa.repository.SellerRatingRepository;
 import com.toqqa.repository.SmeRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.SellerRatingService;
+import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,12 @@ public class SellerRatingServiceImpl implements SellerRatingService {
 
     @Autowired
     private SellerRatingRepository sellerRatingRepository;
+
+    @Autowired
+    private PushNotificationService pushNotificationService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private Helper helper;
@@ -69,6 +76,7 @@ public class SellerRatingServiceImpl implements SellerRatingService {
             sellerRating.setReviewComment(sellerRating.getReviewComment());
             sellerRating.setUser(user);
             sellerRating = this.sellerRatingRepository.saveAndFlush(sellerRating);
+            this.pushNotificationService.sendNotificationToSmeForRating(this.userService.getById(sme.getId()));
             return new Response(new SellerRatingBo(sellerRating), "Seller rated Successfully");
         } else {
             throw new BadRequestException("Already reviewed this Seller");

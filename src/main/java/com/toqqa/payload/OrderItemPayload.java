@@ -1,5 +1,6 @@
 package com.toqqa.payload;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
@@ -10,6 +11,8 @@ import lombok.Setter;
 public class OrderItemPayload {
 
 	@NotNull
+
+	@Min(1)
 	private Integer quantity;
 
 	@NotNull

@@ -70,6 +70,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     @Autowired
     private PushNotificationService pushNotificationService;
 
+    @Autowired
+    private UserService userService;
+
 
     @Override
     public Response<?> placeOrder(OrderPayload orderPayload) {
@@ -156,7 +159,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
                 this.productRepo.saveAndFlush(product);
             });
-
+            this.pushNotificationService.orderCancelToSme(this.userService.getById(orderInfo.getSme().getUserId()));
             return new Response<>(true, "Order cancelled successfully ");
         } else {
             throw new BadRequestException(
@@ -336,6 +339,8 @@ public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdateP
                 orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
                 this.orderInfoRepo.saveAndFlush(orderInfo);
                 pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload, orderInfo.getUser());
+                if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
+                    this.pushNotificationService.sendNotificationToCustomerForRating(orderInfo.getUser());}
                 return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
             } else {
                 throw new BadRequestException("Cannot update orderStatus");

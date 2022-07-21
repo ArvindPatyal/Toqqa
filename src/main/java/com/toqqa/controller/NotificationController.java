@@ -26,7 +26,7 @@ public class NotificationController {
     @ApiOperation(value = "Notification")
     @ApiResponses(value = {@ApiResponse(code = 200, message = ""),
             @ApiResponse(code = 400, message = "Bad Request!")})
-    @GetMapping("/list")
+    @GetMapping("/listNotification")
     public Response listNotification(@RequestBody @Valid NotificationHistoryDto notificationHistoryDto) {
         log.info("Invoked:: NotificationController:: listNotification");
         return this.pushNotificationService.notifications(notificationHistoryDto);

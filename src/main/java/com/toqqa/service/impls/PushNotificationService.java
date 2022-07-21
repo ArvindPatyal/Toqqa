@@ -15,6 +15,7 @@ import com.toqqa.dto.PushNotificationRequestDto;
 import com.toqqa.payload.OrderStatusUpdatePayload;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.NotificationRepository;
+import com.toqqa.repository.OrderItemRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Constants;
@@ -46,6 +47,9 @@ public class PushNotificationService {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
     @Async
     public void sendNotificationToCustomer(OrderStatusUpdatePayload orderStatusUpdatePayload, User user) {
         log.info("Invoked :: PushNotificationService :: sendNotificationToCustomer()");
@@ -56,9 +60,57 @@ public class PushNotificationService {
         }
         this.persistNotification(NotificationDto.builder()
                 .title(Constants.CUSTOMER_NOTIFICATION_TITLE)
-                .message(String.format(Constants.CUSTOMER_NOTIFICATION_MESSAGE))
+                .message(String.format(Constants.CUSTOMER_NOTIFICATION_MESSAGE, orderStatusUpdatePayload.getOrderStatus()))
                 .topic(Constants.CUSTOMER_NOTIFICATION_TITLE)
                 .role(NotificationRoles.CUSTOMER)
+                .user(user)
+                .build());
+    }
+
+    @Async
+    public void orderCancelToSme(User user) {
+        for (Device deviceObj : deviceService.getAllByUser(user)) {
+            sendPushNotificationToToken(bindNotificationObject(Constants.SELLER_NOTIFICATION_TITLE,
+                    Constants.ORDER_CANCELLED,
+                    deviceObj.getToken()));
+        }
+        this.persistNotification(NotificationDto.builder()
+                .title(Constants.SELLER_NOTIFICATION_TITLE)
+                .message(Constants.ORDER_CANCELLED)
+                .topic(Constants.SELLER_NOTIFICATION_TITLE)
+                .role(NotificationRoles.SME)
+                .user(user)
+                .build());
+    }
+
+    @Async
+    public void sendNotificationToCustomerForRating(User user) {
+        for (Device deviceObj : deviceService.getAllByUser(user)) {
+            sendPushNotificationToToken(bindNotificationObject(Constants.RATE_THE_ORDER,
+                    String.format("Your order is delivered", Constants.RATE_YOUR_ORDER),
+                    deviceObj.getToken()));
+        }
+        this.persistNotification(NotificationDto.builder()
+                .title(Constants.RATE_THE_ORDER)
+                .message(Constants.RATE_YOUR_ORDER)
+                .topic(Constants.RATE_THE_ORDER)
+                .role(NotificationRoles.CUSTOMER)
+                .user(user)
+                .build());
+    }
+
+    @Async
+    public void sendNotificationToSmeForRating(User user) {
+        for (Device deviceObj : deviceService.getAllByUser(user)) {
+            sendPushNotificationToToken(bindNotificationObject("New rating received",
+                    Constants.RATINGS_ARRIVED,
+                    deviceObj.getToken()));
+        }
+        this.persistNotification(NotificationDto.builder()
+                .title("New rating received")
+                .message(Constants.RATINGS_ARRIVED)
+                .topic("New rating received")
+                .role(NotificationRoles.SME)
                 .user(user)
                 .build());
     }
@@ -91,9 +143,9 @@ public class PushNotificationService {
 
         Map<String, String> resultMap = new HashMap<>();
         List<Device> deviceTokenList = new ArrayList<>();
-
         for (OrderItemBo orderItemObj : orderInfoObj.getOrderItemBo()) {
             SmeBo smeObj = orderItemObj.getProduct().getSellerDetails();
+
             if (orderItemObj.getProduct().getUnitsInStock() <= Constants.PRODUCT_LOW_COUNT) {
 
                 if (resultMap.containsKey(smeObj.getUserId())) {
@@ -104,23 +156,8 @@ public class PushNotificationService {
                     resultMap.put(smeObj.getUserId(), orderItemObj.getProduct().getProductName());
                     deviceTokenList = deviceService.getAllByUser(userService.getById(smeObj.getUserId()));
                 }
-                sendNotficationData(deviceTokenList, resultMap, Constants.SELLER__PRODUCT_NOTIFICATION_TITLE, Constants.SELLER_PRODUCT_NOTIFICATION_MESSAGE);
-
-            }
-
-
-            if (orderItemObj.getProduct().getUnitsInStock() == 0) {
-
-                if (resultMap.containsKey(smeObj.getUserId())) {
-                    String value = resultMap.get(smeObj.getUserId());
-                    value = value + " and " + orderItemObj.getProduct().getProductName();
-                    resultMap.put(smeObj.getUserId(), value);
-                } else {
-                    resultMap.put(smeObj.getUserId(), orderItemObj.getProduct().getProductName());
-                    deviceTokenList = deviceService.getAllByUser(userService.getById(smeObj.getUserId()));
-
-                }
-                sendNotficationData(deviceTokenList, resultMap, Constants.SELLER__PRODUCT_NOTIFICATION_TITLE, Constants.SELLER_PRODUCT_NOTIFICATION_MESSAGE);
+                sendNotficationData(deviceTokenList, resultMap, Constants.SELLER__PRODUCT_NOTIFICATION_TITLE,
+                        Constants.SELLER_PRODUCT_NOTIFICATION_MESSAGE + " " + Constants.QUANTITY + " " + orderItemObj.getProduct().getUnitsInStock());
             }
         }
     }
@@ -214,4 +251,5 @@ public class PushNotificationService {
         notificationHistories.forEach(notificationHistory -> notificationHistoryBos.add(new NotificationHistoryBo(notificationHistory)));
         return new Response<>(notificationHistoryBos, "List of Notifications");
     }
+
 }
