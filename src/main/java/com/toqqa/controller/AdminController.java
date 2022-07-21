@@ -93,14 +93,14 @@ public class AdminController {
         return this.adminService.approvalRequests();
     }
 
-    /*TODO @ApiOperation(value = "Approve verification request")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @PutMapping(value = "/approve")
-    public Response approve() {
-        log.info("Invoked -+- AdminController -+- approvalRequests");
-        return this.adminService.approve();
-    }*/
+//     @ApiOperation(value = "Approve verification request")
+//    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+//            @ApiResponse(code = 400, message = "Bad Request")})
+//    @PutMapping(value = "/approve")
+//    public Response approve() {
+//        log.info("Invoked -+- AdminController -+- approvalRequests");
+//        return this.adminService.approve();
+//    }
 
 
 //    @ApiOperation(value = "check user register in a specific time period")

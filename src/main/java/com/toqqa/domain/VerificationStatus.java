@@ -1,5 +1,6 @@
 package com.toqqa.domain;
 
+import com.toqqa.constants.VerificationStatusConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,8 @@ public class VerificationStatus {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private VerificationStatusConstants status;
     private String role;
     @ManyToOne
     @JoinColumn(name = "updated_by")

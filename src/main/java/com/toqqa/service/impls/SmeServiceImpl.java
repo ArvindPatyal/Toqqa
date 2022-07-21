@@ -152,7 +152,7 @@ public class SmeServiceImpl implements SmeService {
                 bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
 
                 VerificationStatus status = new VerificationStatus();
-                status.setStatus(VerificationStatusConstants.PENDING.name());
+                status.setStatus(VerificationStatusConstants.PENDING);
                 status.setUser(user);
                 status.setRole(RoleConstants.SME.getValue());
                 this.statusService.createVerificationStatus(status);

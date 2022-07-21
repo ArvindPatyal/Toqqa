@@ -2,6 +2,7 @@ package com.toqqa.service;
 
 import com.toqqa.bo.*;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,17 +38,20 @@ public class AdminService {
     private final AgentRepository agentRepository;
     private final SmeRepository smeRepository;
     private final OrderInfoRepository orderInfoRepository;
+    private final VerificationStatusRepository verificationStatusRepository;
 
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
-                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository) {
+                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository,
+                        VerificationStatusRepository verificationStatusRepository) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
         this.agentRepository = agentRepository;
         this.smeRepository = smeRepository;
         this.orderInfoRepository = orderInfoRepository;
+        this.verificationStatusRepository = verificationStatusRepository;
     }
 
     public ListResponseWithCount users(UserRequestDto userRequestDto) {
@@ -140,15 +145,21 @@ public class AdminService {
         log.info("Invoked -+- AdminService -+- newUsers()");
         return new Response(this.userRepository.findFirst4ByOrderByCreatedAtDesc().stream().map(
                 user -> {
+
                     UserBo userBo = new UserBo(user);
                     user.setProfilePicture(user.getProfilePicture() != null ? this.helper.prepareResource(user.getProfilePicture()) : AdminConstants.NO_PROFILE_PICTURE_FOUND);
+
                     return userBo;
                 }).collect(Collectors.toList()),
                 AdminConstants.NEW_USERS_RETURNED);
     }
 
     public Response newApprovalRequests() {
-        return null;
+        log.info("Invoked -+- AdminService -+- newApprovalRequests");
+        return new Response(this.verificationStatusRepository.findFirst4ByOrderByCreatedDateAtDescAndStatusIn(
+                new ArrayList<>(Arrays.asList(VerificationStatusConstants.PENDING))).stream().map(
+                verificationStatus -> new UserBo(verificationStatus.getUser())).collect(Collectors.toList())
+                , "new ApprovalRequests");
     }
 
     public Response approvalRequests() {
@@ -196,7 +207,6 @@ public class AdminService {
         });
         return new ListResponseWithCount<>(orderInfoBos, "List All Orders", orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
     }
-
 
 
 }

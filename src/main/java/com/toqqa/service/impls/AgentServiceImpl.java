@@ -88,7 +88,7 @@ public class AgentServiceImpl implements AgentService {
                 bo.setIdProof(this.helper.prepareResource(agent.getIdProof()));
 
                 VerificationStatus status = new VerificationStatus();
-                status.setStatus(VerificationStatusConstants.PENDING.name());
+                status.setStatus(VerificationStatusConstants.PENDING);
                 status.setUser(user);
                 status.setRole(RoleConstants.AGENT.getValue());
                 this.statusService.createVerificationStatus(status);
