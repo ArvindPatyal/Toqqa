@@ -37,23 +37,16 @@ public class AdminService {
     private final SmeRepository smeRepository;
     private final OrderInfoRepository orderInfoRepository;
 
-    private final ProductRepository productRepository;
-
-    private final OrderItemRepository orderItemRepository;
-
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
-                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository, OrderItemRepository orderItemRepository,
-                        ProductRepository productRepository) {
+                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
         this.agentRepository = agentRepository;
         this.smeRepository = smeRepository;
         this.orderInfoRepository = orderInfoRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.productRepository = productRepository;
     }
 
     public ListResponseWithCount users(UserRequestDto userRequestDto) {
@@ -143,6 +136,26 @@ public class AdminService {
                 AdminConstants.DASHBOARD_STATS);
     }
 
+    public Response newUsers() {
+        log.info("Invoked -+- AdminService -+- newUsers()");
+        return new Response(this.userRepository.findFirst4ByOrderByCreatedAtDesc().stream().map(
+                user -> {
+                    UserBo userBo = new UserBo(user);
+                    user.setProfilePicture(user.getProfilePicture() != null ? this.helper.prepareResource(user.getProfilePicture()) : AdminConstants.NO_PROFILE_PICTURE_FOUND);
+                    return userBo;
+                }).collect(Collectors.toList()),
+                AdminConstants.NEW_USERS_RETURNED);
+    }
+
+    public Response newApprovalRequests() {
+        return null;
+    }
+
+    public Response approvalRequests() {
+        return null;
+    }
+
+
    /* public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
 
         Page<User> users = this.userRepository.findByCreatedDate(PageRequest.of(usersDto.getPageNumber(), pageSize), usersDto.getStartDate(), usersDto.getEndDate());
@@ -183,4 +196,7 @@ public class AdminService {
         });
         return new ListResponseWithCount<>(orderInfoBos, "List All Orders", orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
     }
+
+
+
 }

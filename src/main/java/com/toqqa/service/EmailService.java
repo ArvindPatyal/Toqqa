@@ -1,11 +1,11 @@
 package com.toqqa.service;
 
-import com.toqqa.bo.EmailBo;
-import com.toqqa.domain.OrderInfo;
-import com.toqqa.domain.User;
 import com.toqqa.dto.EmailRequestDto;
+import com.toqqa.dto.ResetTokenEmailDto;
 
 public interface EmailService {
 
     void sendEmail(EmailRequestDto emailRequestDto);
+
+    void resetToken(ResetTokenEmailDto resetTokenEmailDto);
 }

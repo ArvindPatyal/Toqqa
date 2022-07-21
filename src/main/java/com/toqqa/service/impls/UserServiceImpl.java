@@ -5,23 +5,25 @@ import com.toqqa.config.JWTConfig;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.domain.Device;
+import com.toqqa.domain.ResetToken;
 import com.toqqa.domain.User;
+import com.toqqa.dto.ResetPasswordDto;
+import com.toqqa.dto.ResetTokenEmailDto;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.*;
 import com.toqqa.repository.DeviceRepository;
+import com.toqqa.repository.ResetTokenRepository;
 import com.toqqa.repository.RoleRepository;
 import com.toqqa.repository.UserRepository;
-import com.toqqa.service.AuthenticationService;
-import com.toqqa.service.DeliveryAddressService;
-import com.toqqa.service.StorageService;
-import com.toqqa.service.UserService;
+import com.toqqa.service.*;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,10 +39,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -78,6 +79,13 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private ResetTokenRepository resetTokenRepository;
+    @Autowired
+    @Lazy
+    private EmailService emailService;
+    @Value("${base.url}")
+    private String baseUrl;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -209,15 +217,15 @@ public class UserServiceImpl implements UserService {
         User user = this.authenticationService.currentUser();
         user.setFirstName(updateUser.getFirstName());
         user.setLastName(updateUser.getLastName());
-        if(helper.notNullAndBlank(updateUser.getEmail())){
+        if (helper.notNullAndBlank(updateUser.getEmail())) {
             if (!EmailValidator.getInstance().isValid(updateUser.getEmail())) {
                 throw new BadRequestException("invalid email value : " + updateUser.getEmail());
-            }else{
-                 if(this.userRepository.findByEmail(updateUser.getEmail())==null){
-                     user.setEmail(updateUser.getEmail());
-                 }else {
-                     throw new BadRequestException("Email is already in use");
-                 }
+            } else {
+                if (this.userRepository.findByEmail(updateUser.getEmail()) == null) {
+                    user.setEmail(updateUser.getEmail());
+                } else {
+                    throw new BadRequestException("Email is already in use");
+                }
 
             }
         }
@@ -247,6 +255,45 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new ResourceNotFoundException("Resource doesnt exist");
 
+        }
+    }
+
+    @Override
+    public Response resetToken(String email) {
+        log.info("Invoked :: ResetPasswordServiceImpl :: forgotPassword()");
+        User user = this.userRepository.findByEmail(email);
+        if (user == null) {
+            throw new ResourceNotFoundException("NO USER FOUND WITH THIS EMAIL ADDRESS");
+        }
+        ResetToken resetToken = new ResetToken();
+        resetToken.setToken(UUID.randomUUID().toString() + System.currentTimeMillis());
+        resetToken.setExpiryDate(LocalDateTime.now().plus(60, ChronoUnit.MINUTES));
+        resetToken.setUser(user);
+        this.resetTokenRepository.saveAndFlush(resetToken);
+        ResetTokenEmailDto resetTokenEmailDto = new ResetTokenEmailDto();
+        resetTokenEmailDto.setMailTo(email);
+        resetTokenEmailDto.setFrom("TOQQA-support");
+        resetTokenEmailDto.setMailSubject("Password Reset");
+        resetTokenEmailDto.setUserName(user.getFirstName());
+        resetTokenEmailDto.setTokenUrl(baseUrl + "/api/reset?token=" + resetToken.getToken());
+        this.emailService.resetToken(resetTokenEmailDto);
+        return new Response<>(true, "Email sent");
+    }
+
+    @Override
+    public Response resetPassword(ResetPasswordDto resetPasswordDto) {
+        ResetToken resetToken = this.resetTokenRepository.findByToken(resetPasswordDto.getToken())
+                .orElseThrow(() -> new ResourceNotFoundException("Token Not found"));
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Token Expired");
+        }
+        User user = resetToken.getUser();
+        if (resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
+            user.setPassword(new BCryptPasswordEncoder().encode(resetPasswordDto.getPassword()));
+            this.userRepository.saveAndFlush(user);
+            return new Response<>(true, "Password changed");
+        } else {
+            throw new BadRequestException("Passwords do not match");
         }
     }
 }
