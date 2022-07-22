@@ -87,7 +87,7 @@ public class PushNotificationService {
     public void sendNotificationToCustomerForRating(User user) {
         for (Device deviceObj : deviceService.getAllByUser(user)) {
             sendPushNotificationToToken(bindNotificationObject(Constants.RATE_THE_ORDER,
-                    String.format("Your order is delivered", Constants.RATE_YOUR_ORDER),
+                    "Your order is delivered Rate your order",
                     deviceObj.getToken()));
         }
         this.persistNotification(NotificationDto.builder()
@@ -246,7 +246,7 @@ public class PushNotificationService {
     public Response notifications(NotificationHistoryDto notificationHistoryDto) {
         User user = this.authenticationService.currentUser();
         List<NotificationHistory> notificationHistories = this.notificationRepository.findByUserAndRole(user,
-                String.valueOf(notificationHistoryDto.getNotificationFor()));
+                notificationHistoryDto.getNotificationFor());
         List<NotificationHistoryBo> notificationHistoryBos = new ArrayList<>();
         notificationHistories.forEach(notificationHistory -> notificationHistoryBos.add(new NotificationHistoryBo(notificationHistory)));
         return new Response<>(notificationHistoryBos, "List of Notifications");

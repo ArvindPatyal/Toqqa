@@ -1,5 +1,6 @@
 package com.toqqa.repository;
 
+import com.toqqa.constants.NotificationRoles;
 import com.toqqa.domain.NotificationHistory;
 import com.toqqa.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +12,5 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<NotificationHistory, String> {
 
 
-    List<NotificationHistory> findByUserAndRole(User user, String notificationFor);
+    List<NotificationHistory> findByUserAndRole(User user, NotificationRoles notificationFor);
 }
