@@ -35,6 +35,8 @@ public class ProductRatingServiceImpl implements ProductRatingService {
     private AuthenticationService authenticationService;
     @Autowired
     private ProductRatingRepository productRatingRepository;
+    @Autowired
+    private PushNotificationService pushNotificationService;
 
     @Autowired
     private Helper helper;
@@ -65,6 +67,7 @@ public class ProductRatingServiceImpl implements ProductRatingService {
             productRating.setProduct(product);
             productRating.setUser(user);
             productRating = this.productRatingRepository.saveAndFlush(productRating);
+            this.pushNotificationService.sendNotificationToSmeForRating(product.getUser());
             return new Response(new ProductRatingBo(productRating), "Product rated Successfully");
         } else {
             throw new BadRequestException("Already reviewed this product");

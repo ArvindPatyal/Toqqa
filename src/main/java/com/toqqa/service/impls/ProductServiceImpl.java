@@ -3,7 +3,6 @@ package com.toqqa.service.impls;
 import com.toqqa.bo.FileBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
-import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.FileType;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.OrderBy;
@@ -47,6 +46,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Value("${pageSize}")
     private Integer pageSize;
+
+    @Autowired
+    @Lazy
+    private SmeService smeService;
 
     @Autowired
     private AttachmentService attachmentService;
@@ -344,26 +347,8 @@ public class ProductServiceImpl implements ProductService {
         Wishlist wishlist = wishlistRepository.findByUser_Id(authenticationService.currentUser().getId());
         Sme sme = this.smeRepo.findByUserId(product.getUser().getId());
         ProductBo productBo = new ProductBo(product);
-        if (sme != null) {
-            SmeBo smeBo = new SmeBo(sme);
-            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
 
-
-            if (!sme.getSellerRatings().isEmpty()) {
-                List<Integer> ratings = new ArrayList<>();
-                List<String> reviews = new ArrayList<>();
-                sme.getSellerRatings().forEach(sellerRating -> {
-                    ratings.add(sellerRating.getSellerRating());
-                    reviews.add(sellerRating.getReviewComment());
-                });
-                OptionalDouble average = ratings.stream().mapToDouble(value -> value).average();
-                reviews.removeAll(Collections.singletonList(null));
-                smeBo.setTotalReviews(reviews.size());
-                smeBo.setAverageRating(average.isPresent() ? average.getAsDouble() : 0.0);
-            }
-            productBo.setSellerDetails(smeBo);
-        }
-
+        productBo.setSellerDetails(this.smeService.toSmeBo(sme));
 
         if (!product.getProductRatings().isEmpty()) {
             List<Integer> ratings = new ArrayList<>();

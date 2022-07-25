@@ -1,6 +1,5 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.FeedbackBo;
 import com.toqqa.payload.FeedbackPayload;
 import com.toqqa.payload.Response;
 import com.toqqa.service.FeedbackService;
@@ -26,13 +25,10 @@ public class FeedBackController {
 
     @ApiOperation(value = "add to favourites")
     @PostMapping("/add")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
-            @ApiResponse(code = 400, message = "Bad Request") })
-    public Response addFavourite(@RequestBody @Valid  FeedbackPayload feedbackPayload)  {
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    public Response addFavourite(@RequestBody @Valid FeedbackPayload feedbackPayload) {
         log.info("Invoked:: FavouriteController:: addFavourite");
         return this.feedbackService.addFeedback(feedbackPayload);
     }
-
-
-
 }

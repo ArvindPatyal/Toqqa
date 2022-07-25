@@ -229,10 +229,9 @@ public class SmeServiceImpl implements SmeService {
         log.info("Invoked :: SmeServiceImpl :: fetchSme()");
         Sme sme = this.smeRepo.findByUserId(id);
         if (sme != null) {
-            SmeBo bo = new SmeBo(sme);
+            SmeBo bo = this.toSmeBo(sme);
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
             bo.setIdProof(this.prepareResource(sme.getIdProof()));
-            bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
             bo.setIsFavSme(this.favouriteService.isFavSme(bo,
                     this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             return bo;
@@ -258,8 +257,7 @@ public class SmeServiceImpl implements SmeService {
         List<Sme> smeObjList = getAllSme(Boolean.FALSE);
         List<SmeBo> smeBoList = new ArrayList<>();
         smeObjList.forEach(sme -> {
-            SmeBo smeBo = new SmeBo(sme);
-            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+            SmeBo smeBo = this.toSmeBo(sme);
             smeBo.setIsFavSme(this.favouriteService.isFavSme(smeBo,
                     this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             smeBoList.add(smeBo);
@@ -441,4 +439,27 @@ public class SmeServiceImpl implements SmeService {
         return this.smeRegistration(smeRegistration, user.getId(), false);
     }
 
+    @Override
+    public SmeBo toSmeBo(Sme sme) {
+        SmeBo smeBo = null;
+        if (sme != null) {
+            smeBo = new SmeBo(sme);
+            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+            if (!sme.getSellerRatings().isEmpty()) {
+                List<Integer> ratings = new ArrayList<>();
+                List<String> reviews = new ArrayList<>();
+                sme.getSellerRatings().forEach(sellerRating -> {
+                    ratings.add(sellerRating.getSellerRating());
+                    reviews.add(sellerRating.getReviewComment());
+                });
+                OptionalDouble average = ratings.stream().mapToDouble(value -> value).average();
+                reviews.removeAll(Collections.singletonList(null));
+                smeBo.setTotalReviews(reviews.size());
+                smeBo.setAverageRating(average.isPresent() ? average.getAsDouble() : 0.0);
+            }
+        }
+        return smeBo;
+    }
 }
+
+
