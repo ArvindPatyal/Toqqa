@@ -36,4 +36,5 @@ public interface SmeService {
 
     SmeBo becomeASme(SmeRegistration smeRegistration);
 
+    SmeBo toSmeBo(Sme sme);
 }
