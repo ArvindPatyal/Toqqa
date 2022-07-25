@@ -229,10 +229,9 @@ public class SmeServiceImpl implements SmeService {
         log.info("Invoked :: SmeServiceImpl :: fetchSme()");
         Sme sme = this.smeRepo.findByUserId(id);
         if (sme != null) {
-            SmeBo bo = new SmeBo(sme);
+            SmeBo bo = this.toSmeBo(sme);
             bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
             bo.setIdProof(this.prepareResource(sme.getIdProof()));
-            bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
             bo.setIsFavSme(this.favouriteService.isFavSme(bo,
                     this.favouriteRepository.findByUser(this.authenticationService.currentUser())));
             return bo;
