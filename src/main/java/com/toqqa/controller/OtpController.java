@@ -1,6 +1,7 @@
 package com.toqqa.controller;
 
 import com.toqqa.dto.OtpDto;
+import com.toqqa.payload.Response;
 import com.toqqa.service.OtpService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -29,7 +30,7 @@ public class OtpController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String sendOtp(@RequestBody @Valid OtpDto otpDto) throws IOException {
+    public Response sendOtp(@RequestBody @Valid OtpDto otpDto) throws IOException {
         log.info("Invoked -+- OtpController -+- sendOtp");
         return this.otpService.sendOtp(otpDto);
     }

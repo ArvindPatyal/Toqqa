@@ -1,9 +1,10 @@
 package com.toqqa.service;
 
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toqqa.bo.OtpResponseBo;
 import com.toqqa.dto.OtpDto;
+import com.toqqa.exception.ResourceCreateUpdateException;
+import com.toqqa.payload.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class OtpService {
     @Value("${otp.base.url}")
     private String baseUrl;
 
-    public String sendOtp(OtpDto otpDto) throws IOException {
+    public Response sendOtp(OtpDto otpDto) throws IOException {
         String url = null;
         if (otpDto.getEmail() == null) {
             url = baseUrl +
@@ -60,18 +61,39 @@ public class OtpService {
                     "&company=" + companyName +
                     "&time=" + expiryTime;
         }
-        return executeOtp(url);
+        return new Response(executeOtp(url), "OTP sent successfully");
     }
 
 
-    public String executeOtp(String url) throws IOException {
+    private OtpResponseBo executeOtp(String url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         int responseCode = connection.getResponseCode();
         InputStream inputStream;
         if (200 <= responseCode && responseCode <= 299) {
             inputStream = connection.getInputStream();
         } else {
-            inputStream = connection.getErrorStream();
+            throw new ResourceCreateUpdateException("OTP sending failed");
+        }
+        inputStream.getClass();
+        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder response = new StringBuilder();
+        String currentLine;
+        while ((currentLine = in.readLine()) != null)
+            response.append(currentLine);
+        in.close();
+        return new ObjectMapper().readValue(response.toString(), OtpResponseBo.class);
+    }
+
+
+    public String verifyOtp(String otp, String loginId) throws IOException {
+        String url = baseUrl + "?authkey=" + authKey + "&channel=sms&otp=" + otp + "&logid=" + loginId;
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        int responseCode = connection.getResponseCode();
+        InputStream inputStream;
+        if (200 <= responseCode && responseCode <= 299) {
+            inputStream = connection.getInputStream();
+        } else {
+            throw new ResourceCreateUpdateException("OTP verification failed");
         }
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(
@@ -82,20 +104,5 @@ public class OtpService {
             response.append(currentLine);
         in.close();
         return response.toString();
-    }
-
-
-    public Response verifyOtp(String otp, String loginId) throws IOException {
-        log.info("Invoked -+- OtpService -+- verifyOtp()");
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(baseUrl +
-                        "?authkey=" + authKey +
-                        "&channel=sms&otp=" + otp +
-                        "&logid=" + loginId
-                )
-                .get().build();
-        Response response = client.newCall(request).execute();
-        return response;
     }
 }
