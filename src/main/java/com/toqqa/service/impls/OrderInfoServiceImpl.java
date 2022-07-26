@@ -6,6 +6,7 @@ import com.toqqa.constants.OrderStatus;
 import com.toqqa.constants.PaymentConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.EmailRequestDto;
+import com.toqqa.dto.OrderInfoDto;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.*;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -72,6 +74,10 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    @Lazy
+    private SmeService smeService;
 
 
     @Override
@@ -253,9 +259,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         Page<OrderInfo> allOrders = null;
         Sort sort = Sort.by("createdDate").descending();
         if (authenticationService.isAdmin()) {
-            allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize,sort));
+            allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort));
         } else {
-            allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize,sort), user);
+            allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort), user);
         }
         List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
         allOrders.forEach(orderInfo -> {
@@ -326,33 +332,35 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             throw new BadRequestException("Enter a valid order Id");
         }
     }
-@Override
-public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
-    log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
-    Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
-    if (optionalOrderInfo.isPresent()) {
-        OrderInfo orderInfo = optionalOrderInfo.get();
-        User user = this.authenticationService.currentUser();
-        Sme sme = this.smeRepository.findByUserId(user.getId());
-        if (sme!= null && sme.getId() == orderInfo.getSme().getId()) {
-            if (orderInfo.getOrderStatus().ordinal() + 1 == (orderStatusUpdatePayload.getOrderStatus().ordinal())) {
-                orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
-                this.orderInfoRepo.saveAndFlush(orderInfo);
-                pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload, orderInfo.getUser());
-                if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
-                    this.pushNotificationService.sendNotificationToCustomerForRating(orderInfo.getUser());}
-                return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
+
+    @Override
+    public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdatePayload) {
+        log.info("Invoked :: OrderInfoServiceImpl :: updateOrderStatus()");
+        Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(orderStatusUpdatePayload.getOrderId());
+        if (optionalOrderInfo.isPresent()) {
+            OrderInfo orderInfo = optionalOrderInfo.get();
+            User user = this.authenticationService.currentUser();
+            Sme sme = this.smeRepository.findByUserId(user.getId());
+            if (sme != null && sme.getId() == orderInfo.getSme().getId()) {
+                if (orderInfo.getOrderStatus().ordinal() + 1 == (orderStatusUpdatePayload.getOrderStatus().ordinal())) {
+                    orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
+                    this.orderInfoRepo.saveAndFlush(orderInfo);
+                    pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload, orderInfo.getUser());
+                    if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
+                        this.pushNotificationService.sendNotificationToCustomerForRating(orderInfo.getUser());
+                    }
+                    return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
+                } else {
+                    throw new BadRequestException("Cannot update orderStatus");
+                }
             } else {
-                throw new BadRequestException("Cannot update orderStatus");
+                throw new BadRequestException("You are not an SME Or associated with this order");
             }
         } else {
-            throw new BadRequestException("You are not an SME Or associated with this order");
+            throw new ResourceNotFoundException("Enter a valid order Id");
         }
-    } else {
-        throw new ResourceNotFoundException("Enter a valid order Id");
-    }
 
-}
+    }
 
     @Override
     public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate) {
@@ -365,5 +373,24 @@ public Response<?> updateOrderStatus(OrderStatusUpdatePayload orderStatusUpdateP
         return orderInfoRepo.findOrderCountBySmeAndDateAndStatus(smeId, orderStatus, startDate, endDate);
     }
 
-
+    @Override
+    public Response previousOrderList(OrderInfoDto orderInfoDto) {
+        User user = this.authenticationService.currentUser();
+        List<OrderInfo> orderInfoList = null;
+        if (orderInfoDto.isShowCancelledOrders()) {
+            orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
+                    orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Arrays.asList(OrderStatus.CANCELLED));
+        } else {
+          orderInfoList =   this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
+                    orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Constants.ORDER_STATUSES);
+        }
+        List<OrderInfoBo> orderInfoBos = new ArrayList<>();
+        orderInfoList.forEach(orderInfo -> {
+            SmeBo smeBo = this.smeService.toSmeBo(orderInfo.getSme());
+            OrderInfoBo orderInfoBo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
+            orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderInfo.getId(), user.getId()));
+            orderInfoBos.add(orderInfoBo);
+        });
+        return new Response<>(orderInfoBos,"User previous OrderList ");
+    }
 }

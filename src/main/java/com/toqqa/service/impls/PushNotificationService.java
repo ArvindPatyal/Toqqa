@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.threeten.bp.Duration;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -243,13 +244,14 @@ public class PushNotificationService {
         this.notificationRepository.saveAndFlush(notificationHistory);
     }
 
-    public Response notifications(NotificationHistoryDto notificationHistoryDto) {
-        User user = this.authenticationService.currentUser();
-        List<NotificationHistory> notificationHistories = this.notificationRepository.findByUserAndRole(user,
-                notificationHistoryDto.getNotificationFor());
-        List<NotificationHistoryBo> notificationHistoryBos = new ArrayList<>();
-        notificationHistories.forEach(notificationHistory -> notificationHistoryBos.add(new NotificationHistoryBo(notificationHistory)));
-        return new Response<>(notificationHistoryBos, "List of Notifications");
-    }
+     public Response notifications(NotificationHistoryDto notificationHistoryDto) {
+         User user = this.authenticationService.currentUser();
+         List<NotificationHistory> notificationHistories = this.notificationRepository.findByUserAndRole(user,
+                 notificationHistoryDto.getNotificationFor());
+         List<NotificationHistoryBo> notificationHistoryBos = new ArrayList<>();
+         notificationHistories.forEach(notificationHistory -> notificationHistoryBos.add(new NotificationHistoryBo(notificationHistory)));
+         return new Response<>(notificationHistoryBos, "List of Notifications");
+     }
+
 
 }

@@ -76,7 +76,7 @@ public class SellerRatingServiceImpl implements SellerRatingService {
             sellerRating.setReviewComment(sellerRating.getReviewComment());
             sellerRating.setUser(user);
             sellerRating = this.sellerRatingRepository.saveAndFlush(sellerRating);
-            this.pushNotificationService.sendNotificationToSmeForRating(this.userService.getById(sme.getId()));
+            this.pushNotificationService.sendNotificationToSmeForRating(this.userService.getById(sme.getUserId()));
             return new Response(new SellerRatingBo(sellerRating), "Seller rated Successfully");
         } else {
             throw new BadRequestException("Already reviewed this Seller");

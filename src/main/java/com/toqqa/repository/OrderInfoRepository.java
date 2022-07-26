@@ -7,11 +7,13 @@ import com.toqqa.util.AdminConstants;
 import com.toqqa.util.Constants;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +24,7 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 
     Page<OrderInfo> findBySmeIdAndOrderStatusIn(Pageable pageRequest, String smeId, List<OrderStatus> orderStatus);
 
+    List<OrderInfo> findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort sort, Date startDate, Date endDate, String userId, List<OrderStatus> orderStatus);
     List<OrderInfo> findByUser_IdAndOrderStatus(String userId, OrderStatus orderStatus);
 
     List<OrderInfo> findFirst4ByOrderByCreatedDateDesc();
@@ -34,6 +37,9 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 
     @Query(value = AdminConstants.TOTAL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
     Page<OrderInfo> findByModificationDate(Pageable pageRequest, LocalDate startDate, LocalDate endDate);
+
+    @Query(value = AdminConstants.CANCEL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
+    Page<OrderInfo> findByOrderStatus(Pageable pageRequest, LocalDate startDate, LocalDate endDate);
 
     @Query(value = AdminConstants.TOTAL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
     List<OrderInfo> findByCreatedDate(LocalDate startDate, LocalDate endDate);

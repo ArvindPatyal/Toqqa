@@ -9,7 +9,12 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderInfoDto {
+
     private List<String> orderStatus;
-    private Date from;
-    private Date to;
+
+    private Date endDate;
+
+    private Date startDate;
+
+    private boolean showCancelledOrders = false;
 }

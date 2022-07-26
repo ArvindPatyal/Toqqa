@@ -1,12 +1,14 @@
 package com.toqqa.controller;
 
 import com.toqqa.bo.OrderInfoBo;
+import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
 import com.toqqa.service.AdminService;
+import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -29,6 +31,9 @@ public class AdminController {
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
     }
+
+    @Autowired
+    UserService userService;
 
     @ApiOperation(value = "Returns a page of users")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
@@ -121,5 +126,20 @@ public class AdminController {
         return this.adminService.listOrdersByDate(orderDto);
     }
 
-
+    @ApiOperation(value = "check new users, orders and sale status in a specific time period")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @PostMapping(value = "/manageUsers")
+    public Response manageUsersByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
+        log.info("Invoked -+- AdminController -+- statsByDate()");
+        return this.adminService.manageUsersByDate(adminFilterDto);
+    }
+    @ApiOperation(value = "User details")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping("/fetchUser/{id}")
+    public Response<UserBo> fetchUser(@PathVariable("id") @Valid String id) {
+        log.info("Invoked:: UserController:: fetchUser");
+        return new Response<UserBo>(this.userService.fetchUser(id), "success");
+    }
 }
