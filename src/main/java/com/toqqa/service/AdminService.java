@@ -64,37 +64,29 @@ public class AdminService {
             UserBo userBo = new UserBo(user);
             userBo.setProfilePicture(user.getProfilePicture() != null ? this.helper.prepareResource(user.getProfilePicture()) : AdminConstants.NO_PROFILE_PICTURE_FOUND);
             if (user.getRoles().contains(agent)) {
-                userBo.setAgentBo(this.toAgentBo(user.getId()));
+                userBo.setAgentBo(this.toAgentBo(this.agentRepository.findByUserId(user.getId())));
             }
             if (user.getRoles().contains(sme)) {
-                userBo.setSmeBo(this.toSmeBo(user.getId()));
+                userBo.setSmeBo(this.toSmeBo(this.smeRepository.findByUserId(user.getId())));
             }
             userBos.add(userBo);
         });
         return userBos;
     }
 
-    private AgentBo toAgentBo(String userId) {
-        Agent agent = this.agentRepository.findByUserId(userId);
-        AgentBo agentBo = null;
-        if (agent != null) {
-            agentBo = new AgentBo(agent);
-            agentBo.setAgentDocuments(agent.getAgentDocuments() != null ? this.helper.prepareResource(agent.getAgentDocuments()) : AdminConstants.NO_AGENT_DOCUMENTS_FOUND);
-            agentBo.setProfilePicture(agent.getAgentProfilePicture() != null ? this.helper.prepareResource(agent.getAgentProfilePicture()) : AdminConstants.NO_PROFILE_PICTURE_FOUND);
-            agentBo.setIdProof(agent.getIdProof() != null ? this.helper.prepareResource(agent.getIdProof()) : AdminConstants.NO_ID_PROOF_FOUND);
-        }
+    private AgentBo toAgentBo(Agent agent) {
+        AgentBo agentBo = new AgentBo(agent);
+        agentBo.setAgentDocuments(agent.getAgentDocuments() != null ? this.helper.prepareResource(agent.getAgentDocuments()) : AdminConstants.NO_AGENT_DOCUMENTS_FOUND);
+        agentBo.setProfilePicture(agent.getAgentProfilePicture() != null ? this.helper.prepareResource(agent.getAgentProfilePicture()) : AdminConstants.NO_PROFILE_PICTURE_FOUND);
+        agentBo.setIdProof(agent.getIdProof() != null ? this.helper.prepareResource(agent.getIdProof()) : AdminConstants.NO_ID_PROOF_FOUND);
         return agentBo;
     }
 
-    private SmeBo toSmeBo(String userId) {
-        Sme sme = this.smeRepository.findByUserId(userId);
-        SmeBo smeBo = null;
-        if (sme != null) {
-            smeBo = new SmeBo(sme);
-            smeBo.setBusinessLogo(sme.getBusinessLogo() != null ? this.helper.prepareResource(sme.getBusinessLogo()) : AdminConstants.NO_BUSINESS_LOGO_FOUND);
-            smeBo.setIdProof(sme.getIdProof() != null ? this.helper.prepareResource(sme.getIdProof()) : AdminConstants.NO_ID_PROOF_FOUND);
-            smeBo.setRegDoc(sme.getRegDoc() != null ? this.helper.prepareResource(sme.getRegDoc()) : AdminConstants.NO_REGISTRATION_DOCUMENT_FOUND);
-        }
+    private SmeBo toSmeBo(Sme sme) {
+        SmeBo smeBo = new SmeBo(sme);
+        smeBo.setBusinessLogo(sme.getBusinessLogo() != null ? this.helper.prepareResource(sme.getBusinessLogo()) : AdminConstants.NO_BUSINESS_LOGO_FOUND);
+        smeBo.setIdProof(sme.getIdProof() != null ? this.helper.prepareResource(sme.getIdProof()) : AdminConstants.NO_ID_PROOF_FOUND);
+        smeBo.setRegDoc(sme.getRegDoc() != null ? this.helper.prepareResource(sme.getRegDoc()) : AdminConstants.NO_REGISTRATION_DOCUMENT_FOUND);
         return smeBo;
     }
 
@@ -187,10 +179,7 @@ public class AdminService {
                 productBo.setBanner(this.helper.prepareAttachmentResource(item.getProduct().getBanner()));
                 orderItemBo.add(new OrderItemBo(item, productBo));
             });
-            SmeBo smeBo = new SmeBo(info.getSme());
-            smeBo.setBusinessLogo(this.helper.prepareResource(info.getSme().getBusinessLogo()));
-            smeBo.setIdProof(this.helper.prepareResource(info.getSme().getIdProof()));
-            smeBo.setRegDoc(this.helper.prepareResource(info.getSme().getRegDoc()));
+            SmeBo smeBo = this.toSmeBo(info.getSme());
             OrderInfoBo orderInfoBo = new OrderInfoBo(info, orderItemBo, smeBo);
             orderInfoBos.add(orderInfoBo);
         });

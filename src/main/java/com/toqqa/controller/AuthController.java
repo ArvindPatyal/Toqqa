@@ -3,6 +3,7 @@ package com.toqqa.controller;
 import com.toqqa.config.JWTConfig;
 import com.toqqa.dto.ResetPasswordDto;
 import com.toqqa.payload.LoginRequest;
+import com.toqqa.payload.LoginRequestAdmin;
 import com.toqqa.payload.LoginResponse;
 import com.toqqa.payload.Response;
 import com.toqqa.service.UserService;
@@ -38,7 +39,7 @@ public class AuthController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/adminSignIn")
-    public Response<?> adminSignIn(@RequestBody @Valid LoginRequest request) {
+    public Response<?> adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
         log.info("Invoked:: AuthController:: signIn");
         return new Response<LoginResponse>(this.userService.adminSignIn(request), "success");
     }

@@ -25,7 +25,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -300,7 +299,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoginResponse adminSignIn(LoginRequest request) {
+    @PostAuthorize("hasRole('ROLE_ADMIN')")
+    public LoginResponse adminSignIn(LoginRequestAdmin request) {
         log.info("Invoked :: UserServiceImpl :: adminSignIn()");
 
         try {
@@ -312,9 +312,6 @@ public class UserServiceImpl implements UserService {
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
             UserBo userBoObj = new UserBo(user);
-           if(!userBoObj.getRoles().contains("ROLE_ADMIN")){
-                throw new BadRequestException("You are not an admin");
-            }
             userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
             return new LoginResponse(jwtAuthenticationResponse, userBoObj);
         } catch (Exception e) {
