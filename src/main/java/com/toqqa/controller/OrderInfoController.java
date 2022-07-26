@@ -2,6 +2,7 @@ package com.toqqa.controller;
 
 import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.PaginationBo;
+import com.toqqa.dto.OrderInfoDto;
 import com.toqqa.payload.*;
 import com.toqqa.service.OrderInfoService;
 import io.swagger.annotations.ApiOperation;
@@ -78,5 +79,13 @@ public class OrderInfoController {
     public Response orderStatus(@RequestBody @Valid OrderStatusUpdatePayload orderStatusUpdatePayload) {
         log.info("Invoked:: OrderInfoController:: orderStatus");
         return this.orderInfoService.updateOrderStatus(orderStatusUpdatePayload);
+    }
+
+    @ApiOperation(value = "list of previous orders placed by customers")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request")})
+    @PostMapping("/previousOrders")
+    public Response previousOrderList(@RequestBody @Valid OrderInfoDto orderInfoDto) {
+        log.info("Invoked:: OrderInfoController:: previousOrderList");
+        return this.orderInfoService.previousOrderList(orderInfoDto);
     }
 }

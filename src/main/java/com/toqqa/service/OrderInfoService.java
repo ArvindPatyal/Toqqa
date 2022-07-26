@@ -4,6 +4,7 @@ import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.OrderItemBo;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.domain.OrderInfo;
+import com.toqqa.dto.OrderInfoDto;
 import com.toqqa.payload.*;
 
 import java.time.LocalDate;
@@ -34,5 +35,5 @@ public interface OrderInfoService {
 
     Optional<Integer> getOrderCountBySmeAndDateAndStatus(String smeId, String orderStatus, LocalDate startDate, LocalDate endDate);
 
-
+    Response previousOrderList(OrderInfoDto orderInfoDto);
 }

@@ -194,9 +194,19 @@ public class AdminService {
             OrderInfoBo orderInfoBo = new OrderInfoBo(info, orderItemBo, smeBo);
             orderInfoBos.add(orderInfoBo);
         });
-        return new ListResponseWithCount<>(orderInfoBos, "List All Orders", orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
+        return new ListResponseWithCount<>(orderInfoBos, AdminConstants.ORDER_LIST, orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
     }
 
 
-
+    public Response manageUsersByDate(AdminFilterDto adminFilterDto) {
+        log.info("Invoked -+- AdminService -+- manageUsersByDate");
+        List<User> users = this.userRepository.findByCreatedDate(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
+        List<Sme> smes = this.smeRepository.findAll(false);
+        List<Agent> agents = this.agentRepository.findAll();
+        return new Response(new TotalUsersBo(
+                (long) users.size(),
+                (long) smes.size(),
+                (long) agents.size()),
+                AdminConstants.TOTAL_USERS);
+    }
 }
