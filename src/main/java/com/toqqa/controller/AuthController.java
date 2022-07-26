@@ -34,6 +34,16 @@ public class AuthController {
         return new Response<LoginResponse>(this.userService.signIn(request), "success");
     }
 
+    @ApiOperation(value = "Authenticate user and signin")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
+            @ApiResponse(code = 400, message = "Bad Request!")})
+    @PostMapping("/adminSignIn")
+    public Response<?> adminSignIn(@RequestBody @Valid LoginRequest request) {
+        log.info("Invoked:: AuthController:: signIn");
+        return new Response<LoginResponse>(this.userService.adminSignIn(request), "success");
+    }
+
+
     @ApiOperation(value = "Generates a token for reset password and send it to email")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request")})
