@@ -2,6 +2,7 @@ package com.toqqa.service;
 
 import com.toqqa.dto.ResetPasswordDto;
 import com.toqqa.payload.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.toqqa.bo.UserBo;
@@ -25,5 +26,7 @@ public interface UserService extends UserDetailsService {
 	Response resetToken(String email);
 	Response resetPassword(ResetPasswordDto resetPasswordDto);
 
-	LoginResponse adminSignIn(LoginRequestAdmin request);
+	ResponseEntity adminSignIn(LoginRequestAdmin request);
+
+	Response userFromToken(String token);
 }
