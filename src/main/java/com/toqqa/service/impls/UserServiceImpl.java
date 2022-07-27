@@ -1,12 +1,15 @@
 package com.toqqa.service.impls;
 
 import com.toqqa.bo.UserBo;
+import com.toqqa.bo.VerifyOtpResponseBo;
 import com.toqqa.config.JWTConfig;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.Device;
 import com.toqqa.domain.ResetToken;
 import com.toqqa.domain.User;
+import com.toqqa.domain.VerificationStatus;
 import com.toqqa.dto.ResetPasswordDto;
 import com.toqqa.dto.ResetTokenEmailDto;
 import com.toqqa.exception.BadRequestException;
@@ -14,10 +17,7 @@ import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.*;
-import com.toqqa.repository.DeviceRepository;
-import com.toqqa.repository.ResetTokenRepository;
-import com.toqqa.repository.RoleRepository;
-import com.toqqa.repository.UserRepository;
+import com.toqqa.repository.*;
 import com.toqqa.service.*;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +86,12 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     @Value("${base.url}")
     private String baseUrl;
+    @Autowired
+    private OtpService otpService;
+
+    @Autowired
+    @Lazy
+    private VerificationStatusRepository verificationStatusRepository;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -93,6 +99,10 @@ public class UserServiceImpl implements UserService {
         log.info("Invoked :: UserServiceImpl :: addUser()");
         if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
             throw new UserAlreadyExists("user with email/number already exists");
+        }
+        VerifyOtpResponseBo otpResponseBo = this.otpService.verifyOtp(userSignUp.getOtp(), userSignUp.getLoginId());
+        if (!otpResponseBo.isStatus()) {
+            throw new BadCredentialsException(otpResponseBo.getMessage());
         }
         User user = new User();
         user.setCity(userSignUp.getCity());
@@ -122,9 +132,20 @@ public class UserServiceImpl implements UserService {
         user.setPassword(new BCryptPasswordEncoder().encode(userSignUp.getPassword()));
         user.setRoles(Arrays.asList(this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue())));
         user = this.userRepository.saveAndFlush(user);
+
+        this.customerApprovalEntry(user);
+
         this.deliveryAddressService.create(user);
         return new UserBo(user);
+    }
 
+    private void customerApprovalEntry(User user) {
+        VerificationStatus verificationStatus = new VerificationStatus();
+        verificationStatus.setStatus(VerificationStatusConstants.ACCEPTED);
+        verificationStatus.setUser(user);
+        verificationStatus.setRole(RoleConstants.CUSTOMER);
+        verificationStatus.setUpdatedBy(null);
+        this.verificationStatusRepository.saveAndFlush(verificationStatus);
     }
 
     @Override
@@ -280,6 +301,7 @@ public class UserServiceImpl implements UserService {
         return new Response<>(true, "Email sent");
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public Response resetPassword(ResetPasswordDto resetPasswordDto) {
         ResetToken resetToken = this.resetTokenRepository.findByToken(resetPasswordDto.getToken())
@@ -291,6 +313,7 @@ public class UserServiceImpl implements UserService {
         if (resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
             user.setPassword(new BCryptPasswordEncoder().encode(resetPasswordDto.getPassword()));
             this.userRepository.saveAndFlush(user);
+            this.resetTokenRepository.delete(resetToken);
             return new Response<>(true, "Password changed");
         } else {
             throw new BadRequestException("Passwords do not match");

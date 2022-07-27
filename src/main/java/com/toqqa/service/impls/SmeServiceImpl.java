@@ -154,7 +154,7 @@ public class SmeServiceImpl implements SmeService {
                 VerificationStatus status = new VerificationStatus();
                 status.setStatus(VerificationStatusConstants.PENDING);
                 status.setUser(user);
-                status.setRole(RoleConstants.SME.getValue());
+                status.setRole(RoleConstants.SME);
                 this.statusService.createVerificationStatus(status);
 
                 return bo;

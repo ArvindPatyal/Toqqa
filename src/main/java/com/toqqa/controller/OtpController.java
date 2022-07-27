@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.io.IOException;
 
 @RestController
 @Slf4j
@@ -30,7 +29,7 @@ public class OtpController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Response sendOtp(@RequestBody @Valid OtpDto otpDto) throws IOException {
+    public Response sendOtp(@RequestBody @Valid OtpDto otpDto) {
         log.info("Invoked -+- OtpController -+- sendOtp");
         return this.otpService.sendOtp(otpDto);
     }

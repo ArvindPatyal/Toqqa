@@ -13,7 +13,7 @@ import javax.mail.Message;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OtpResponseBo {
+public class SendOtpResponseBo {
     @JsonProperty(value = "LogID")
     private String logId;
     @JsonProperty(value = "Message")

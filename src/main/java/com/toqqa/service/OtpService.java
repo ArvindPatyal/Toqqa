@@ -1,12 +1,16 @@
 package com.toqqa.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.toqqa.bo.OtpResponseBo;
+import com.toqqa.bo.SendOtpResponseBo;
+import com.toqqa.bo.VerifyOtpResponseBo;
 import com.toqqa.dto.OtpDto;
 import com.toqqa.exception.ResourceCreateUpdateException;
+import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -30,10 +34,23 @@ public class OtpService {
     private String emailTemplateId;
     @Value("${otp.company.name}")
     private String companyName;
-    @Value("${otp.base.url}")
+    @Value("${otp.send.base.url}")
     private String baseUrl;
+    @Value("${otp.auth.base.url}")
+    private String authUrl;
 
-    public Response sendOtp(OtpDto otpDto) throws IOException {
+
+    private final UserService userService;
+
+    @Autowired
+    public OtpService(@Lazy UserService userService) {
+        this.userService = userService;
+    }
+
+    public Response sendOtp(OtpDto otpDto) {
+        if (userService.isUserExists(otpDto.getEmail(), otpDto.getMobileNumber())) {
+            throw new UserAlreadyExists("User Already exists with this phone Number OR Email!!!");
+        }
         String url = null;
         if (otpDto.getEmail() == null) {
             url = baseUrl +
@@ -65,44 +82,53 @@ public class OtpService {
     }
 
 
-    private OtpResponseBo executeOtp(String url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        int responseCode = connection.getResponseCode();
-        InputStream inputStream;
-        if (200 <= responseCode && responseCode <= 299) {
-            inputStream = connection.getInputStream();
-        } else {
-            throw new ResourceCreateUpdateException("OTP sending failed");
+    private SendOtpResponseBo executeOtp(String url) {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            int responseCode = connection.getResponseCode();
+            InputStream inputStream;
+            if (200 <= responseCode && responseCode <= 299) {
+                inputStream = connection.getInputStream();
+            } else {
+                throw new ResourceCreateUpdateException("OTP sending failed");
+            }
+            inputStream.getClass();
+            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder response = new StringBuilder();
+            String currentLine;
+            while ((currentLine = in.readLine()) != null)
+                response.append(currentLine);
+            in.close();
+            return new ObjectMapper().readValue(response.toString(), SendOtpResponseBo.class);
+        } catch (Exception e) {
+            throw new ResourceCreateUpdateException("Error occurred while making call to send OTP");
         }
-        inputStream.getClass();
-        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder response = new StringBuilder();
-        String currentLine;
-        while ((currentLine = in.readLine()) != null)
-            response.append(currentLine);
-        in.close();
-        return new ObjectMapper().readValue(response.toString(), OtpResponseBo.class);
     }
 
 
-    public String verifyOtp(String otp, String loginId) throws IOException {
-        String url = baseUrl + "?authkey=" + authKey + "&channel=sms&otp=" + otp + "&logid=" + loginId;
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        int responseCode = connection.getResponseCode();
-        InputStream inputStream;
-        if (200 <= responseCode && responseCode <= 299) {
-            inputStream = connection.getInputStream();
-        } else {
-            throw new ResourceCreateUpdateException("OTP verification failed");
+    public VerifyOtpResponseBo verifyOtp(String otp, String loginId) {
+        try {
+            String url = authUrl + "?authkey=" + authKey + "&channel=sms&otp=" + otp + "&logid=" + loginId;
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            int responseCode = connection.getResponseCode();
+            InputStream inputStream;
+            if (200 <= responseCode && responseCode <= 299) {
+                inputStream = connection.getInputStream();
+            } else {
+                throw new ResourceCreateUpdateException("OTP verification failed");
+            }
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(
+                            inputStream));
+            StringBuilder response = new StringBuilder();
+            String currentLine;
+            while ((currentLine = in.readLine()) != null)
+                response.append(currentLine);
+            in.close();
+            return new ObjectMapper().readValue(response.toString(), VerifyOtpResponseBo.class);
+
+        } catch (IOException e) {
+            throw new ResourceCreateUpdateException("Error occurred while making call to verify OTP");
         }
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(
-                        inputStream));
-        StringBuilder response = new StringBuilder();
-        String currentLine;
-        while ((currentLine = in.readLine()) != null)
-            response.append(currentLine);
-        in.close();
-        return response.toString();
     }
 }

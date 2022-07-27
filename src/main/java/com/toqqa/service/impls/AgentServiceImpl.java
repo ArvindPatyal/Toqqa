@@ -90,7 +90,7 @@ public class AgentServiceImpl implements AgentService {
                 VerificationStatus status = new VerificationStatus();
                 status.setStatus(VerificationStatusConstants.PENDING);
                 status.setUser(user);
-                status.setRole(RoleConstants.AGENT.getValue());
+                status.setRole(RoleConstants.AGENT);
                 this.statusService.createVerificationStatus(status);
 
                 return bo;

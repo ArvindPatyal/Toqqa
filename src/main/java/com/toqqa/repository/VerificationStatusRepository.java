@@ -16,5 +16,5 @@ public interface VerificationStatusRepository extends JpaRepository<Verification
 
     List<VerificationStatus> findByStatusIn(List<VerificationStatusConstants> verificationStatusConstants);
 
-    List<VerificationStatus> findFirst4ByOrderByCreatedDateAtDescAndStatusIn(ArrayList<VerificationStatusConstants> verificationStatusConstants);
+//    List<VerificationStatus> findFirst4ByOrderByCreatedDateAtDescAndStatusIn(ArrayList<VerificationStatusConstants> verificationStatusConstants);
 }
