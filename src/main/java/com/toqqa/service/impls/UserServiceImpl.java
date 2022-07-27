@@ -276,7 +276,7 @@ public class UserServiceImpl implements UserService {
         resetTokenEmailDto.setFrom("TOQQA-support");
         resetTokenEmailDto.setMailSubject("Password Reset");
         resetTokenEmailDto.setUserName(user.getFirstName());
-        resetTokenEmailDto.setTokenUrl(baseUrl + "/api/reset?token=" + resetToken.getToken());
+        resetTokenEmailDto.setTokenUrl(baseUrl + "/auth/resetToken/" + resetToken.getToken());
         this.emailService.resetToken(resetTokenEmailDto);
         return new Response<>(true, "Email sent");
     }
