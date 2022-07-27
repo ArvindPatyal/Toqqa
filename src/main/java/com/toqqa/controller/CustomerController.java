@@ -37,13 +37,6 @@ public class CustomerController extends BaseController {
 	@Autowired
 	private SmeService smeService;
 
-	@Autowired
-	CustomerController(CustomerService customerService, AdvertisementService advertisementService,
-			SmeService smeService) {
-		this.customerService = customerService;
-		this.advertisementService = advertisementService;
-		this.smeService = smeService;
-	}
 
 	@ApiOperation(value = "fetch product list for customer")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "success"),
