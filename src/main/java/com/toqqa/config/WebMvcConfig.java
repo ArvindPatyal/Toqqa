@@ -6,6 +6,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
+
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
@@ -20,6 +22,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(interceptor).addPathPatterns("/**");
+		registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns(Arrays.asList("/api/auth/**"));
 	}
 }

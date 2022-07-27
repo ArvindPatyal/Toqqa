@@ -54,17 +54,14 @@ public class Interceptor implements HandlerInterceptor {
         List<VerificationStatus> statusList = verificationStatusRepository.findByUser(user);
         if (statusList.size() > 0) {
             if (isSMEEndpoint(endpoint)) {
-                result = statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.SME.getValue()));
-
+                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.SME.getValue()));
+            } else if (isAgentEndpoint(endpoint)) {
+                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.AGENT.getValue()));
             } else {
-                result = statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.AGENT.getValue()));
+                throw new AccessDeniedException("your application request is either pending or declined, please contact admin!!");
             }
         }
-
-        if (result) {
-            return result;
-        }
-        throw new AccessDeniedException("your application request is either pending or declined, please contact admin!!");
+        throw new AccessDeniedException("You have not applied for sme or agent for now!!!!");
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
@@ -74,6 +71,16 @@ public class Interceptor implements HandlerInterceptor {
         }
         return null;
     }
+
+//    private String endPoints(String endPoint){
+//        if (endPoint.toLowerCase().contains("api/sme"))
+//            return "sme";
+//        else if (endPoint.toLowerCase().contains("api/agent"))
+//            return "agent";
+//        else if (endPoint.toLowerCase().contains("api/")) {
+//
+//        }
+//    }
 
     private boolean isSMEEndpoint(String endpoint) {
         return endpoint.toLowerCase().contains("sme");
