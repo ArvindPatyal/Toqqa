@@ -2,6 +2,7 @@ package com.toqqa.service;
 
 import com.toqqa.bo.*;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
@@ -153,16 +154,23 @@ public class AdminService {
     }
 
     public Response newApprovalRequests() {
-//        log.info("Invoked -+- AdminService -+- newApprovalRequests");
-//        return new Response(this.verificationStatusRepository.findFirst4ByOrderByCreatedDateAtDescAndStatusIn(
-//                new ArrayList<>(Arrays.asList(VerificationStatusConstants.PENDING))).stream().map(
-//                verificationStatus -> new UserBo(verificationStatus.getUser())).collect(Collectors.toList())
-//                , "new ApprovalRequests");
+        log.info("Invoked -+- AdminService -+- newApprovalRequests");
+       /* return new Response(this.verificationStatusRepository.findFirst4ByOrderByCreatedDateAtDesc().stream().map(
+                verificationStatus -> new UserBo(verificationStatus.getUser())).collect(Collectors.toList())
+                , "new ApprovalRequests");*/
         return null;
     }
 
     public Response approvalRequests() {
         return null;
+    }
+
+    public Response approve(String verificationStatusId, boolean accepted) {
+        log.info("Invoked -+- AdminService -+- approve()");
+        VerificationStatus verificationStatus = this.verificationStatusRepository.findById(verificationStatusId).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this  ID"));
+        verificationStatus.setStatus(accepted ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
+        this.verificationStatusRepository.saveAndFlush(verificationStatus);
+        return new Response<>(accepted ? "Request Approved" : "Request Declined", "Successful");
     }
 
 

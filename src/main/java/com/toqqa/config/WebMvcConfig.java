@@ -11,8 +11,16 @@ import java.util.Arrays;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
+
+    private final Interceptor interceptor;
+    private final CustomerInterceptor customerInterceptor;
+
     @Autowired
-    private Interceptor interceptor;
+    public WebMvcConfig(Interceptor interceptor,
+                        CustomerInterceptor customerInterceptor) {
+        this.interceptor = interceptor;
+        this.customerInterceptor = customerInterceptor;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -23,5 +31,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns(Arrays.asList("/api/auth/**", "/api/otp", "/api/registration/**"));
+        registry.addInterceptor(customerInterceptor).addPathPatterns(Arrays.asList("/api/advertisement/**", "/api/agent/**", "/api/order/list", "/api/order/updateStatus", "/api/product/**"))
+                .excludePathPatterns(Arrays.asList("/api/product/fetchProduct/**", "/api/product/fetchProductList", "/api/product/search"));
     }
 }
