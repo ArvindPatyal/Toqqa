@@ -1,7 +1,12 @@
 package com.toqqa.util;
 
+import com.toqqa.constants.OrderStatus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constants {
@@ -56,4 +61,8 @@ public class Constants {
     public static final String RATINGS_ARRIVED = "You have received a new rating. Take a look.";
     public static final String ORDER_CANCELLED = "Order cancelled";
     public static final String RATE_THE_ORDER = "Rate the Order";
+    public static final List<OrderStatus> ORDER_STATUSES = new ArrayList<>(Arrays.asList(OrderStatus.PLACED, OrderStatus.RECEIVED,
+            OrderStatus.CONFIRMED, OrderStatus.READY_FOR_DISPATCH, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED, OrderStatus.CANCELLED));
+
+
 }

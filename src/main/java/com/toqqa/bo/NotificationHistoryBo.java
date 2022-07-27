@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,11 +19,14 @@ public class NotificationHistoryBo {
     private String topic;
     private String role;
 
+    private LocalDateTime createdDate;
+
     public NotificationHistoryBo(NotificationHistory notificationHistory) {
 
         this.title = notificationHistory.getTitle();
         this.message = notificationHistory.getMessage();
         this.topic = notificationHistory.getTopic();
         this.role = String.valueOf(notificationHistory.getRole());
+        this.createdDate = notificationHistory.getCreatedDate();
     }
 }

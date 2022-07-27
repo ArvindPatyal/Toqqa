@@ -25,4 +25,5 @@ public interface UserService extends UserDetailsService {
 
     Response resetPassword(ResetPasswordDto resetPasswordDto);
 
+	LoginResponse adminSignIn(LoginRequestAdmin request);
 }

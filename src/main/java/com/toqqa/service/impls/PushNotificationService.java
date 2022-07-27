@@ -21,6 +21,7 @@ import com.toqqa.service.UserService;
 import com.toqqa.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.threeten.bp.Duration;
@@ -245,11 +246,10 @@ public class PushNotificationService {
 
     public Response notifications(NotificationHistoryDto notificationHistoryDto) {
         User user = this.authenticationService.currentUser();
-        List<NotificationHistory> notificationHistories = this.notificationRepository.findByUserAndRole(user,
+        List<NotificationHistory> notificationHistories = this.notificationRepository.findByUserAndRole(Sort.by(Sort.Direction.DESC, "createdDate"), user,
                 notificationHistoryDto.getNotificationFor());
         List<NotificationHistoryBo> notificationHistoryBos = new ArrayList<>();
         notificationHistories.forEach(notificationHistory -> notificationHistoryBos.add(new NotificationHistoryBo(notificationHistory)));
         return new Response<>(notificationHistoryBos, "List of Notifications");
     }
-
 }
