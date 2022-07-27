@@ -9,10 +9,7 @@ import com.toqqa.domain.ResetToken;
 import com.toqqa.domain.User;
 import com.toqqa.dto.ResetPasswordDto;
 import com.toqqa.dto.ResetTokenEmailDto;
-import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.ResourceCreateUpdateException;
-import com.toqqa.exception.ResourceNotFoundException;
-import com.toqqa.exception.UserAlreadyExists;
+import com.toqqa.exception.*;
 import com.toqqa.payload.*;
 import com.toqqa.repository.DeviceRepository;
 import com.toqqa.repository.ResetTokenRepository;
@@ -25,7 +22,8 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.AccessControlException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -163,6 +162,9 @@ public class UserServiceImpl implements UserService {
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
             UserBo userBoObj = new UserBo(user);
+            if (userBoObj.getRoles().contains("ROLE_ADMIN")) {
+                throw new AccessControlException("Admin cannot login on this portal");
+            }
             userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
 
             this.token(user, request);
@@ -299,10 +301,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PostAuthorize("hasRole('ROLE_ADMIN')")
-    public LoginResponse adminSignIn(LoginRequestAdmin request) {
+    public ResponseEntity adminSignIn(LoginRequestAdmin request) {
         log.info("Invoked :: UserServiceImpl :: adminSignIn()");
-
         try {
             Authentication authentication = this.manager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -311,12 +311,29 @@ public class UserServiceImpl implements UserService {
                     this.jwtConfig.generateToken(request.getUsername()));
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
-            UserBo userBoObj = new UserBo(user);
-            userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
-            return new LoginResponse(jwtAuthenticationResponse, userBoObj);
+            UserBo userBo = new UserBo(user);
+            if (!userBo.getRoles().contains("ROLE_ADMIN")) {
+                return new ResponseEntity(new Response<>(null, "You are not An Admin"), HttpStatus.UNAUTHORIZED);
+            }
+            return new ResponseEntity(jwtAuthenticationResponse, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Exception in :: UserServiceImpl :: signIn() ::" + e.getLocalizedMessage());
             throw new BadCredentialsException("invalid login credentials");
         }
     }
+
+    @Override
+    public Response userFromToken(String token) {
+        log.info("Invoked -+- UserServiceImpl -+- userFromToken()");
+        this.jwtConfig.validateToken(token);
+        User user = this.findByEmailOrPhone(jwtConfig.extractUsername(token));
+        UserBo userBo = new UserBo(user);
+        if (!userBo.getRoles().contains("ROLE_ADMIN")) {
+            throw new AuthenticationException("cannot access this resource");
+        }
+        userBo.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
+        return new Response<>(userBo, "user details returned");
+    }
+
+
 }

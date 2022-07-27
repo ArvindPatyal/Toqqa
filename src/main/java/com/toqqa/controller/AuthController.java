@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -39,9 +40,9 @@ public class AuthController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/adminSignIn")
-    public Response<?> adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
+    public ResponseEntity adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
         log.info("Invoked:: AuthController:: signIn");
-        return new Response<LoginResponse>(this.userService.adminSignIn(request), "success");
+        return this.userService.adminSignIn(request);
     }
 
 
@@ -61,6 +62,14 @@ public class AuthController {
     public Response resetPassword(@RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         log.info("Invoked -+- ResetPasswordController -+- forgotPassword()");
         return this.userService.resetPassword(resetPasswordDto);
+    }
+
+    @ApiOperation(value = "extract user from token")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @RequestMapping(method = RequestMethod.GET, value = "/extractUser/{token}")
+    public Response userFromToken(@PathVariable @Valid String token) {
+       return this.userService.userFromToken(token);
     }
 
 }
