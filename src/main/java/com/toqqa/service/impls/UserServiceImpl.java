@@ -9,7 +9,10 @@ import com.toqqa.domain.ResetToken;
 import com.toqqa.domain.User;
 import com.toqqa.dto.ResetPasswordDto;
 import com.toqqa.dto.ResetTokenEmailDto;
-import com.toqqa.exception.*;
+import com.toqqa.exception.BadRequestException;
+import com.toqqa.exception.ResourceCreateUpdateException;
+import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.*;
 import com.toqqa.repository.DeviceRepository;
 import com.toqqa.repository.ResetTokenRepository;
@@ -294,6 +297,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+
     @Override
     public Response adminSignIn(LoginRequestAdmin request) {
         log.info("Invoked :: UserServiceImpl :: adminSignIn()");
@@ -305,14 +309,10 @@ public class UserServiceImpl implements UserService {
                     this.jwtConfig.generateToken(request.getUsername()));
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
-            UserBo userBo = new UserBo(user);
-            if (!userBo.getRoles().contains("ROLE_ADMIN")) {
-                throw new AuthenticationException("You are not an admin");
-            }
             return new Response(jwtAuthenticationResponse, "Bearer token returned");
         } catch (Exception e) {
             log.error("Exception in :: UserServiceImpl :: signIn() ::" + e.getLocalizedMessage());
-            throw new AuthenticationException("Invalid login credentials");
+            throw new BadCredentialsException("Invalid login credentials");
         }
     }
 
