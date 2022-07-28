@@ -93,9 +93,9 @@ public class AdminController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @GetMapping(value = "/approval_requests")
-    public Response approvalRequests() {
-        log.info("Invoked -+- AdminController -+- approvalRequests");
-        return this.adminService.approvalRequests();
+    public Response allApprovalRequests() {
+        log.info("Invoked -+- AdminController -+- allApprovalRequests");
+        return this.adminService.allApprovalRequests();
     }
 
     @ApiOperation(value = "Approve verification request")
@@ -134,6 +134,7 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- statsByDate()");
         return this.adminService.manageUsersByDate(adminFilterDto);
     }
+
     @ApiOperation(value = "User details")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
