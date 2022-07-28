@@ -3,10 +3,7 @@ package com.toqqa.controller;
 import com.toqqa.config.JWTConfig;
 import com.toqqa.dto.OtpDto;
 import com.toqqa.dto.ResetPasswordDto;
-import com.toqqa.payload.LoginRequest;
-import com.toqqa.payload.LoginRequestAdmin;
-import com.toqqa.payload.LoginResponse;
-import com.toqqa.payload.Response;
+import com.toqqa.payload.*;
 import com.toqqa.service.OtpService;
 import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -14,6 +11,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -39,13 +37,14 @@ public class AuthController {
         return new Response<LoginResponse>(this.userService.signIn(request), "success");
     }
 
-    @ApiOperation(value = "Authenticate user and signin")
+    @PostAuthorize(value = "hasRole('ROLE_ADMIN')")
+    @ApiOperation(value = "SignIn for Admin")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/adminSignIn")
-    public Response<?> adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
+    public Response adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
         log.info("Invoked:: AuthController:: signIn");
-        return new Response<LoginResponse>(this.userService.adminSignIn(request), "success");
+        return this.userService.adminSignIn(request);
     }
 
 
@@ -53,9 +52,9 @@ public class AuthController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @RequestMapping(method = RequestMethod.POST, value = "/reset")
-    public Response forgotPassword(@RequestParam @Valid String email) {
+    public Response forgotPassword(@RequestBody @Valid ForgotPasswordDto forgotPasswordDto) {
         log.info("Invoked -+- ResetPasswordController -+- forgotPassword()");
-        return this.userService.resetToken(email);
+        return this.userService.resetToken(forgotPasswordDto.getEmail());
     }
 
     @ApiOperation(value = "changes password and validates reset password token")

@@ -58,6 +58,13 @@ public class AdminService {
         this.authenticationService = authenticationService;
     }
 
+    public Response userFromToken() {
+        log.info("Invoked -+- UserServiceImpl -+- userFromToken()");
+        UserBo userBo = new UserBo(this.authenticationService.currentUser());
+        userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+        return new Response(userBo, "User details");
+    }
+
     public ListResponseWithCount users(UserRequestDto userRequestDto) {
         log.info("Invoked -+- AdminService -+- users()");
         Page<User> users = this.userRepository.findAll(PageRequest.of(userRequestDto.getPageNumber(), pageSize, Sort.by(userRequestDto.getSortOrder(), AdminConstants.USER_LIST_SORT_BY)));

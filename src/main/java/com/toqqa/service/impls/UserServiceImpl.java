@@ -25,7 +25,6 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -321,11 +320,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    @PostAuthorize("hasRole('ROLE_ADMIN')")
-    public LoginResponse adminSignIn(LoginRequestAdmin request) {
-        log.info("Invoked :: UserServiceImpl :: adminSignIn()");
 
+    @Override
+    public Response adminSignIn(LoginRequestAdmin request) {
+        log.info("Invoked :: UserServiceImpl :: adminSignIn()");
         try {
             Authentication authentication = this.manager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -334,12 +332,11 @@ public class UserServiceImpl implements UserService {
                     this.jwtConfig.generateToken(request.getUsername()));
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
-            UserBo userBoObj = new UserBo(user);
-            userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
-            return new LoginResponse(jwtAuthenticationResponse, userBoObj);
+            return new Response(jwtAuthenticationResponse, "Bearer token returned");
         } catch (Exception e) {
             log.error("Exception in :: UserServiceImpl :: signIn() ::" + e.getLocalizedMessage());
-            throw new BadCredentialsException("invalid login credentials");
+            throw new BadCredentialsException("Invalid login credentials");
         }
     }
+
 }

@@ -21,6 +21,8 @@ public class UserSignUp {
 
     private String email;
 
+    @NotBlank
+    @NotNull
     private String phone;
 
     @NotNull
