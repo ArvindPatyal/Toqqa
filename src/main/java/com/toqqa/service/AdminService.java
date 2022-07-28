@@ -36,17 +36,29 @@ public class AdminService {
     private final AgentRepository agentRepository;
     private final SmeRepository smeRepository;
     private final OrderInfoRepository orderInfoRepository;
+    private final AuthenticationService authenticationService;
+
 
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
-                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository) {
+                        SmeRepository smeRepository, OrderInfoRepository orderInfoRepository,
+                        AuthenticationService authenticationService) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
         this.agentRepository = agentRepository;
         this.smeRepository = smeRepository;
         this.orderInfoRepository = orderInfoRepository;
+        this.authenticationService = authenticationService;
+    }
+
+
+    public Response userFromToken() {
+        log.info("Invoked -+- UserServiceImpl -+- userFromToken()");
+        UserBo userBo = new UserBo(this.authenticationService.currentUser());
+        userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+        return new Response(userBo, "User details");
     }
 
     public ListResponseWithCount users(UserRequestDto userRequestDto) {

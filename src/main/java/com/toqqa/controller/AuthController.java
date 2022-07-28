@@ -36,11 +36,11 @@ public class AuthController {
         return new Response<LoginResponse>(this.userService.signIn(request), "success");
     }
 
-    @ApiOperation(value = "Authenticate user and signin")
+    @ApiOperation(value = "SignIn for Admin")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request!")})
     @PostMapping("/adminSignIn")
-    public ResponseEntity adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
+    public Response adminSignIn(@RequestBody @Valid LoginRequestAdmin request) {
         log.info("Invoked:: AuthController:: signIn");
         return this.userService.adminSignIn(request);
     }
@@ -62,14 +62,6 @@ public class AuthController {
     public Response resetPassword(@RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         log.info("Invoked -+- ResetPasswordController -+- forgotPassword()");
         return this.userService.resetPassword(resetPasswordDto);
-    }
-
-    @ApiOperation(value = "extract user from token")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @RequestMapping(method = RequestMethod.GET, value = "/extractUser/{token}")
-    public Response userFromToken(@PathVariable @Valid String token) {
-       return this.userService.userFromToken(token);
     }
 
 }

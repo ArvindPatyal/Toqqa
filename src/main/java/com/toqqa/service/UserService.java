@@ -26,7 +26,5 @@ public interface UserService extends UserDetailsService {
 	Response resetToken(String email);
 	Response resetPassword(ResetPasswordDto resetPasswordDto);
 
-	ResponseEntity adminSignIn(LoginRequestAdmin request);
-
-	Response userFromToken(String token);
+	Response adminSignIn(LoginRequestAdmin request);
 }

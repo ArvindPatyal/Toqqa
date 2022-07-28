@@ -26,14 +26,22 @@ import javax.validation.Valid;
 public class AdminController {
 
     private final AdminService adminService;
+    private final UserService userService;
 
     @Autowired
-    public AdminController(AdminService adminService) {
+    public AdminController(AdminService adminService, UserService userService) {
         this.adminService = adminService;
+        this.userService = userService;
     }
 
-    @Autowired
-    UserService userService;
+
+    @ApiOperation(value = "extract user from token")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @RequestMapping(method = RequestMethod.GET, value = "/extractUser")
+    public Response userFromToken() {
+        return this.adminService.userFromToken();
+    }
 
     @ApiOperation(value = "Returns a page of users")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
@@ -98,6 +106,8 @@ public class AdminController {
         return this.adminService.approvalRequests();
     }
 
+
+
     /*TODO @ApiOperation(value = "Approve verification request")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
@@ -134,6 +144,7 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- statsByDate()");
         return this.adminService.manageUsersByDate(adminFilterDto);
     }
+
     @ApiOperation(value = "User details")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})

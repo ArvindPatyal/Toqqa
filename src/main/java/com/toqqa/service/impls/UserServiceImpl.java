@@ -22,8 +22,6 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.AccessControlException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -162,9 +159,6 @@ public class UserServiceImpl implements UserService {
             authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
             UserBo userBoObj = new UserBo(user);
-            if (userBoObj.getRoles().contains("ROLE_ADMIN")) {
-                throw new AccessControlException("Admin cannot login on this portal");
-            }
             userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
 
             this.token(user, request);
@@ -301,7 +295,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity adminSignIn(LoginRequestAdmin request) {
+    public Response adminSignIn(LoginRequestAdmin request) {
         log.info("Invoked :: UserServiceImpl :: adminSignIn()");
         try {
             Authentication authentication = this.manager
@@ -313,27 +307,13 @@ public class UserServiceImpl implements UserService {
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
             UserBo userBo = new UserBo(user);
             if (!userBo.getRoles().contains("ROLE_ADMIN")) {
-                return new ResponseEntity(new Response<>(null, "You are not An Admin"), HttpStatus.UNAUTHORIZED);
+                throw new AuthenticationException("You are not an admin");
             }
-            return new ResponseEntity(jwtAuthenticationResponse, HttpStatus.OK);
+            return new Response(jwtAuthenticationResponse, "Bearer token returned");
         } catch (Exception e) {
             log.error("Exception in :: UserServiceImpl :: signIn() ::" + e.getLocalizedMessage());
-            throw new BadCredentialsException("invalid login credentials");
+            throw new AuthenticationException("Invalid login credentials");
         }
     }
-
-    @Override
-    public Response userFromToken(String token) {
-        log.info("Invoked -+- UserServiceImpl -+- userFromToken()");
-        this.jwtConfig.validateToken(token);
-        User user = this.findByEmailOrPhone(jwtConfig.extractUsername(token));
-        UserBo userBo = new UserBo(user);
-        if (!userBo.getRoles().contains("ROLE_ADMIN")) {
-            throw new AuthenticationException("cannot access this resource");
-        }
-        userBo.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
-        return new Response<>(userBo, "user details returned");
-    }
-
 
 }
