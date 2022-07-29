@@ -3,10 +3,13 @@ package com.toqqa.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toqqa.bo.SendOtpResponseBo;
 import com.toqqa.bo.VerifyOtpResponseBo;
+import com.toqqa.constants.CountryCodes;
 import com.toqqa.dto.OtpDto;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.Response;
+import com.toqqa.util.TemplateId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +31,6 @@ public class OtpService {
     private String authKey;
     @Value("${otp.expiryTime}")
     private String expiryTime;
-    @Value("${otp.sms.template.id}")
-    private String smsTemplateId;
     @Value("${otp.email.template.id}")
     private String emailTemplateId;
     @Value("${otp.company.name}")
@@ -48,19 +49,20 @@ public class OtpService {
     }
 
     public Response sendOtp(OtpDto otpDto) {
-        if (userService.isUserExists(otpDto.getEmail(), otpDto.getMobileNumber())) {
+        if (userService.isUserExists(otpDto.getMobileNumber(), otpDto.getMobileNumber())) {
             throw new UserAlreadyExists("User Already exists with this phone Number OR Email!!!");
         }
+        String smsTemplateId = this.templateIdByCountryCode(otpDto.getCountryCode());
         String url = null;
-        if (otpDto.getEmail() == null) {
-            url = baseUrl +
-                    "?authkey=" + authKey +
-                    "&mobile=" + otpDto.getMobileNumber() +
-                    "&country_code=" + otpDto.getCountryCode() +
-                    "&sid=" + smsTemplateId +
-                    "&company=" + companyName +
-                    "&time=" + expiryTime;
-        } else if (otpDto.getMobileNumber() == null) {
+//        if (otpDto.getEmail() == null) {
+        url = baseUrl +
+                "?authkey=" + authKey +
+                "&mobile=" + otpDto.getMobileNumber() +
+                "&country_code=" + otpDto.getCountryCode() +
+                "&sid=" + smsTemplateId +
+                "&company=" + companyName +
+                "&time=" + expiryTime;
+      /*  } else if (otpDto.getMobileNumber() == null) {
             url = baseUrl +
                     "?authkey=" + authKey +
                     "&email=" + otpDto.getEmail() +
@@ -77,8 +79,23 @@ public class OtpService {
                     "&mid=" + emailTemplateId +
                     "&company=" + companyName +
                     "&time=" + expiryTime;
-        }
+        }*/
         return new Response(executeOtp(url), "OTP sent successfully");
+    }
+
+    private String templateIdByCountryCode(String countryCode) {
+        CountryCodes countryCodes = CountryCodes.valueOf(countryCode);
+        if (countryCodes.equals(null)) {
+            throw new BadRequestException("Enter a valid country code");
+        }
+        if (countryCodes == CountryCodes.INDIA) {
+            return TemplateId.INDIA;
+        }
+        if (countryCodes == CountryCodes.PAKISTAN) {
+            return TemplateId.PAKISTAN;
+
+        }
+        throw new BadRequestException("Invalid country code");
     }
 
 
@@ -92,7 +109,6 @@ public class OtpService {
             } else {
                 throw new ResourceCreateUpdateException("OTP sending failed");
             }
-            inputStream.getClass();
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder response = new StringBuilder();
             String currentLine;

@@ -289,6 +289,9 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         User user = this.authenticationService.currentUser();
         String userId = user.getId();
         Sme sme = this.smeRepository.findByUserId(userId);
+        if (sme == null) {
+            throw new BadRequestException("You Are not an sme");
+        }
         String smeId = sme.getId();
         Page<OrderInfo> orderInfo = null;
         if (toggleOrdersStatus.getOrderStatus() != null) {
@@ -381,7 +384,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
                     orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Arrays.asList(OrderStatus.CANCELLED));
         } else {
-          orderInfoList =   this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
+            orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
                     orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Constants.ORDER_STATUSES);
         }
         List<OrderInfoBo> orderInfoBos = new ArrayList<>();
@@ -391,6 +394,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderInfo.getId(), user.getId()));
             orderInfoBos.add(orderInfoBo);
         });
-        return new Response<>(orderInfoBos,"User previous OrderList ");
+        return new Response<>(orderInfoBos, "User previous OrderList ");
     }
 }

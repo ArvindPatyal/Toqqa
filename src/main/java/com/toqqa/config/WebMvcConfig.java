@@ -30,8 +30,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns(Arrays.asList("/api/auth/**", "/api/otp", "/api/registration/**","/api/admin/**"));
-        registry.addInterceptor(customerInterceptor).addPathPatterns(Arrays.asList("/api/advertisement/**", "/api/agent/**", "/api/order/list", "/api/order/updateStatus", "/api/product/**"))
+       registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns(Arrays.asList("/api/auth/**", "/api/otp", "/api/registration/**","/api/admin/**"));
+        registry.addInterceptor(customerInterceptor).addPathPatterns(Arrays.asList("/api/advertisement/**", "/api/agent/**", "/api/order/list", "/api/order/updateStatus", "/api/product/**","/api/sme/**"))
                 .excludePathPatterns(Arrays.asList("/api/product/fetchProduct/**", "/api/product/fetchProductList", "/api/product/search"));
     }
 }

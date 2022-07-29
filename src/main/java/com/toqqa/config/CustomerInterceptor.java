@@ -1,9 +1,9 @@
 package com.toqqa.config;
 
-import com.toqqa.constants.RoleConstants;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.util.Helper;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 public class CustomerInterceptor implements HandlerInterceptor {
 
     private final Helper helper;
+
 
     public CustomerInterceptor(Helper helper) {
         this.helper = helper;
@@ -25,8 +26,8 @@ public class CustomerInterceptor implements HandlerInterceptor {
             throw new BadRequestException("header not found!! Please add UserType header!!");
         }
 
-        if (userType == RoleConstants.CUSTOMER.getValue()) {
-            return false;
+        if (userType.equals("ROLE_CUSTOMER")) {
+            throw new AccessDeniedException("Access denied");
         } else {
             return true;
         }
