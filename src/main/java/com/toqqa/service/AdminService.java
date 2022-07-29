@@ -8,6 +8,7 @@ import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
@@ -185,16 +186,16 @@ public class AdminService {
 
     }
 
-    public Response approve(String verificationStatusId, boolean accepted) {
+    public Response approve(ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminService -+- approve()");
-        VerificationStatus verificationStatus = this.verificationStatusRepository.findById(verificationStatusId).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this ID"));
+        VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this ID"));
         if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) && verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
             throw new BadRequestException("Already change approval status");
         }
-        verificationStatus.setStatus(accepted ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
+        verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
         verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
         this.verificationStatusRepository.saveAndFlush(verificationStatus);
-        return new Response<>(accepted ? "Request Approved" : "Request Declined", "Successful");
+        return new Response<>(approvalPayload.isAction() ? "Request Approved" : "Request Declined", "Successful");
     }
 
 

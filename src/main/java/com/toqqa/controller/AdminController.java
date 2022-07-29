@@ -4,6 +4,7 @@ import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
+import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
@@ -107,14 +108,13 @@ public class AdminController {
     }
 
 
-
     @ApiOperation(value = "Approve verification request")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PutMapping(value = "/approve")
-    public Response approve(@RequestParam String id, @RequestParam boolean action) {
+    public Response approve(@RequestBody @Valid ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminController -+- approvalRequests");
-        return this.adminService.approve(id, action);
+        return this.adminService.approve(approvalPayload);
     }
 
 
