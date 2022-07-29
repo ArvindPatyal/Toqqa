@@ -1,8 +1,15 @@
 package com.toqqa.constants;
 
 public enum CountryCodes {
-    INDIA("+91"), PAKISTAN("+92");
+    INDIA("5454"), PAKISTAN("5456");
 
-    CountryCodes(String countryCode) {
+    private final String value;
+
+    private CountryCodes(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
     }
 }

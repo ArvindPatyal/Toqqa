@@ -9,7 +9,6 @@ import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.Response;
-import com.toqqa.util.TemplateId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,18 +83,13 @@ public class OtpService {
     }
 
     private String templateIdByCountryCode(String countryCode) {
-        CountryCodes countryCodes = CountryCodes.valueOf(countryCode);
-        if (countryCodes.equals(null)) {
-            throw new BadRequestException("Enter a valid country code");
+        if (countryCode.equals("+91")) {
+            return CountryCodes.INDIA.getValue();
+        } else if (countryCode.equals("+92")) {
+            return CountryCodes.PAKISTAN.getValue();
+        } else {
+            throw new BadRequestException("Enter a valid Country code ");
         }
-        if (countryCodes == CountryCodes.INDIA) {
-            return TemplateId.INDIA;
-        }
-        if (countryCodes == CountryCodes.PAKISTAN) {
-            return TemplateId.PAKISTAN;
-
-        }
-        throw new BadRequestException("Invalid country code");
     }
 
 
