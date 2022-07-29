@@ -152,21 +152,23 @@ public class AdminService {
         log.info("Invoked -+- AdminService -+- newUsers()");
         List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
-        List<UserBo> newUsers = users.stream().map(user -> {
-            UserBo newUsers1 = new UserBo(user);
-            List<VerificationStatus> verificationStatuses1 = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
+        List<UserBo> userBos = users.stream().map(user -> {
+            UserBo userBo = new UserBo(user);
+            List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
             Map<String, String> verificationMap = new HashMap<>();
-            verificationStatuses1.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().toString(), verificationStatus.getStatus().toString()));
-            newUsers1.setVerification(verificationMap);
-            return newUsers1;
+            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().toString(), verificationStatus.getStatus().toString()));
+            userBo.setVerification(verificationMap);
+            userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+            return userBo;
         }).collect(Collectors.toList());
-        return new Response(newUsers, "New Users returned");
+        return new Response(userBos, "New Users returned");
     }
 
     public Response newApprovalRequests() {
         log.info("Invoked -+- AdminService -+- newApprovalRequests");
         return new Response(this.verificationStatusRepository.findFirst4NewRequest()
-                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
+                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus,
+                        null,
                         verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
                         verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
                 .collect(Collectors.toList()),
@@ -190,7 +192,7 @@ public class AdminService {
         log.info("Invoked -+- AdminService -+- approve()");
         VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this ID"));
         if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) && verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
-            throw new BadRequestException("Already change approval status");
+            throw new BadRequestException("Already changed approval status");
         }
         verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
         verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
