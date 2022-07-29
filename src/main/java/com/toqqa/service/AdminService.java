@@ -2,10 +2,13 @@ package com.toqqa.service;
 
 import com.toqqa.bo.*;
 import com.toqqa.constants.RoleConstants;
+import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
+import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
+import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
@@ -20,9 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,23 +37,24 @@ public class AdminService {
     private final AgentRepository agentRepository;
     private final SmeRepository smeRepository;
     private final OrderInfoRepository orderInfoRepository;
-    private final AuthenticationService authenticationService;
+    private final VerificationStatusRepository verificationStatusRepository;
 
+    private final AuthenticationService authenticationService;
 
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
                         SmeRepository smeRepository, OrderInfoRepository orderInfoRepository,
-                        AuthenticationService authenticationService) {
+                        VerificationStatusRepository verificationStatusRepository, AuthenticationService authenticationService) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
         this.agentRepository = agentRepository;
         this.smeRepository = smeRepository;
         this.orderInfoRepository = orderInfoRepository;
+        this.verificationStatusRepository = verificationStatusRepository;
         this.authenticationService = authenticationService;
     }
-
 
     public Response userFromToken() {
         log.info("Invoked -+- UserServiceImpl -+- userFromToken()");
@@ -102,6 +104,12 @@ public class AdminService {
         return smeBo;
     }
 
+    private UserBo toUserBo(User user) {
+        this.authenticationService.currentUser();
+        UserBo userBo = new UserBo(user);
+        return userBo;
+    }
+
     public Response toggleUser(String userId) {
         log.info("Invoked -+- AdminService -+- toggleUser()");
         Optional<User> optionalUser = this.userRepository.findById(userId);
@@ -142,21 +150,52 @@ public class AdminService {
 
     public Response newUsers() {
         log.info("Invoked -+- AdminService -+- newUsers()");
-        return new Response(this.userRepository.findFirst4ByOrderByCreatedAtDesc().stream().map(
-                user -> {
-                    UserBo userBo = new UserBo(user);
-                    user.setProfilePicture(user.getProfilePicture() != null ? this.helper.prepareResource(user.getProfilePicture()) : AdminConstants.NO_PROFILE_PICTURE_FOUND);
-                    return userBo;
-                }).collect(Collectors.toList()),
-                AdminConstants.NEW_USERS_RETURNED);
+        List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
+        List<UserBo> newUsers = users.stream().map(user -> {
+            UserBo newUsers1 = new UserBo(user);
+            List<VerificationStatus> verificationStatuses1 = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
+            Map<String, String> verificationMap = new HashMap<>();
+            verificationStatuses1.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().toString(), verificationStatus.getStatus().toString()));
+            newUsers1.setVerification(verificationMap);
+            return newUsers1;
+        }).collect(Collectors.toList());
+        return new Response(newUsers, "New Users returned");
     }
 
     public Response newApprovalRequests() {
-        return null;
+        log.info("Invoked -+- AdminService -+- newApprovalRequests");
+        return new Response(this.verificationStatusRepository.findFirst4NewRequest()
+                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
+                        verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
+                        verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
+                .collect(Collectors.toList()),
+                AdminConstants.APPROVAL_REQUESTS);
     }
 
-    public Response approvalRequests() {
-        return null;
+
+    public Response allApprovalRequests() {
+
+        log.info("Invoked -+- AdminService -+- approvalRequests()");
+        return new Response(this.verificationStatusRepository.findByStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
+                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
+                        verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
+                        verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
+                .collect(Collectors.toList()),
+                AdminConstants.APPROVAL_REQUESTS);
+
+    }
+
+    public Response approve(ApprovalPayload approvalPayload) {
+        log.info("Invoked -+- AdminService -+- approve()");
+        VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this ID"));
+        if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) && verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
+            throw new BadRequestException("Already change approval status");
+        }
+        verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
+        verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
+        this.verificationStatusRepository.saveAndFlush(verificationStatus);
+        return new Response<>(approvalPayload.isAction() ? "Request Approved" : "Request Declined", "Successful");
     }
 
 

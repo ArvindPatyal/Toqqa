@@ -47,7 +47,7 @@ public class DeviceService {
 		if (deviceObj.isPresent()) {
 			deviceRepository.delete(deviceObj.get());
 		}else {
-    		throw new ResourceNotFoundException(Constants.MSG_NO_RESCOURCE);
+    		throw new ResourceNotFoundException(Constants.MSG_NO_RESOURCE);
 		}
 
 	}

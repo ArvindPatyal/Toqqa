@@ -4,6 +4,7 @@ import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserRequestDto;
+import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
@@ -101,21 +102,20 @@ public class AdminController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @GetMapping(value = "/approval_requests")
-    public Response approvalRequests() {
-        log.info("Invoked -+- AdminController -+- approvalRequests");
-        return this.adminService.approvalRequests();
+    public Response allApprovalRequests() {
+        log.info("Invoked -+- AdminController -+- allApprovalRequests");
+        return this.adminService.allApprovalRequests();
     }
 
 
-
-    /*TODO @ApiOperation(value = "Approve verification request")
+    @ApiOperation(value = "Approve verification request")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PutMapping(value = "/approve")
-    public Response approve() {
+    public Response approve(@RequestBody @Valid ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminController -+- approvalRequests");
-        return this.adminService.approve();
-    }*/
+        return this.adminService.approve(approvalPayload);
+    }
 
 
 //    @ApiOperation(value = "check user register in a specific time period")

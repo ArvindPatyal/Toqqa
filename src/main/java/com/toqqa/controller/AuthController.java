@@ -1,8 +1,10 @@
 package com.toqqa.controller;
 
 import com.toqqa.config.JWTConfig;
+import com.toqqa.dto.OtpDto;
 import com.toqqa.dto.ResetPasswordDto;
 import com.toqqa.payload.*;
+import com.toqqa.service.OtpService;
 import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -23,6 +25,8 @@ public class AuthController {
     private UserService userService;
     @Autowired
     private JWTConfig jwtConfig;
+    @Autowired
+    private OtpService otpService;
 
     @ApiOperation(value = "Authenticate user and signin")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
@@ -60,6 +64,15 @@ public class AuthController {
     public Response resetPassword(@RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         log.info("Invoked -+- ResetPasswordController -+- forgotPassword()");
         return this.userService.resetPassword(resetPasswordDto);
+    }
+
+    @ApiOperation("Send Otp for verification")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @RequestMapping(value = "/otp", method = RequestMethod.POST)
+    public Response sendOtp(@RequestBody @Valid OtpDto otpDto) {
+        log.info("Invoked -+- OtpController -+- sendOtp");
+        return this.otpService.sendOtp(otpDto);
     }
 
 }

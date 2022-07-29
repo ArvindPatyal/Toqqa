@@ -6,10 +6,8 @@ import com.toqqa.bo.SmeBo;
 import com.toqqa.bo.UserBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.constants.RoleConstants;
-import com.toqqa.domain.Agent;
-import com.toqqa.domain.Role;
-import com.toqqa.domain.Sme;
-import com.toqqa.domain.User;
+import com.toqqa.constants.VerificationStatusConstants;
+import com.toqqa.domain.*;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.payload.AgentPayload;
@@ -23,6 +21,7 @@ import com.toqqa.repository.UserRepository;
 import com.toqqa.service.AgentService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.StorageService;
+import com.toqqa.service.VerificationStatusService;
 import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +58,9 @@ public class AgentServiceImpl implements AgentService {
     @Autowired
     private Helper helper;
 
+    @Autowired
+    private VerificationStatusService statusService;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId,boolean isNewUser) {
@@ -84,6 +86,13 @@ public class AgentServiceImpl implements AgentService {
                 AgentBo bo = new AgentBo(agent);
                 bo.setAgentDocuments(this.helper.prepareResource(agent.getAgentDocuments()));
                 bo.setIdProof(this.helper.prepareResource(agent.getIdProof()));
+
+                VerificationStatus status = new VerificationStatus();
+                status.setStatus(VerificationStatusConstants.PENDING);
+                status.setUser(user);
+                status.setRole(RoleConstants.AGENT);
+                this.statusService.createVerificationStatus(status);
+
                 return bo;
             } catch (Exception e) {
                 log.error("Invoked :: AgentServiceImpl :: agentRegistration() :: Unable to create Agent", e);

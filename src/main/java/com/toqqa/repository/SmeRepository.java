@@ -1,6 +1,7 @@
 package com.toqqa.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,7 @@ import com.toqqa.domain.Sme;
 public interface SmeRepository extends JpaRepository<Sme, String> {
 
     Sme findByUserId(String userId);
+    Optional<Sme> getByUserId(String userId);
     
     @Query("select s from Sme s where s.isDeleted=:isDeleted")
     List<Sme> findAll(@Param("isDeleted") Boolean isDeleted);
