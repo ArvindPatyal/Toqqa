@@ -22,66 +22,69 @@ import java.util.List;
 @AllArgsConstructor
 public class User {
 
-	@Id
-	@GeneratedValue(generator = "uuid2")
-	@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-	private String id;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    private String id;
 
-	@Size(max = 1024)
-	@NotNull
-	@NotBlank
-	private String firstName;
+    @Size(max = 1024)
+    @NotNull
+    @NotBlank
+    private String firstName;
 
-	@Size(max = 1024)
-	@NotNull
-	@NotBlank
-	private String lastName;
+    @Size(max = 1024)
+    @NotNull
+    @NotBlank
+    private String lastName;
 
-	@Column(unique = true, nullable = true)
-	private String email;
+    @Column(unique = true, nullable = true)
+    private String email;
 
-	@Column(unique = true, nullable = true)
-	private String phone;
+    @Column(unique = true, nullable = true)
+    private String phone;
 
-	/*
-	 * private String houseNumber;
-	 * 
-	 * private String street;
-	 */
+    /*
+     * private String houseNumber;
+     *
+     * private String street;
+     */
 
-	@NotNull
-	private String password;
+    @NotNull
+    private String password;
 
-	private String address;
+    private String address;
 
-	private String city;
+    private String city;
 
-	private String postCode;
+    private String postCode;
 
-	private String state;
+    private String state;
 
-	private String country;
+    private String country;
 
-	private String agentId;
+    private String agentId;
 
-	private Boolean isDeleted;
+    private Boolean isDeleted;
 
-	private Date createdAt;
+    private Date createdAt;
 
-	private String profilePicture;
+    private String profilePicture;
 
-	private double latitude;
+    private double latitude;
 
-	private double longitude;
+    private double longitude;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private List<Role> roles = new ArrayList<Role>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private List<Role> roles = new ArrayList<Role>();
 
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-	private List<Product> products = new ArrayList<>();
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Product> products = new ArrayList<>();
 
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)    
-	private List<DeliveryAddress> deliveryAddress;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<DeliveryAddress> deliveryAddress;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<VerificationStatus> verificationStatuses;
 
 }
