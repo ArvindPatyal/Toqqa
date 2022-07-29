@@ -53,15 +53,6 @@ public class AdminController {
         return this.adminService.users(userRequestDto);
     }
 
-    @ApiOperation(value = "Top 4 new users")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/new_users")
-    public Response newUsers() {
-        log.info("Invoked -+- AdminController -+- newUsers()");
-        return this.adminService.newUsers();
-    }
-
     @ApiOperation(value = "Enable or Disable a user")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
@@ -89,15 +80,6 @@ public class AdminController {
         return this.adminService.statsByDate(adminFilterDto);
     }
 
-    @ApiOperation(value = "Recent 4 approval requests")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/new_approval_requests")
-    public Response newApprovalRequests() {
-        log.info("Invoked -+- AdminController -+- newApprovalRequests");
-        return this.adminService.newApprovalRequests();
-    }
-
     @ApiOperation(value = "Approval requests")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
@@ -106,17 +88,6 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- allApprovalRequests");
         return this.adminService.allApprovalRequests();
     }
-
-
-    @ApiOperation(value = "Approve verification request")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @PutMapping(value = "/approve")
-    public Response approve(@RequestBody @Valid ApprovalPayload approvalPayload) {
-        log.info("Invoked -+- AdminController -+- approvalRequests");
-        return this.adminService.approve(approvalPayload);
-    }
-
 
 //    @ApiOperation(value = "check user register in a specific time period")
 //    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
@@ -143,6 +114,33 @@ public class AdminController {
     public Response manageUsersByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
         log.info("Invoked -+- AdminController -+- statsByDate()");
         return this.adminService.manageUsersByDate(adminFilterDto);
+    }
+
+    @ApiOperation(value = "Top 4 new users")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/new_users")
+    public Response newUsers() {
+        log.info("Invoked -+- AdminController -+- newUsers()");
+        return this.adminService.newUsers();
+    }
+
+    @ApiOperation(value = "Recent 4 approval requests")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/new_approval_requests")
+    public Response newApprovalRequests() {
+        log.info("Invoked -+- AdminController -+- newApprovalRequests");
+        return this.adminService.newApprovalRequests();
+    }
+
+    @ApiOperation(value = "Approve verification request")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @PutMapping(value = "/approve")
+    public Response approve(@RequestBody @Valid ApprovalPayload approvalPayload) {
+        log.info("Invoked -+- AdminController -+- approvalRequests");
+        return this.adminService.approve(approvalPayload);
     }
 
     @ApiOperation(value = "User details")
