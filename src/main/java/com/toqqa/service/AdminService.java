@@ -22,10 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,13 +149,17 @@ public class AdminService {
 
     public Response newUsers() {
         log.info("Invoked -+- AdminService -+- newUsers()");
-        return new Response(this.verificationStatusRepository.findFirst4ByOrderByCreatedDateDesc().stream().map(
-                        verificationStatus -> new VerificationStatusBo(verificationStatus,
-                                null,
-                                verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
-                                verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
-                .collect(Collectors.toList()),
-                AdminConstants.NEW_USERS_RETURNED);
+        List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
+        List<UserBo> newUsers = users.stream().map(user -> {
+            UserBo newUsers1 = new UserBo(user);
+            List<VerificationStatus> verificationStatuses1 = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
+            Map<String, String> verificationMap = new HashMap<>();
+            verificationStatuses1.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().toString(), verificationStatus.getStatus().toString()));
+            newUsers1.setVerification(verificationMap);
+            return newUsers1;
+        }).collect(Collectors.toList());
+        return new Response(newUsers, "New Users returned");
     }
 
     public Response newApprovalRequests() {

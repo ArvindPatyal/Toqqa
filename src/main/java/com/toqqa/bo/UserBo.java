@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections.map.HashedMap;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -44,10 +46,8 @@ public class UserBo {
 
     private Date createdAt;
 
-    private String verifiedSeller;
-    private String verifiedAgent;
-
     private List<String> roles = new ArrayList<>();
+    private Map<String, String> verification = new HashedMap();
     private SmeBo smeBo;
     private AgentBo agentBo;
 
