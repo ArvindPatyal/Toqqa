@@ -150,11 +150,8 @@ public class AdminService {
 
     public Response newUsers() {
         log.info("Invoked -+- AdminService -+- newUsers()");
-
-
         List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
-        List<VerificationStatus> verificationStatuses = new ArrayList<>();
-        users.forEach(user -> verificationStatuses.forEach(verificationStatus -> verificationStatuses.add(verificationStatus)));
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
         List<UserBo> userBos = users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
@@ -165,8 +162,6 @@ public class AdminService {
             return userBo;
         }).collect(Collectors.toList());
         return new Response(userBos, "New Users returned");
-
-
     }
 
     public Response newApprovalRequests() {

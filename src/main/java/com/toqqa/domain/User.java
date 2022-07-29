@@ -84,7 +84,5 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<DeliveryAddress> deliveryAddress;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<VerificationStatus> verificationStatuses;
 
 }
