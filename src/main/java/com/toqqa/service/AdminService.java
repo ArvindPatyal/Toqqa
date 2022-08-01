@@ -156,7 +156,7 @@ public class AdminService {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
             Map<String, String> verificationMap = new HashMap<>();
-            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().toString(), verificationStatus.getStatus().toString()));
+            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             return userBo;

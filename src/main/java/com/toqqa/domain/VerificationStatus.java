@@ -11,7 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -40,9 +40,9 @@ public class VerificationStatus {
     private User updatedBy;
 
     @CreationTimestamp
-    private LocalDateTime createdDate;
+    private LocalDate createdDate;
 
     @UpdateTimestamp
-    private LocalDateTime modificationDate;
+    private LocalDate modificationDate;
 
 }
