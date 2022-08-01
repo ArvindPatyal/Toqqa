@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -17,12 +16,12 @@ public class VerificationStatusBo {
     private String id;
     private String status;
     private String role;
-    private LocalDateTime createdDate;
+    private LocalDate createdDate;
     private UserBo userBo;
     private SmeBo smeBo;
     private AgentBo agentBo;
 
-    public VerificationStatusBo(VerificationStatus verificationStatus,UserBo userBo,
+    public VerificationStatusBo(VerificationStatus verificationStatus, UserBo userBo,
                                 SmeBo smeBo, AgentBo agentBo) {
         this.id = verificationStatus.getId();
         this.userBo = userBo;
