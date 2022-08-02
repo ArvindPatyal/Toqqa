@@ -54,9 +54,9 @@ public class Interceptor implements HandlerInterceptor {
         List<VerificationStatus> statusList = verificationStatusRepository.findByUser(user);
         if (statusList.size() > 0) {
             if (isSMEEndpoint(endpoint)) {
-                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.SME.getValue()));
+                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.SME));
             } else if (isAgentEndpoint(endpoint)) {
-                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.AGENT.getValue()));
+                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.AGENT));
             } else {
                 throw new AccessDeniedException("your application request is either pending or declined, please contact admin!!");
             }
