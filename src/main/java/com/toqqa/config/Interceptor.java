@@ -83,10 +83,19 @@ public class Interceptor implements HandlerInterceptor {
 //    }
 
     private boolean isSMEEndpoint(String endpoint) {
-        return endpoint.toLowerCase().contains("sme");
+        if (endpoint.toLowerCase().contains("sme")) {
+            return true;
+        } else if (endpoint.toLowerCase().contains("product")) {
+            return true;
+        } else if (endpoint.toLowerCase().contains("advertisement")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean isAgentEndpoint(String endpoint) {
         return endpoint.toLowerCase().contains("agent");
     }
+
 }
