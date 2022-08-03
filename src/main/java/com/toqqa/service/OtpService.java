@@ -30,14 +30,14 @@ public class OtpService {
     private String authKey;
     @Value("${otp.expiryTime}")
     private String expiryTime;
-    @Value("${otp.email.template.id}")
-    private String emailTemplateId;
     @Value("${otp.company.name}")
     private String companyName;
     @Value("${otp.send.base.url}")
     private String baseUrl;
     @Value("${otp.auth.base.url}")
     private String authUrl;
+    @Value("${otp.sms.template.id}")
+    private String smsTemplateId;
 
 
     private final UserService userService;
@@ -51,9 +51,7 @@ public class OtpService {
         if (userService.isUserExists(otpDto.getMobileNumber(), otpDto.getMobileNumber())) {
             throw new UserAlreadyExists("User Already exists with this phone Number OR Email!!!");
         }
-        String smsTemplateId = this.templateIdByCountryCode(otpDto.getCountryCode());
         String url = null;
-//        if (otpDto.getEmail() == null) {
         url = baseUrl +
                 "?authkey=" + authKey +
                 "&mobile=" + otpDto.getMobileNumber() +
@@ -81,18 +79,6 @@ public class OtpService {
         }*/
         return new Response(executeOtp(url), "OTP sent successfully");
     }
-
-    private String templateIdByCountryCode(String countryCode) {
-        if (countryCode.equals("+91")) {
-            return CountryCodes.INDIA.getValue();
-        } else if (countryCode.equals("+92")) {
-            return CountryCodes.PAKISTAN.getValue();
-        } else {
-            throw new BadRequestException("Enter a valid Country code ");
-        }
-    }
-
-
     private SendOtpResponseBo executeOtp(String url) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();

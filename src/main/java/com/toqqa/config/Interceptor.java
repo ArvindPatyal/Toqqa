@@ -54,9 +54,9 @@ public class Interceptor implements HandlerInterceptor {
         List<VerificationStatus> statusList = verificationStatusRepository.findByUser(user);
         if (statusList.size() > 0) {
             if (isSMEEndpoint(endpoint)) {
-                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.SME.getValue()));
+                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.SME));
             } else if (isAgentEndpoint(endpoint)) {
-                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.AGENT.getValue()));
+                return statusList.stream().anyMatch(verificationStatus -> verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) && verificationStatus.getRole().equals(RoleConstants.AGENT));
             } else {
                 throw new AccessDeniedException("your application request is either pending or declined, please contact admin!!");
             }
@@ -83,10 +83,19 @@ public class Interceptor implements HandlerInterceptor {
 //    }
 
     private boolean isSMEEndpoint(String endpoint) {
-        return endpoint.toLowerCase().contains("sme");
+        if (endpoint.toLowerCase().contains("sme")) {
+            return true;
+        } else if (endpoint.toLowerCase().contains("product")) {
+            return true;
+        } else if (endpoint.toLowerCase().contains("advertisement")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean isAgentEndpoint(String endpoint) {
         return endpoint.toLowerCase().contains("agent");
     }
+
 }

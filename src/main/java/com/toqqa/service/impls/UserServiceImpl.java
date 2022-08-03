@@ -184,9 +184,11 @@ public class UserServiceImpl implements UserService {
             User user = this.userRepository.findByEmailOrPhone(authentication.getName(), authentication.getName());
             UserBo userBoObj = new UserBo(user);
             userBoObj.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
-
             this.token(user, request);
-
+            Map<String, String> status = new HashMap<>();
+            List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(Collections.singletonList(user));
+            verificationStatuses.forEach(verificationStatus -> status.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
+            userBoObj.setVerification(status);
             return new LoginResponse(jwtAuthenticationResponse, userBoObj);
         } catch (Exception e) {
             log.error("Exception in :: UserServiceImpl :: signIn() ::" + e.getLocalizedMessage());
@@ -286,6 +288,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new ResourceNotFoundException("NO USER FOUND WITH THIS EMAIL ADDRESS");
         }
+
+            /*this.resetTokenRepository.deleteAllByUser(user);*/
+
         ResetToken resetToken = new ResetToken();
         resetToken.setToken(UUID.randomUUID().toString() + System.currentTimeMillis());
         resetToken.setExpiryDate(LocalDateTime.now().plus(60, ChronoUnit.MINUTES));
