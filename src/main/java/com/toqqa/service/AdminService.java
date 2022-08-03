@@ -41,6 +41,7 @@ public class AdminService {
 
     private final AuthenticationService authenticationService;
 
+
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
@@ -152,7 +153,7 @@ public class AdminService {
         log.info("Invoked -+- AdminService -+- newUsers()");
         List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
-        List<UserBo> userBos = users.stream().map(user -> {
+        return new Response(users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
             Map<String, String> verificationMap = new HashMap<>();
@@ -160,8 +161,22 @@ public class AdminService {
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             return userBo;
-        }).collect(Collectors.toList());
-        return new Response(userBos, "New Users returned");
+        }).collect(Collectors.toList()), AdminConstants.NEW_USERS_RETURNED);
+    }
+
+    public Response allUsers() {
+        log.info("Invoked -+- AdminService -+- newUsers()");
+        List<User> users = this.userRepository.findAllByOrderByCreatedAtDesc();
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
+        return new Response(users.stream().map(user -> {
+            UserBo userBo = new UserBo(user);
+            List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
+            Map<String, String> verificationMap = new HashMap<>();
+            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
+            userBo.setVerification(verificationMap);
+            userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+            return userBo;
+        }).collect(Collectors.toList()), AdminConstants.NEW_USERS_RETURNED);
     }
 
     public Response newApprovalRequests() {
@@ -242,11 +257,11 @@ public class AdminService {
 
     public Response manageUsersByDate(AdminFilterDto adminFilterDto) {
         log.info("Invoked -+- AdminService -+- manageUsersByDate");
-        List<User> users = this.userRepository.findByCreatedDate(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
-        List<Sme> smes = this.smeRepository.findAll(false);
-        List<Agent> agents = this.agentRepository.findAll();
+        List<VerificationStatus> customers = this.verificationStatusRepository.findByCustomerRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
+        List<VerificationStatus> smes = this.verificationStatusRepository.findBySmeRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
+        List<VerificationStatus> agents = this.verificationStatusRepository.findByAgentRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
         return new Response(new TotalUsersBo(
-                (long) users.size(),
+                (long) customers.size(),
                 (long) smes.size(),
                 (long) agents.size()),
                 AdminConstants.TOTAL_USERS);

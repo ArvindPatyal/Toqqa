@@ -125,6 +125,15 @@ public class AdminController {
         return this.adminService.newUsers();
     }
 
+    @ApiOperation(value = "all users")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/all_users")
+    public Response allUsers() {
+        log.info("Invoked -+- AdminController -+- allUsers()");
+        return this.adminService.allUsers();
+    }
+
     @ApiOperation(value = "Recent 4 approval requests")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
