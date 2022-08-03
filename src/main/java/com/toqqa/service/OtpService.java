@@ -81,7 +81,7 @@ public class OtpService {
     }
     private SendOtpResponseBo executeOtp(String url) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("www.google.com").openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             int responseCode = connection.getResponseCode();
             InputStream inputStream;
             if (200 <= responseCode && responseCode <= 299) {
