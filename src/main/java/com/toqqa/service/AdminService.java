@@ -38,8 +38,8 @@ public class AdminService {
     private final SmeRepository smeRepository;
     private final OrderInfoRepository orderInfoRepository;
     private final VerificationStatusRepository verificationStatusRepository;
-
     private final AuthenticationService authenticationService;
+
 
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
@@ -63,14 +63,14 @@ public class AdminService {
         return new Response(userBo, "User details");
     }
 
-    public ListResponseWithCount users(UserRequestDto userRequestDto) {
-        log.info("Invoked -+- AdminService -+- users()");
-        Page<User> users = this.userRepository.findAll(PageRequest.of(userRequestDto.getPageNumber(), pageSize, Sort.by(userRequestDto.getSortOrder(), AdminConstants.USER_LIST_SORT_BY)));
-        List<UserBo> userBos = this.userToUserBo(users);
-        return new ListResponseWithCount(userBos, AdminConstants.LIST_OF_USERS_RETURNED, users.getTotalElements(), userRequestDto.getPageNumber(), users.getTotalPages());
-    }
+//    public ListResponseWithCount users(UserRequestDto userRequestDto) {
+//        log.info("Invoked -+- AdminService -+- users()");
+//        Page<User> users = this.userRepository.findAll(PageRequest.of(userRequestDto.getPageNumber(), pageSize, Sort.by(userRequestDto.getSortOrder(), AdminConstants.USER_LIST_SORT_BY)));
+//        List<UserBo> userBos = this.userToUserBo(users);
+//        return new ListResponseWithCount(userBos, AdminConstants.LIST_OF_USERS_RETURNED, users.getTotalElements(), userRequestDto.getPageNumber(), users.getTotalPages());
+//    }
 
-    private List<UserBo> userToUserBo(Page<User> users) {
+   /* private List<UserBo> userToUserBo(Page<User> users) {
         List<UserBo> userBos = new ArrayList<>();
         Role agent = this.roleRepository.findByRole(RoleConstants.AGENT.getValue());
         Role sme = this.roleRepository.findByRole(RoleConstants.SME.getValue());
@@ -86,7 +86,7 @@ public class AdminService {
             userBos.add(userBo);
         });
         return userBos;
-    }
+    }*/
 
     private AgentBo toAgentBo(Agent agent) {
         AgentBo agentBo = new AgentBo(agent);
@@ -104,23 +104,17 @@ public class AdminService {
         return smeBo;
     }
 
-    private UserBo toUserBo(User user) {
-        this.authenticationService.currentUser();
-        UserBo userBo = new UserBo(user);
-        return userBo;
-    }
-
-    public Response toggleUser(String userId) {
-        log.info("Invoked -+- AdminService -+- toggleUser()");
-        Optional<User> optionalUser = this.userRepository.findById(userId);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            user.setIsDeleted(!user.getIsDeleted());
-            this.userRepository.saveAndFlush(user);
-            return new Response(true, AdminConstants.TOGGLE_USER_STATUS_CHANGED);
-        }
-        throw new ResourceNotFoundException(AdminConstants.NO_USER_FOUND_WITH_ID + userId);
-    }
+//    public Response toggleUser(String userId) {
+//        log.info("Invoked -+- AdminService -+- toggleUser()");
+//        Optional<User> optionalUser = this.userRepository.findById(userId);
+//        if (optionalUser.isPresent()) {
+//            User user = optionalUser.get();
+//            user.setIsDeleted(!user.getIsDeleted());
+//            this.userRepository.saveAndFlush(user);
+//            return new Response(true, AdminConstants.TOGGLE_USER_STATUS_CHANGED);
+//        }
+//        throw new ResourceNotFoundException(AdminConstants.NO_USER_FOUND_WITH_ID + userId);
+//    }
 
 
     public Response recentOrders() {
@@ -152,7 +146,7 @@ public class AdminService {
         log.info("Invoked -+- AdminService -+- newUsers()");
         List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
-        List<UserBo> userBos = users.stream().map(user -> {
+        return new Response(users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
             Map<String, String> verificationMap = new HashMap<>();
@@ -160,8 +154,22 @@ public class AdminService {
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             return userBo;
-        }).collect(Collectors.toList());
-        return new Response(userBos, "New Users returned");
+        }).collect(Collectors.toList()), AdminConstants.NEW_USERS_RETURNED);
+    }
+
+    public Response allUsers() {
+        log.info("Invoked -+- AdminService -+- newUsers()");
+        List<User> users = this.userRepository.findAllByOrderByCreatedAtDesc();
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
+        return new Response(users.stream().map(user -> {
+            UserBo userBo = new UserBo(user);
+            List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
+            Map<String, String> verificationMap = new HashMap<>();
+            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
+            userBo.setVerification(verificationMap);
+            userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+            return userBo;
+        }).collect(Collectors.toList()), AdminConstants.NEW_USERS_RETURNED);
     }
 
     public Response newApprovalRequests() {
@@ -175,17 +183,15 @@ public class AdminService {
                 AdminConstants.APPROVAL_REQUESTS);
     }
 
-
     public Response allApprovalRequests() {
-
         log.info("Invoked -+- AdminService -+- approvalRequests()");
-        return new Response(this.verificationStatusRepository.findByStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
+        return new Response(this.verificationStatusRepository.findByStatusIn(
+                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
                 .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
                         verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
                         verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
                 .collect(Collectors.toList()),
                 AdminConstants.APPROVAL_REQUESTS);
-
     }
 
     public Response approve(ApprovalPayload approvalPayload) {
@@ -220,7 +226,8 @@ public class AdminService {
         return new ListResponseWithCount<>(userBos, "List All Users", users.getTotalElements(), usersDto.getPageNumber(), users.getTotalPages());
     }*/
 
-    public ListResponseWithCount<OrderInfoBo> listOrdersByDate(OrderDto orderDto) {
+
+   /* public ListResponseWithCount<OrderInfoBo> listOrdersByDate(OrderDto orderDto) {
 
         Page<OrderInfo> orders = this.orderInfoRepository.findByModificationDate(PageRequest.of(orderDto.getPageNumber(), pageSize), orderDto.getStartDate(), orderDto.getEndDate());
         List<OrderInfoBo> orderInfoBos = new ArrayList<>();
@@ -237,16 +244,16 @@ public class AdminService {
             orderInfoBos.add(orderInfoBo);
         });
         return new ListResponseWithCount<>(orderInfoBos, AdminConstants.ORDER_LIST, orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
-    }
+    }*/
 
 
-    public Response manageUsersByDate(AdminFilterDto adminFilterDto) {
+    public Response userStatsByDate(AdminFilterDto adminFilterDto) {
         log.info("Invoked -+- AdminService -+- manageUsersByDate");
-        List<User> users = this.userRepository.findByCreatedDate(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
-        List<Sme> smes = this.smeRepository.findAll(false);
-        List<Agent> agents = this.agentRepository.findAll();
+        List<VerificationStatus> customers = this.verificationStatusRepository.findByCustomerRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
+        List<VerificationStatus> smes = this.verificationStatusRepository.findBySmeRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
+        List<VerificationStatus> agents = this.verificationStatusRepository.findByAgentRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
         return new Response(new TotalUsersBo(
-                (long) users.size(),
+                (long) customers.size(),
                 (long) smes.size(),
                 (long) agents.size()),
                 AdminConstants.TOTAL_USERS);

@@ -15,16 +15,19 @@ public class AdminConstants {
     public static final String DASHBOARD_STATS = "Dashboard Stats";
     public static final String ORDER_LIST = "List All Orders";
     public static final String TOTAL_USERS = "Total registered users list";
-    public static final String NEW_USERS_RETURNED = "New users returned";
+    public static final String NEW_USERS_RETURNED = "New Users returned";
     public static final String TOTAL_USERS_COUNT_QUERY_BY_DATE = "select * from user_info  where cast(created_at as Date) between ?1 AND ?2";
     public static final String TOTAL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info  where cast(modification_date as Date) between ?1 AND ?2";
     public static final String ORDER_STATUS = "('DELIVERED')";
 
     public static final String ORDER_INFO = "('CANCELLED')";
-
-    public static final String APPROVAL_REQUESTS ="Approval requests returned";
-    public static final String CANCEL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info o where o.order_status IN "+ ORDER_STATUS +" cast(modification_date as Date) between ?1 AND ?2";
+    public static final String APPROVAL_REQUESTS = "Approval requests returned";
+    public static final String CANCEL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info o where o.order_status IN " + ORDER_STATUS + " cast(modification_date as Date) between ?1 AND ?2";
     public static final String TOTAL_ORDER_AMOUNT_DELIVERED_BY_DATE = "select sum(o.amount + o.shipping_fee) from order_info o where o.order_status IN" + ORDER_STATUS
             + " and cast(created_date as DATE) between ?1 AND ?2";
     public static final String TOP_4_NEW_APPROVAL_REQUEST = "SELECT * from verification_status v where v.status = 'PENDING' order by created_date DESC limit 4";
+    public static final String VERIFICATION_STATUS = "('ACCEPTED'+'PENDING')";
+    public static final String ALL_NEW_CUSTOMER = "select * from verification_status v WHERE cast(created_date as Date)between ?1 AND ?2 AND v.status IN" + VERIFICATION_STATUS + "AND v.role = 'CUSTOMER'";
+    public static final String ALL_NEW_SMES = "select * from verification_status v WHERE cast(created_date as Date)between ?1 AND ?2 AND v.status IN" + VERIFICATION_STATUS + "AND v.role = 'SME'";
+    public static final String ALL_NEW_AGENTS = "select * from verification_status v WHERE cast(created_date as Date)between ?1 AND ?2 AND v.status IN" + VERIFICATION_STATUS + "AND v.role = 'AGENT'";
 }

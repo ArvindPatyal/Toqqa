@@ -44,23 +44,23 @@ public class AdminController {
         return this.adminService.userFromToken();
     }
 
-    @ApiOperation(value = "Returns a page of users")
+   /* @ApiOperation(value = "Returns a page of users")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PostMapping(value = "/users")
     public ListResponseWithCount users(@RequestBody @Valid UserRequestDto userRequestDto) {
         log.info("Invoked -+- AdminController -+- users()");
         return this.adminService.users(userRequestDto);
-    }
+    }*/
 
-    @ApiOperation(value = "Enable or Disable a user")
+    /*@ApiOperation(value = "Enable or Disable a user")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PutMapping(value = "/user")
     public Response toggleUser(@RequestParam String id) {
         log.info("Invoked -+- AdminController -+-toggleUser()");
         return this.adminService.toggleUser(id);
-    }
+    }*/
 
     @ApiOperation(value = "Recent orders on Dashboard")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
@@ -98,14 +98,14 @@ public class AdminController {
 //        return this.adminService.listUsersByDate(usersDto);
 //    }
 
-    @ApiOperation(value = "check order status in a specific time period")
+ /*   @ApiOperation(value = "check order status in a specific time period")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PostMapping(value = "/findOrdersByDate")
     public ListResponseWithCount<OrderInfoBo> listOrdersByDate(@RequestBody @Valid OrderDto orderDto) {
         log.info("Invoked -+- AdminController -+- listOrdersByDate()");
         return this.adminService.listOrdersByDate(orderDto);
-    }
+    }*/
 
     @ApiOperation(value = "check new users, orders and sale status in a specific time period")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
@@ -113,7 +113,7 @@ public class AdminController {
     @PostMapping(value = "/manageUsers")
     public Response manageUsersByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
         log.info("Invoked -+- AdminController -+- statsByDate()");
-        return this.adminService.manageUsersByDate(adminFilterDto);
+        return this.adminService.userStatsByDate(adminFilterDto);
     }
 
     @ApiOperation(value = "Top 4 new users")
@@ -123,6 +123,15 @@ public class AdminController {
     public Response newUsers() {
         log.info("Invoked -+- AdminController -+- newUsers()");
         return this.adminService.newUsers();
+    }
+
+    @ApiOperation(value = "all users")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/all_users")
+    public Response allUsers() {
+        log.info("Invoked -+- AdminController -+- allUsers()");
+        return this.adminService.allUsers();
     }
 
     @ApiOperation(value = "Recent 4 approval requests")
@@ -143,12 +152,12 @@ public class AdminController {
         return this.adminService.approve(approvalPayload);
     }
 
-    @ApiOperation(value = "User details")
+   /* @ApiOperation(value = "User details")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @GetMapping("/fetchUser/{id}")
     public Response<UserBo> fetchUser(@PathVariable("id") @Valid String id) {
         log.info("Invoked:: UserController:: fetchUser");
         return new Response<UserBo>(this.userService.fetchUser(id), "success");
-    }
+    }*/
 }

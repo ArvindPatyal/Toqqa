@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -63,7 +64,7 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId,boolean isNewUser) {
+    public AgentBo agentRegistration(AgentRegistration agentRegistration, String userId, boolean isNewUser) {
         log.info("Invoked :: AgentServiceImpl :: agentRegistration()");
         if (!this.alreadyAgent(userId)) {
             try {
@@ -116,10 +117,10 @@ public class AgentServiceImpl implements AgentService {
         log.info("Invoked :: AgentServiceImpl :: agentUpdate()");
         User user = this.authenticationService.currentUser();
         Agent agent = this.agentRepo.findByUserId(user.getId());
-        if(agent==null){
-            throw  new BadRequestException("You are not an agent");
+        if (agent == null) {
+            throw new BadRequestException("You are not an agent");
         }
-        if (agentUpdatePayload.getAgentDocuments()!=null) {
+        if (agentUpdatePayload.getAgentDocuments() != null) {
             try {
                 agent.setAgentDocuments(this.storageService.uploadFileAsync(agentUpdatePayload.getAgentDocuments(), agent.getUserId(), FolderConstants.DOCUMENTS.getValue()).get());
             } catch (InterruptedException | ExecutionException e) {
@@ -133,7 +134,7 @@ public class AgentServiceImpl implements AgentService {
                 throw new ResourceCreateUpdateException("Cannot update agent,idProof  operations failed");
             }
         }*/
-        if (agentUpdatePayload.getAgentProfilePicture()!=null) {
+        if (agentUpdatePayload.getAgentProfilePicture() != null) {
             try {
                 agent.setAgentProfilePicture(this.storageService.uploadFileAsync(agentUpdatePayload.getAgentProfilePicture(), agent.getUserId(), FolderConstants.PROFILE_PICTURE.getValue()).get());
             } catch (InterruptedException | ExecutionException e) {
@@ -169,15 +170,10 @@ public class AgentServiceImpl implements AgentService {
         User user = this.authenticationService.currentUser();
         Role agentRole = this.roleRepo.findByRole(RoleConstants.AGENT.getValue());
         Role smeRole = this.roleRepo.findByRole(RoleConstants.SME.getValue());
-
-        if (!user.getRoles().stream().anyMatch(role -> role.equals(agentRole))) {
-            throw new BadRequestException("you are not an agent");
-        }
-
+        List<Role> roles = agentPayload.getRoles().stream().map(roleConstants -> this.roleRepo.findByRole(roleConstants.getValue())).collect(Collectors.toList());
         Agent agent = this.agentRepo.findByUserId(user.getId());
-        List<User> userList = this.userRepo.findByAgentId(agent.getAgentId());
+        List<User> userList = this.userRepo.findByAgentIdAndRolesIn(agent.getAgentId(), roles);
         List<AgentReferralBo> agentReferralBo = new ArrayList<>();
-
         for (User users : userList) {
             String userId = users.getId();
             UserBo userBo = new UserBo(users);
@@ -213,7 +209,7 @@ public class AgentServiceImpl implements AgentService {
     public AgentBo becomeAnAgent(AgentRegistration agentRegistration) {
         log.info("Invoked :: AgentServiceImpl ::becomeAnAgent()");
         User user = this.authenticationService.currentUser();
-        return this.agentRegistration(agentRegistration, user.getId(),false);
+        return this.agentRegistration(agentRegistration, user.getId(), false);
     }
 }
 

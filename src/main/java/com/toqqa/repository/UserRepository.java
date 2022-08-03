@@ -1,5 +1,7 @@
 package com.toqqa.repository;
 
+import com.toqqa.constants.RoleConstants;
+import com.toqqa.domain.Role;
 import com.toqqa.domain.User;
 import com.toqqa.util.AdminConstants;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     User findByEmailOrPhone(String email, String phone);
 
-    List<User> findByAgentId(String agentId);
+    List<User> findByAgentIdAndRolesIn(String agentId, List<Role> roles);
 
     Optional<User> findById(String id);
 
@@ -28,4 +30,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findFirst4ByOrderByCreatedAtDesc();
 
+    List<User> findAllByOrderByCreatedAtDesc();
 }

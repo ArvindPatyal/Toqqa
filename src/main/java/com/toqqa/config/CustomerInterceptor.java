@@ -27,7 +27,7 @@ public class CustomerInterceptor implements HandlerInterceptor {
         }
 
         if (userType.equals("ROLE_CUSTOMER")) {
-            throw new AccessDeniedException("Access denied");
+            return false;
         } else {
             return true;
         }
