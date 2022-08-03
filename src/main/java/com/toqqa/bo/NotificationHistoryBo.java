@@ -1,5 +1,6 @@
 package com.toqqa.bo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.toqqa.domain.NotificationHistory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,7 @@ public class NotificationHistoryBo {
     private String message;
     private String topic;
     private String role;
-
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdDate;
 
     public NotificationHistoryBo(NotificationHistory notificationHistory) {

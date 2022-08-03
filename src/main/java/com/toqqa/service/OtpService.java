@@ -3,9 +3,7 @@ package com.toqqa.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toqqa.bo.SendOtpResponseBo;
 import com.toqqa.bo.VerifyOtpResponseBo;
-import com.toqqa.constants.CountryCodes;
 import com.toqqa.dto.OtpDto;
-import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceCreateUpdateException;
 import com.toqqa.exception.UserAlreadyExists;
 import com.toqqa.payload.Response;
@@ -48,6 +46,7 @@ public class OtpService {
     }
 
     public Response sendOtp(OtpDto otpDto) {
+        log.info("Invoked -+- OtpService -+-  sendOtp()");
         if (userService.isUserExists(otpDto.getMobileNumber(), otpDto.getMobileNumber())) {
             throw new UserAlreadyExists("User Already exists with this phone Number OR Email!!!");
         }
@@ -79,7 +78,9 @@ public class OtpService {
         }*/
         return new Response(executeOtp(url), "OTP sent successfully");
     }
+
     private SendOtpResponseBo executeOtp(String url) {
+        log.info("Invoked -+- OtpService -+- executeOtp()");
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             int responseCode = connection.getResponseCode();
@@ -103,6 +104,7 @@ public class OtpService {
 
 
     public VerifyOtpResponseBo verifyOtp(String otp, String loginId) {
+        log.info("Invoked -+- OtpService -+- verifyOtp()");
         try {
             String url = authUrl + "?authkey=" + authKey + "&channel=sms&otp=" + otp + "&logid=" + loginId;
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
