@@ -9,7 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -30,7 +30,7 @@ public class NotificationHistory {
     private String topic;
 
     @CreationTimestamp
-    private LocalDateTime createdDate;
+    private Date createdDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
