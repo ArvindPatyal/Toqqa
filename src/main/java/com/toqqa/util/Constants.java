@@ -38,13 +38,21 @@ public class Constants {
 
     public static final String CUSTOMER_NOTIFICATION_TITLE = "Order";
 
+    public static final String CUSTOMER_NOTIFICATION_TOPIC = "ORDER";
+
     public static final String CUSTOMER_NOTIFICATION_MESSAGE = "Your order is %s ";
 
     public static final String SELLER_NOTIFICATION_TITLE = "Order";
 
+    public static final String NEW_ORDER_RECEIVED_TOPIC = "New Order Received";
+
+    public static final String SELLER_NOTIFICATION_TOPIC = "Order Cancelled";
+
     public static final String SELLER_NOTIFICATION_MESSAGE = "A new order has been placed with product %s ";
 
     public static final String SELLER__PRODUCT_NOTIFICATION_TITLE = "Product";
+
+    public static final String LOW_STOCK = "Low Stock";
 
     public static final String SELLER_PRODUCT_NOTIFICATION_MESSAGE = "Product with low quantity are %s ";
 
@@ -59,8 +67,12 @@ public class Constants {
     public static final String NO_VERIFICATION_STATUS_FOUND = "No verification status found";
     public static final String RATE_YOUR_ORDER = " Your order has been delivered. Kindly rate the product and the seller.";
     public static final String RATINGS_ARRIVED = "You have received a new rating. Take a look.";
+
+    public static final String RATINGS_ARRIVED_TOPIC = "New Rating Received";
     public static final String ORDER_CANCELLED = "Order cancelled";
     public static final String RATE_THE_ORDER = "Rate the Order";
+
+    public static final String RATE_THE_ORDER_TOPIC = "Rate Product";
     public static final List<OrderStatus> ORDER_STATUSES = new ArrayList<>(Arrays.asList(OrderStatus.PLACED, OrderStatus.RECEIVED,
             OrderStatus.CONFIRMED, OrderStatus.READY_FOR_DISPATCH, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED, OrderStatus.CANCELLED));
 

@@ -62,7 +62,7 @@ public class PushNotificationService {
         this.persistNotification(NotificationDto.builder()
                 .title(Constants.CUSTOMER_NOTIFICATION_TITLE)
                 .message(String.format(Constants.CUSTOMER_NOTIFICATION_MESSAGE, orderStatusUpdatePayload.getOrderStatus()))
-                .topic(Constants.CUSTOMER_NOTIFICATION_TITLE)
+                .topic(Constants.CUSTOMER_NOTIFICATION_TOPIC + " " + orderStatusUpdatePayload.getOrderStatus().name())
                 .role(NotificationRoles.CUSTOMER)
                 .user(user)
                 .build());
@@ -78,7 +78,7 @@ public class PushNotificationService {
         this.persistNotification(NotificationDto.builder()
                 .title(Constants.SELLER_NOTIFICATION_TITLE)
                 .message(Constants.ORDER_CANCELLED)
-                .topic(Constants.SELLER_NOTIFICATION_TITLE)
+                .topic(Constants.SELLER_NOTIFICATION_TOPIC)
                 .role(NotificationRoles.SME)
                 .user(user)
                 .build());
@@ -94,7 +94,7 @@ public class PushNotificationService {
         this.persistNotification(NotificationDto.builder()
                 .title(Constants.RATE_THE_ORDER)
                 .message(Constants.RATE_YOUR_ORDER)
-                .topic(Constants.RATE_THE_ORDER)
+                .topic(Constants.RATE_THE_ORDER_TOPIC)
                 .role(NotificationRoles.CUSTOMER)
                 .user(user)
                 .build());
@@ -110,7 +110,7 @@ public class PushNotificationService {
         this.persistNotification(NotificationDto.builder()
                 .title("New rating received")
                 .message(Constants.RATINGS_ARRIVED)
-                .topic("New rating received")
+                .topic(Constants.RATINGS_ARRIVED_TOPIC)
                 .role(NotificationRoles.SME)
                 .user(user)
                 .build());
@@ -134,7 +134,7 @@ public class PushNotificationService {
                 deviceTokenList = deviceService.getAllByUser(userService.getById(smeObj.getUserId()));
             }
         }
-        sendNotficationData(deviceTokenList, resultMap, Constants.SELLER_NOTIFICATION_TITLE, Constants.SELLER_NOTIFICATION_MESSAGE);
+        sendNotficationData(deviceTokenList, resultMap, Constants.SELLER_NOTIFICATION_TITLE, Constants.NEW_ORDER_RECEIVED_TOPIC, Constants.SELLER_NOTIFICATION_MESSAGE);
 
     }
 
@@ -157,13 +157,13 @@ public class PushNotificationService {
                     resultMap.put(smeObj.getUserId(), orderItemObj.getProduct().getProductName());
                     deviceTokenList = deviceService.getAllByUser(userService.getById(smeObj.getUserId()));
                 }
-                sendNotficationData(deviceTokenList, resultMap, Constants.SELLER__PRODUCT_NOTIFICATION_TITLE,
+                sendNotficationData(deviceTokenList, resultMap, Constants.SELLER__PRODUCT_NOTIFICATION_TITLE, Constants.LOW_STOCK,
                         Constants.SELLER_PRODUCT_NOTIFICATION_MESSAGE + " " + Constants.QUANTITY + " " + orderItemObj.getProduct().getUnitsInStock());
             }
         }
     }
 
-    private void sendNotficationData(List<Device> deviceTokenList, Map<String, String> resultMap, String title,
+    private void sendNotficationData(List<Device> deviceTokenList, Map<String, String> resultMap, String title, String topic,
                                      String notficationBody) {
 
         for (Map.Entry<String, String> entry : resultMap.entrySet()) {
@@ -175,7 +175,7 @@ public class PushNotificationService {
             this.persistNotification(NotificationDto.builder()
                     .title(title)
                     .message(String.format(notficationBody, entry.getValue()))
-                    .topic(title)
+                    .topic(topic)
                     .role(NotificationRoles.SME)
                     .user(this.userService.getById(entry.getKey()))
                     .build());
