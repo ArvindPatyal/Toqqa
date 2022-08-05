@@ -70,6 +70,14 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- recentOrders()");
         return this.adminService.recentOrders();
     }
+    /*@ApiOperation(value = "All orders on Dashboard")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/all_orders")
+    public Response allOrders() {
+        log.info("Invoked -+- AdminController -+- recentOrders()");
+        return this.adminService.allOrders();
+    }*/
 
     @ApiOperation(value = "check new users, orders and sale status in a specific time period")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),

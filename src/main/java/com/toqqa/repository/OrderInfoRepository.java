@@ -29,6 +29,8 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 
     List<OrderInfo> findFirst4ByOrderByCreatedDateDesc();
 
+    //List<OrderInfo> findAllByOrderByCreatedDateDesc();
+
     @Query(value = Constants.TOTAL_ORDER_AMOUNT_DELIVERED_QUERY_BY_DATE, nativeQuery = true)
     Optional<Integer> findDelOrderAmountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate);
 

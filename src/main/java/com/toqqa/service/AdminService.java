@@ -5,12 +5,9 @@ import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
-import com.toqqa.dto.UserRequestDto;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ApprovalPayload;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.*;
 import com.toqqa.util.AdminConstants;
@@ -18,12 +15,13 @@ import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,6 +131,22 @@ public class AdminService {
                                 null)).collect(Collectors.toList()), AdminConstants.RECENT_ORDERS_RETURNED);
     }
 
+  /*  public Response allOrders() {
+        log.info("Invoked -+- AdminService -+- allOrders()");
+        List<OrderInfo> orders = this.orderInfoRepository.findAllByOrderByCreatedDateDesc();
+        return orders.equals(null) ? new Response(null, AdminConstants.NO_RECENT_ORDERS_FOUND) :
+                new Response(orders.stream().map(
+                        orderInfo -> new OrderInfoBo(orderInfo,
+                                orderInfo.getOrderItems().stream().map(
+                                        orderItem -> {
+                                            ProductBo productBo = new ProductBo(orderItem.getProduct());
+                                            productBo.setImages(this.helper.prepareProductAttachments(orderItem.getProduct().getAttachments()));
+                                            return new OrderItemBo(orderItem, productBo);
+                                        }
+                                ).collect(Collectors.toList()),
+                                null)).collect(Collectors.toList()), AdminConstants.RECENT_ORDERS_RETURNED);
+    }*/
+
     public Response statsByDate(AdminFilterDto adminFilterDto) {
         log.info("Invoked -+- AdminService -+- statsByDate");
         return new Response(new StatsBo(
@@ -186,8 +200,9 @@ public class AdminService {
     public Response allApprovalRequests() {
         log.info("Invoked -+- AdminService -+- approvalRequests()");
         return new Response(this.verificationStatusRepository.findByStatusIn(
-                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
-                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
+                        Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
+                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus,
+                        null,
                         verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
                         verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
                 .collect(Collectors.toList()),
@@ -196,9 +211,9 @@ public class AdminService {
 
     public Response approve(ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminService -+- approve()");
-        VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this ID"));
+        VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException(AdminConstants.NO_APPROVAL_STATUS + " " + approvalPayload.getId()));
         if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) && verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
-            throw new BadRequestException("Already changed approval status");
+            throw new BadRequestException(AdminConstants.APPROVAL_STATUS);
         }
         verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
         verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
@@ -248,7 +263,7 @@ public class AdminService {
 
 
     public Response userStatsByDate(AdminFilterDto adminFilterDto) {
-        log.info("Invoked -+- AdminService -+- manageUsersByDate");
+        log.info("Invoked -+- AdminService -+- userStatsByDate");
         List<VerificationStatus> customers = this.verificationStatusRepository.findByCustomerRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
         List<VerificationStatus> smes = this.verificationStatusRepository.findBySmeRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
         List<VerificationStatus> agents = this.verificationStatusRepository.findByAgentRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
