@@ -18,6 +18,10 @@ public class AdminConstants {
     public static final String NEW_USERS_RETURNED = "New Users returned";
     public static final String TOTAL_USERS_COUNT_QUERY_BY_DATE = "select * from user_info  where cast(created_at as Date) between ?1 AND ?2";
     public static final String TOTAL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info  where cast(modification_date as Date) between ?1 AND ?2";
+
+    public static final String APPROVAL_STATUS = "Already changed approval status";
+
+    public static final String NO_APPROVAL_STATUS = "No approval status found with this ID:";
     public static final String ORDER_STATUS = "('DELIVERED')";
 
     public static final String ORDER_INFO = "('CANCELLED')";
