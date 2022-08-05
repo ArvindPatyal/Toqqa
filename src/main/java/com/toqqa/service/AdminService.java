@@ -5,12 +5,9 @@ import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
-import com.toqqa.dto.UserRequestDto;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ApprovalPayload;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.*;
 import com.toqqa.util.AdminConstants;
@@ -18,12 +15,13 @@ import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -186,7 +184,7 @@ public class AdminService {
     public Response allApprovalRequests() {
         log.info("Invoked -+- AdminService -+- approvalRequests()");
         return new Response(this.verificationStatusRepository.findByStatusIn(
-                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
+                        Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
                 .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
                         verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
                         verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
@@ -206,6 +204,15 @@ public class AdminService {
         return new Response<>(approvalPayload.isAction() ? "Request Approved" : "Request Declined", "Successful");
     }
 
+    public Response userVerificationRequests(String userId) {
+        log.info("Invoked -+- AdminService -+- userVerificationRequests()");
+        return new Response<>(this.verificationStatusRepository.findByUser(this.userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found with id -  " + userId)))
+                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus))
+                , "Approval Requests Returned");
+    }
+
+//    public Response deleteApproval(String userId,)
 
    /* public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
 

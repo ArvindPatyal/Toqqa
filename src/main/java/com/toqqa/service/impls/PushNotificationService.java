@@ -51,7 +51,6 @@ public class PushNotificationService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
-    @Async
     public void sendNotificationToCustomer(OrderStatusUpdatePayload orderStatusUpdatePayload, User user) {
         log.info("Invoked :: PushNotificationService :: sendNotificationToCustomer()");
         for (Device deviceObj : deviceService.getAllByUser(user)) {

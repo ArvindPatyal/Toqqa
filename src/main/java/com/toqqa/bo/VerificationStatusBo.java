@@ -33,4 +33,11 @@ public class VerificationStatusBo {
         this.agentBo = agentBo;
     }
 
+    public VerificationStatusBo(VerificationStatus verificationStatus) {
+        this.id = verificationStatus.getId();
+        this.role = verificationStatus.getRole().getValue();
+        this.status = verificationStatus.getStatus().toString();
+        this.createdDate = verificationStatus.getCreatedDate();
+    }
+
 }
