@@ -197,7 +197,7 @@ public class AdminService {
     public Response approve(ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminService -+- approve()");
         VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException("No approval status found with this ID"));
-        if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) && verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
+        if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) || verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
             throw new BadRequestException("Already changed approval status");
         }
         verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
