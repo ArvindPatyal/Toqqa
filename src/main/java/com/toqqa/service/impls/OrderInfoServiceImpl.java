@@ -392,6 +392,13 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         List<OrderInfoBo> orderInfoBos = new ArrayList<>();
         orderInfoList.forEach(orderInfo -> {
             SmeBo smeBo = this.smeService.toSmeBo(orderInfo.getSme());
+            smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
+            if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
+                SellerRating sellerRating = this.sellerRatingRepository.findBySmeIdAndUser_Id(smeBo.getId(), user.getId());
+                if (sellerRating != null) {
+                    smeBo.setSellerRatingBo(new SellerRatingBo(sellerRating));
+                }
+            }
             OrderInfoBo orderInfoBo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
             orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderInfo.getId(), user.getId()));
             orderInfoBos.add(orderInfoBo);

@@ -15,10 +15,10 @@ import com.toqqa.dto.PushNotificationRequestDto;
 import com.toqqa.payload.OrderStatusUpdatePayload;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.NotificationRepository;
-import com.toqqa.repository.OrderItemRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Constants;
+import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -47,11 +47,10 @@ public class PushNotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
-
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private Helper helper;
 
-    @Async
+
     public void sendNotificationToCustomer(OrderStatusUpdatePayload orderStatusUpdatePayload, User user) {
         log.info("Invoked :: PushNotificationService :: sendNotificationToCustomer()");
         for (Device deviceObj : deviceService.getAllByUser(user)) {
@@ -246,10 +245,12 @@ public class PushNotificationService {
 
     public Response notifications(NotificationHistoryDto notificationHistoryDto) {
         User user = this.authenticationService.currentUser();
-        List<NotificationHistory> notificationHistories = this.notificationRepository.findByUserAndRole(Sort.by(Sort.Direction.DESC, "createdDate"), user,
-                notificationHistoryDto.getNotificationFor());
-        List<NotificationHistoryBo> notificationHistoryBos = new ArrayList<>();
-        notificationHistories.forEach(notificationHistory -> notificationHistoryBos.add(new NotificationHistoryBo(notificationHistory)));
-        return new Response<>(notificationHistoryBos, "List of Notifications");
+        return new Response(this.notificationRepository
+                .findByUserAndRole(Sort.by(Sort.Direction.DESC, "createdDate"), user, notificationHistoryDto.getNotificationFor())
+                .stream().map(notificationHistory -> {
+                    NotificationHistoryBo notificationHistoryBo = new NotificationHistoryBo(notificationHistory);
+                    notificationHistoryBo.setCreatedDate(this.helper.dateToFormattedPKTDate(notificationHistory.getCreatedDate()));
+                    return notificationHistoryBo;
+                }), "List of Notifications");
     }
 }

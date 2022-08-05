@@ -1,15 +1,12 @@
 package com.toqqa.bo;
 
 import com.toqqa.domain.VerificationStatus;
-import io.grpc.netty.shaded.io.netty.handler.codec.DateFormatter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -20,7 +17,7 @@ public class VerificationStatusBo {
     private String id;
     private String status;
     private String role;
-    private Date createdDate;
+    private LocalDateTime createdDate;
     private UserBo userBo;
     private SmeBo smeBo;
     private AgentBo agentBo;
@@ -31,9 +28,16 @@ public class VerificationStatusBo {
         this.userBo = userBo;
         this.role = verificationStatus.getRole().getValue();
         this.status = verificationStatus.getStatus().toString();
-        this.createdDate = Date.from(verificationStatus.getCreatedDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        this.createdDate = verificationStatus.getCreatedDate();
         this.smeBo = smeBo;
         this.agentBo = agentBo;
+    }
+
+    public VerificationStatusBo(VerificationStatus verificationStatus) {
+        this.id = verificationStatus.getId();
+        this.role = verificationStatus.getRole().getValue();
+        this.status = verificationStatus.getStatus().toString();
+        this.createdDate = verificationStatus.getCreatedDate();
     }
 
 }

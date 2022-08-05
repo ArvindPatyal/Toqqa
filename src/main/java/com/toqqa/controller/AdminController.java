@@ -1,12 +1,7 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.OrderInfoBo;
-import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
-import com.toqqa.dto.UserRequestDto;
 import com.toqqa.payload.ApprovalPayload;
-import com.toqqa.payload.ListResponseWithCount;
-import com.toqqa.payload.OrderDto;
 import com.toqqa.payload.Response;
 import com.toqqa.service.AdminService;
 import com.toqqa.service.UserService;
@@ -160,6 +155,15 @@ public class AdminController {
         return this.adminService.approve(approvalPayload);
     }
 
+   /* @ApiOperation(value = "get verification requests of a user")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @GetMapping(value = "/approval/requests")
+    public Response userVerificationRequests(@RequestParam String userId) {
+        log.info("Invoked -+- AdminController -+- userVerificationRequests()");
+        return this.adminService.userVerificationRequests(userId);
+    }
+*/
    /* @ApiOperation(value = "User details")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
