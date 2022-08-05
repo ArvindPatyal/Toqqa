@@ -13,6 +13,5 @@ import java.util.TimeZone;
 public class ToqqaApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ToqqaApplication.class, args);
-		TimeZone.setDefault(TimeZone.getTimeZone("PLT"));
 	}
 }

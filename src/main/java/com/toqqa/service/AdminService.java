@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -140,26 +141,24 @@ public class AdminService {
                 AdminConstants.DASHBOARD_STATS);
     }
 
+
+
+
     public Response newUsers() {
         log.info("Invoked -+- AdminService -+- newUsers()");
         List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
-        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
-        return new Response(users.stream().map(user -> {
-            UserBo userBo = new UserBo(user);
-            List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
-            Map<String, String> verificationMap = new HashMap<>();
-            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
-            userBo.setVerification(verificationMap);
-            userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
-            return userBo;
-        }).collect(Collectors.toList()), AdminConstants.NEW_USERS_RETURNED);
+        return new Response(this.usersWithVerificationStatus(users), AdminConstants.NEW_USERS_RETURNED);
     }
 
     public Response allUsers() {
         log.info("Invoked -+- AdminService -+- newUsers()");
         List<User> users = this.userRepository.findAllByOrderByCreatedAtDesc();
+        return new Response(this.usersWithVerificationStatus(users), AdminConstants.NEW_USERS_RETURNED);
+    }
+
+    private List<UserBo> usersWithVerificationStatus(List<User> users) {
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
-        return new Response(users.stream().map(user -> {
+        return users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
             Map<String, String> verificationMap = new HashMap<>();
@@ -167,30 +166,34 @@ public class AdminService {
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             return userBo;
-        }).collect(Collectors.toList()), AdminConstants.NEW_USERS_RETURNED);
+        }).collect(Collectors.toList());
     }
+
+
+
 
     public Response newApprovalRequests() {
         log.info("Invoked -+- AdminService -+- newApprovalRequests");
-        return new Response(this.verificationStatusRepository.findFirst4NewRequest()
-                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus,
-                        null,
-                        verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
-                        verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
-                .collect(Collectors.toList()),
-                AdminConstants.APPROVAL_REQUESTS);
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findFirst4NewRequest();
+        return new Response(this.verificationStatusToBo(verificationStatuses), AdminConstants.APPROVAL_REQUESTS);
     }
 
     public Response allApprovalRequests() {
         log.info("Invoked -+- AdminService -+- approvalRequests()");
-        return new Response(this.verificationStatusRepository.findByStatusIn(
-                        Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING))
-                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus, null,
-                        verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
-                        verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null))
-                .collect(Collectors.toList()),
-                AdminConstants.APPROVAL_REQUESTS);
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByStatusIn(
+                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING));
+        return new Response(this.verificationStatusToBo(verificationStatuses), AdminConstants.APPROVAL_REQUESTS);
     }
+
+    private Stream verificationStatusToBo(List<VerificationStatus> verificationStatuses) {
+        return verificationStatuses.stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus,
+                        null,
+                        verificationStatus.getRole().equals(RoleConstants.SME) ? this.toSmeBo(this.smeRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Sme not found"))) : null,
+                        verificationStatus.getRole().equals(RoleConstants.AGENT) ? this.toAgentBo(this.agentRepository.getByUserId(verificationStatus.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("Agent not found"))) : null));
+    }
+
+
+
 
     public Response approve(ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminService -+- approve()");
@@ -204,13 +207,13 @@ public class AdminService {
         return new Response<>(approvalPayload.isAction() ? "Request Approved" : "Request Declined", "Successful");
     }
 
-    public Response userVerificationRequests(String userId) {
+    /*public Response userVerificationRequests(String userId) {
         log.info("Invoked -+- AdminService -+- userVerificationRequests()");
         return new Response<>(this.verificationStatusRepository.findByUser(this.userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User Not found with id -  " + userId)))
-                .stream().map(verificationStatus -> new VerificationStatusBo(verificationStatus))
+                        .orElseThrow(() -> new ResourceNotFoundException("User Not found with id -  " + userId)))
+                .stream().map(VerificationStatusBo::new)
                 , "Approval Requests Returned");
-    }
+    }*/
 
 //    public Response deleteApproval(String userId,)
 
