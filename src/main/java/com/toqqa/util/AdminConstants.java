@@ -10,6 +10,12 @@ public class AdminConstants {
     public static final String TOGGLE_USER_STATUS_CHANGED = "User status changes";
     public static final String NO_USER_FOUND_WITH_ID = "No User found with id : ";
     public static final String LIST_OF_USERS_RETURNED = "List of users Returned";
+    public static final String NO_SME_FOUND = "No Sme found";
+    public static final String NO_AGENT_FOUND = "No Agent found";
+    public static final String INVALID_REQUEST = "INVALID REQUEST";
+    public static final String APPROVAL_REQUEST_DELETED = "Approval Request Deleted";
+    public static final String REQUEST_APPROVED="Request Approved";
+    public static final String REQUEST_DECLINED="Request Declined";
     public static final String RECENT_ORDERS_RETURNED = "Recent orders returned";
     public static final String NO_RECENT_ORDERS_FOUND = "No recent orders found";
     public static final String DASHBOARD_STATS = "Dashboard Stats";
@@ -21,7 +27,7 @@ public class AdminConstants {
 
     public static final String APPROVAL_STATUS = "Already changed approval status";
 
-    public static final String NO_APPROVAL_STATUS = "No approval status found with this ID:";
+    public static final String NO_APPROVAL_STATUS = "No approval status found with this ID : ";
     public static final String ORDER_STATUS = "('DELIVERED')";
 
     public static final String ORDER_INFO = "('CANCELLED')";

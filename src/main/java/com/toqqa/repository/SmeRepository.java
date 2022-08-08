@@ -15,6 +15,7 @@ public interface SmeRepository extends JpaRepository<Sme, String> {
 
     Sme findByUserId(String userId);
     Optional<Sme> getByUserId(String userId);
+    void deleteByUserId(String userId);
     
     @Query("select s from Sme s where s.isDeleted=:isDeleted")
     List<Sme> findAll(@Param("isDeleted") Boolean isDeleted);
