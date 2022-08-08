@@ -247,10 +247,6 @@ public class PushNotificationService {
         User user = this.authenticationService.currentUser();
         return new Response(this.notificationRepository
                 .findByUserAndRole(Sort.by(Sort.Direction.DESC, "createdDate"), user, notificationHistoryDto.getNotificationFor())
-                .stream().map(notificationHistory -> {
-                    NotificationHistoryBo notificationHistoryBo = new NotificationHistoryBo(notificationHistory);
-                    notificationHistoryBo.setCreatedDate(this.helper.dateToFormattedPKTDate(notificationHistory.getCreatedDate()));
-                    return notificationHistoryBo;
-                }), "List of Notifications");
+                .stream().map(NotificationHistoryBo::new), Constants.LIST_OF_NOTIFICATIONS);
     }
 }

@@ -18,7 +18,7 @@ public class NotificationHistoryBo {
     private String message;
     private String topic;
     private String role;
-    private String createdDate;
+    private Date createdDate;
 
     public NotificationHistoryBo(NotificationHistory notificationHistory) {
 
@@ -26,5 +26,6 @@ public class NotificationHistoryBo {
         this.message = notificationHistory.getMessage();
         this.topic = notificationHistory.getTopic();
         this.role = String.valueOf(notificationHistory.getRole());
+        this.createdDate=notificationHistory.getCreatedDate();
     }
 }

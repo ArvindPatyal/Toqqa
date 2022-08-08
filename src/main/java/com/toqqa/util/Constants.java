@@ -63,7 +63,7 @@ public class Constants {
     public static final String ORDER_EMAIL_CONSTANT = "TOQQA Email";
 
     public static final String MSG_NO_RESOURCE = "Resource doesn't exist";
-	public static final String QUANTITY = "quantity";
+    public static final String QUANTITY = "quantity";
     public static final String NO_VERIFICATION_STATUS_FOUND = "No verification status found";
     public static final String RATE_YOUR_ORDER = " Your order has been delivered. Kindly rate the product and the seller.";
     public static final String RATINGS_ARRIVED = "You have received a new rating. Take a look.";
@@ -75,6 +75,8 @@ public class Constants {
     public static final String RATE_THE_ORDER_TOPIC = "Rate Product";
     public static final List<OrderStatus> ORDER_STATUSES = new ArrayList<>(Arrays.asList(OrderStatus.PLACED, OrderStatus.RECEIVED,
             OrderStatus.CONFIRMED, OrderStatus.READY_FOR_DISPATCH, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED, OrderStatus.CANCELLED));
+
+    public static final String LIST_OF_NOTIFICATIONS = "List of notifications returned";
 
 
 }
