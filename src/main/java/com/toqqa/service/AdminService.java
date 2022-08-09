@@ -5,11 +5,11 @@ import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
-import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.*;
+import com.toqqa.service.impls.PushNotificationService;
 import com.toqqa.util.AdminConstants;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,13 +38,15 @@ public class AdminService {
     private final OrderInfoRepository orderInfoRepository;
     private final VerificationStatusRepository verificationStatusRepository;
     private final AuthenticationService authenticationService;
+    private final PushNotificationService pushNotificationService;
 
 
     @Autowired
     public AdminService(UserRepository userRepository, Helper helper,
                         RoleRepository roleRepository, AgentRepository agentRepository,
                         SmeRepository smeRepository, OrderInfoRepository orderInfoRepository,
-                        VerificationStatusRepository verificationStatusRepository, AuthenticationService authenticationService) {
+                        VerificationStatusRepository verificationStatusRepository, AuthenticationService authenticationService,
+                        PushNotificationService pushNotificationService) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
@@ -55,6 +55,7 @@ public class AdminService {
         this.orderInfoRepository = orderInfoRepository;
         this.verificationStatusRepository = verificationStatusRepository;
         this.authenticationService = authenticationService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     public Response userFromToken() {
@@ -194,8 +195,8 @@ public class AdminService {
 
     public Response allApprovalRequests() {
         log.info("Invoked -+- AdminService -+- approvalRequests()");
-        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByStatusIn(
-                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(VerificationStatusConstants.PENDING));
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByRoleIn(
+                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(RoleConstants.SME, RoleConstants.AGENT));
         return new Response(this.verificationStatusToBo(verificationStatuses), AdminConstants.APPROVAL_REQUESTS);
     }
 
@@ -210,12 +211,13 @@ public class AdminService {
     public Response approve(ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminService -+- approve()");
         VerificationStatus verificationStatus = this.verificationStatusRepository.findById(approvalPayload.getId()).orElseThrow(() -> new ResourceNotFoundException(AdminConstants.NO_APPROVAL_STATUS + approvalPayload.getId()));
-        if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) || verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
+        /*if (!verificationStatus.getCreatedDate().isEqual(verificationStatus.getModificationDate()) || verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED) {
             throw new BadRequestException(AdminConstants.APPROVAL_STATUS);
-        }
+        }*/
         verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
         verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
         this.verificationStatusRepository.saveAndFlush(verificationStatus);
+        pushNotificationService.sendNotificationToCustomerApproval(verificationStatus);
         return new Response<>(approvalPayload.isAction() ? AdminConstants.REQUEST_APPROVED : AdminConstants.REQUEST_DECLINED, "Successful");
     }
 

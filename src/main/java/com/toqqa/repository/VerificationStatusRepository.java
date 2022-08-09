@@ -20,7 +20,7 @@ public interface VerificationStatusRepository extends JpaRepository<Verification
 
     List<VerificationStatus> findByUserIn(List<User> users);
 
-    List<VerificationStatus> findByStatusIn(Sort sort, List<VerificationStatusConstants> verificationStatusConstants);
+    List<VerificationStatus> findByRoleIn(Sort sort, List<RoleConstants> roleConstants);
 
     @Query(value = AdminConstants.TOP_4_NEW_APPROVAL_REQUEST, nativeQuery = true)
     List<VerificationStatus> findFirst4NewRequest();

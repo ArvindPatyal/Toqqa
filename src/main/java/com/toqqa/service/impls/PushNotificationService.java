@@ -6,9 +6,11 @@ import com.toqqa.bo.OrderInfoBo;
 import com.toqqa.bo.OrderItemBo;
 import com.toqqa.bo.SmeBo;
 import com.toqqa.constants.NotificationRoles;
+import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.Device;
 import com.toqqa.domain.NotificationHistory;
 import com.toqqa.domain.User;
+import com.toqqa.domain.VerificationStatus;
 import com.toqqa.dto.NotificationDto;
 import com.toqqa.dto.NotificationHistoryDto;
 import com.toqqa.dto.PushNotificationRequestDto;
@@ -66,6 +68,27 @@ public class PushNotificationService {
                 .user(user)
                 .build());
     }
+
+    @Async
+    public void sendNotificationToCustomerApproval(VerificationStatus verificationStatus) {
+        String message = verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) ?
+                "Your Verification Request  for " + verificationStatus.getRole().name() + " is Approved" :
+                "Your Verification Request  for " + verificationStatus.getRole().name() + " is Declined";
+
+        for (Device deviceObj : deviceService.getAllByUser(verificationStatus.getUser())) {
+            sendPushNotificationToToken(bindNotificationObject(Constants.CUSTOMER_APPROVAL_TITLE,
+                    message,
+                    deviceObj.getToken()));
+        }
+        this.persistNotification(NotificationDto.builder()
+                .title(Constants.CUSTOMER_APPROVAL_TITLE)
+                .message(message)
+                .topic(Constants.CUSTOMER_APPROVAL_TITLE)
+                .role(NotificationRoles.CUSTOMER)
+                .user(verificationStatus.getUser())
+                .build());
+    }
+
 
     @Async
     public void orderCancelToSme(User user) {
