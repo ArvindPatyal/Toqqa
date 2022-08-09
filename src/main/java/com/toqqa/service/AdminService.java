@@ -288,7 +288,7 @@ public class AdminService {
 
 
     public Response userStatsByDate(AdminFilterDto adminFilterDto) {
-        log.info("Invoked -+- AdminService -+- manageUsersByDate");
+        log.info("Invoked -+- AdminService -+- userStatsByDate()");
         List<VerificationStatus> customers = this.verificationStatusRepository.findByCustomerRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
         List<VerificationStatus> smes = this.verificationStatusRepository.findBySmeRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());
         List<VerificationStatus> agents = this.verificationStatusRepository.findByAgentRolesAndStatus(adminFilterDto.getStartDate(), adminFilterDto.getEndDate());

@@ -113,9 +113,9 @@ public class AdminController {
     @ApiOperation(value = "check new users, orders and sale status in a specific time period")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping(value = "/manageUsers")
-    public Response manageUsersByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
-        log.info("Invoked -+- AdminController -+- statsByDate()");
+    @PostMapping(value = "/usersStats")
+    public Response userStatsByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
+        log.info("Invoked -+- AdminController -+- userStatsByDate()");
         return this.adminService.userStatsByDate(adminFilterDto);
     }
 
