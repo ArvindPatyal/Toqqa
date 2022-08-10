@@ -132,7 +132,7 @@ public class AdminService {
                                             return new OrderItemBo(orderItem, productBo);
                                         }
                                 ).collect(Collectors.toList()),
-                                null)).collect(Collectors.toList()), AdminConstants.RECENT_ORDERS_RETURNED);
+                                null)), AdminConstants.RECENT_ORDERS_RETURNED);
     }
 
   /*  public Response allOrders() {
@@ -173,7 +173,7 @@ public class AdminService {
         return new Response(this.usersWithVerificationStatus(users), AdminConstants.NEW_USERS_RETURNED);
     }
 
-    private List<UserBo> usersWithVerificationStatus(List<User> users) {
+    private Stream<UserBo> usersWithVerificationStatus(List<User> users) {
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
         return users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
@@ -183,7 +183,7 @@ public class AdminService {
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             return userBo;
-        }).collect(Collectors.toList());
+        });
     }
 
 

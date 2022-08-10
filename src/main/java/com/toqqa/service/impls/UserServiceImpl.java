@@ -212,11 +212,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserBo fetchUser(String id) {
         log.info("Invoked :: UserServiceImpl :: fetchUser()");
-        Optional<User> user = this.userRepository.findById(id);
-        if (user.isPresent()) {
-            return new UserBo(user.get());
-        }
-        throw new BadRequestException("no user found with id= " + id);
+        User user = this.userRepository.findById(id).orElseThrow(() -> new BadRequestException("no user found with id= " + id));
+        UserBo userBo = new UserBo(user);
+        userBo.setProfilePicture(this.helper.prepareResource(user.getProfilePicture()));
+        return userBo;
+
+
     }
 
     @Override
@@ -289,7 +290,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("NO USER FOUND WITH THIS EMAIL ADDRESS");
         }
 
-            /*this.resetTokenRepository.deleteAllByUser(user);*/
+        /*this.resetTokenRepository.deleteAllByUser(user);*/
 
         ResetToken resetToken = new ResetToken();
         resetToken.setToken(UUID.randomUUID().toString() + System.currentTimeMillis());
