@@ -18,7 +18,7 @@ public interface VerificationStatusRepository extends JpaRepository<Verification
 
     List<VerificationStatus> findByUser(User user);
 
-    List<VerificationStatus> findByUserIn(List<User> users);
+    List<VerificationStatus> findByUserInAndStatusIn(List<User> users, List<VerificationStatusConstants> verificationStatusConstants);
 
     List<VerificationStatus> findByRoleIn(Sort sort, List<RoleConstants> roleConstants);
 
@@ -30,6 +30,7 @@ public interface VerificationStatusRepository extends JpaRepository<Verification
 
     @Query(value = AdminConstants.ALL_NEW_SMES, nativeQuery = true)
     List<VerificationStatus> findBySmeRolesAndStatus(LocalDate startDate, LocalDate endDate);
+
     @Query(value = AdminConstants.ALL_NEW_AGENTS, nativeQuery = true)
     List<VerificationStatus> findByAgentRolesAndStatus(LocalDate startDate, LocalDate endDate);
 

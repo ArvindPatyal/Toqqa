@@ -5,6 +5,7 @@ import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
 import com.toqqa.dto.AdminFilterDto;
+import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.Response;
@@ -15,6 +16,8 @@ import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -164,17 +167,20 @@ public class AdminService {
     public Response newUsers() {
         log.info("Invoked -+- AdminService -+- newUsers()");
         List<User> users = this.userRepository.findFirst4ByOrderByCreatedAtDesc();
-        return new Response(this.usersWithVerificationStatus(users), AdminConstants.NEW_USERS_RETURNED);
+        return new Response(this.usersWithVerificationStatus(users, AdminConstants.VerificationStatus), AdminConstants.NEW_USERS_RETURNED);
     }
 
-    public Response allUsers() {
+    public Response allUsers(UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminService -+- newUsers()");
-        List<User> users = this.userRepository.findAllByOrderByCreatedAtDesc();
-        return new Response(this.usersWithVerificationStatus(users), AdminConstants.NEW_USERS_RETURNED);
+        Page<User> users = this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
+        if (userDetailsDto.getStatus().equals(null)) {
+            userDetailsDto.setStatus(AdminConstants.VerificationStatus);
+        }
+        return new Response(this.usersWithVerificationStatus((List<User>) users, userDetailsDto.getStatus()), AdminConstants.NEW_USERS_RETURNED);
     }
 
-    private Stream<UserBo> usersWithVerificationStatus(List<User> users) {
-        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserIn(users);
+    private Stream<UserBo> usersWithVerificationStatus(List<User> users, List<VerificationStatusConstants> verificationStatusConstants) {
+        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserInAndStatusIn(users, verificationStatusConstants);
         return users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());

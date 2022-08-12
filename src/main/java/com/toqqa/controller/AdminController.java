@@ -1,6 +1,7 @@
 package com.toqqa.controller;
 
 import com.toqqa.dto.AdminFilterDto;
+import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.Response;
 import com.toqqa.service.AdminService;
@@ -131,10 +132,10 @@ public class AdminController {
     @ApiOperation(value = "all users")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/all_users")
-    public Response allUsers() {
+    @PostMapping(value = "/all_users")
+    public Response allUsers(@RequestBody @Valid UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminController -+- allUsers()");
-        return this.adminService.allUsers();
+        return this.adminService.allUsers(userDetailsDto);
     }
 
     @ApiOperation(value = "Recent 4 approval requests")

@@ -120,8 +120,7 @@ public class ProductController {
 	@ApiOperation(value = "Update Product sequence")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })
-//	@PreAuthorize("hasRole(ROLE_ADMIN)")
-	@PutMapping("/update_sequence")
+	@PostMapping("/update_sequence")
 	public Response<Boolean> updateSequence(@RequestBody @Valid UpdateSequenceNumberDTO dto) {
 		log.info("Invoked:: ProductController:: updateProductImage");
 		return new Response<Boolean>(this.productService.updateSequenceNumber(dto),"sequence updated successfully!!");
