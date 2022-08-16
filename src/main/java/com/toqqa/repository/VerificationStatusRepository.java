@@ -18,6 +18,8 @@ public interface VerificationStatusRepository extends JpaRepository<Verification
 
     List<VerificationStatus> findByUser(User user);
 
+    List<VerificationStatus> findByUserIn(List<User> users);
+
     List<VerificationStatus> findByUserInAndStatusIn(List<User> users, List<VerificationStatusConstants> verificationStatusConstants);
 
     List<VerificationStatus> findByRoleIn(Sort sort, List<RoleConstants> roleConstants);
