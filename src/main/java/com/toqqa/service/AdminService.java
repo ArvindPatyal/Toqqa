@@ -173,10 +173,11 @@ public class AdminService {
     public Response allUsers(UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminService -+- newUsers()");
         Page<User> users = this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
-        if (userDetailsDto.getStatus().equals(null)) {
+        if (userDetailsDto.getStatus() == null) {
             userDetailsDto.setStatus(AdminConstants.VerificationStatus);
         }
-        return new Response(this.usersWithVerificationStatus((List<User>) users, userDetailsDto.getStatus()), AdminConstants.NEW_USERS_RETURNED);
+
+        return new Response(this.usersWithVerificationStatus(users.getContent(), userDetailsDto.getStatus()), AdminConstants.NEW_USERS_RETURNED);
     }
 
     private Stream<UserBo> usersWithVerificationStatus(List<User> users, List<VerificationStatusConstants> verificationStatusConstants) {

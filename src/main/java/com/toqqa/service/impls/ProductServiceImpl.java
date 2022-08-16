@@ -81,6 +81,7 @@ public class ProductServiceImpl implements ProductService {
                 throw new BadRequestException("Max. value greater then min. value");
             }
         }
+        User user = this.authenticationService.currentUser();
         Product product = new Product();
         product.setProductName(addProduct.getProductName());
         product.setProductCategories(this.productCategoryRepo.findAllById(addProduct.getProductCategory()));
@@ -97,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
 
         product.setCountryOfOrigin(addProduct.getCountryOfOrigin());
         product.setManufacturerName(addProduct.getManufacturerName());
-        product.setUser(authenticationService.currentUser());
+        product.setUser(user);
         product.setIsDeleted(false);
         product.setDeliveredInSpecifiedRadius(addProduct.getDeliveredInSpecifiedRadius());
         product.setDelieveredOutsideSpecifiedRadius(addProduct.getDelieveredOutsideSpecifiedRadius());
@@ -122,14 +123,15 @@ public class ProductServiceImpl implements ProductService {
                     e.printStackTrace();
                 }
         }
-
         product.setAttachments(attachments);
+        product.setSequenceNumber(this.productRepo.findByUser(user).size());
         product = this.productRepo.saveAndFlush(product);
 
         ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
         bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
         return bo;
     }
+
 
 	/*private String prepareResource(String location) {
 		if (this.helper.notNullAndBlank(location)) {

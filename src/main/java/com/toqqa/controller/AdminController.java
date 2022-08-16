@@ -5,7 +5,6 @@ import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.Response;
 import com.toqqa.service.AdminService;
-import com.toqqa.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -23,12 +22,10 @@ import javax.validation.Valid;
 public class AdminController {
 
     private final AdminService adminService;
-    private final UserService userService;
 
     @Autowired
-    public AdminController(AdminService adminService, UserService userService) {
+    public AdminController(AdminService adminService) {
         this.adminService = adminService;
-        this.userService = userService;
     }
 
 
@@ -132,7 +129,7 @@ public class AdminController {
     @ApiOperation(value = "all users")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping(value = "/all_users")
+    @PostMapping(value = "/allUsers")
     public Response allUsers(@RequestBody @Valid UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminController -+- allUsers()");
         return this.adminService.allUsers(userDetailsDto);
