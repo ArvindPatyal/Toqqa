@@ -105,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDelieveredOutsideSpecifiedRadius(addProduct.getDelieveredOutsideSpecifiedRadius());
         if (addProduct.getManufacturingDate() != null)
             product.setManufacturingDate(new Date(addProduct.getManufacturingDate()));
-
+        product.setSequenceNumber(this.productRepo.findByUser(user).size());
         product = this.productRepo.saveAndFlush(product);
         List<Attachment> attachments = new ArrayList<>();
         for (MultipartFile imageFile : addProduct.getImages()) {
@@ -125,7 +125,6 @@ public class ProductServiceImpl implements ProductService {
                 }
         }
         product.setAttachments(attachments);
-        product.setSequenceNumber(this.productRepo.findByUser(user).size());
         product = this.productRepo.saveAndFlush(product);
 
         ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
