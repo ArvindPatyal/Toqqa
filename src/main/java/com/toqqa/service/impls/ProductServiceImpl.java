@@ -10,6 +10,7 @@ import com.toqqa.domain.*;
 import com.toqqa.dto.UpdateSequenceNumberDTO;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.InternalServerException;
+import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.*;
 import com.toqqa.repository.*;
 import com.toqqa.service.*;
@@ -204,15 +205,8 @@ public class ProductServiceImpl implements ProductService {
     public ListResponseWithCount<ProductBo> fetchProductList(ListProductRequest paginationBo) {
         log.info("Invoked :: ProductServiceImpl :: fetchProductList()");
         User user = this.authenticationService.currentUser();
-        Page<Product> allProducts = null;
-
-        if (this.authenticationService.isAdmin()) {
-            allProducts = this.productRepo.findByIsDeleted(PageRequest.of(paginationBo.getPageNumber(), pageSize),
-                    paginationBo.getIsInActive());
-        } else {
-            allProducts = this.productRepo.findByUserAndIsDeleted(
-                    PageRequest.of(paginationBo.getPageNumber(), pageSize), user, paginationBo.getIsInActive());
-        }
+        Page<Product> allProducts = this.productRepo.findByUserAndIsDeleted(
+                    PageRequest.of(paginationBo.getPageNumber(), pageSize,Sort.by(Sort.Direction.ASC,"sequenceNumber")), user, paginationBo.getIsInActive());
         List<ProductBo> bos = new ArrayList<>();
         allProducts.forEach(product -> {
             bos.add(this.toProductBo(product));
@@ -376,12 +370,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Boolean updateSequenceNumber(UpdateSequenceNumberDTO dto) {
         log.info("Invoked :: ProductServiceImpl :: updateSequenceNumber()");
-        Optional<Product> product = this.productRepo.findById(dto.getProductId());
-        if (product.isPresent()) {
-            product.get().setSequenceNumber(dto.getSequenceNumber());
-            this.productRepo.saveAndFlush(product.get());
+        User user = this.authenticationService.currentUser();
+        Product product = this.productRepo.findById(dto.getProductId()).orElseThrow(() -> new ResourceNotFoundException("No product found with id "+ dto.getProductId()));
+        if (product.getUser()!=user){
+            throw new BadRequestException("This product is not associated with you");
+        }
+            product.setSequenceNumber(dto.getSequenceNumber());
+            this.productRepo.saveAndFlush(product);
             return true;
         }
-        throw new InternalServerException("unable to update sequence!!");
-    }
 }
