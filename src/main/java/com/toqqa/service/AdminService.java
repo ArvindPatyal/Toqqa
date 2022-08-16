@@ -16,8 +16,6 @@ import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -172,12 +170,11 @@ public class AdminService {
 
     public Response allUsers(UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminService -+- newUsers()");
-        Page<User> users = this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
         if (userDetailsDto.getStatus() == null) {
             userDetailsDto.setStatus(AdminConstants.VerificationStatus);
         }
-
-        return new Response(this.usersWithVerificationStatus(users.getContent(), userDetailsDto.getStatus()), AdminConstants.NEW_USERS_RETURNED);
+        return new Response(this.usersWithVerificationStatus(this.userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")),
+                userDetailsDto.getStatus()), AdminConstants.NEW_USERS_RETURNED);
     }
 
     private Stream<UserBo> usersWithVerificationStatus(List<User> users, List<VerificationStatusConstants> verificationStatusConstants) {
