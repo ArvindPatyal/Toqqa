@@ -376,11 +376,11 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     @Override
     public Response previousOrderList(OrderInfoDto orderInfoDto) {
         User user = this.authenticationService.currentUser();
-        List<OrderInfo> orderInfoList = null;
+        Page<OrderInfo> orderInfoList = null;
         Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
         if (orderInfoDto.isShowCancelledOrders()) {
             orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(PageRequest.of(orderInfoDto.getPageNumber(), pageSize, sort),
-                    orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Arrays.asList(OrderStatus.CANCELLED));
+                    orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Collections.singletonList(OrderStatus.CANCELLED));
         } else {
             orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(PageRequest.of(orderInfoDto.getPageNumber(), pageSize, sort),
                     orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Constants.ORDER_STATUSES);

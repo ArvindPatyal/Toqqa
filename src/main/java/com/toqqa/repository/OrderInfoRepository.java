@@ -6,7 +6,6 @@ import com.toqqa.domain.User;
 import com.toqqa.util.AdminConstants;
 import com.toqqa.util.Constants;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,7 +23,7 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 
     Page<OrderInfo> findBySmeIdAndOrderStatusIn(Pageable pageRequest, String smeId, List<OrderStatus> orderStatus);
 
-    List<OrderInfo> findByCreatedDateBetweenAndUserIdAndOrderStatusIn(PageRequest pageRequest, Date startDate, Date endDate, String userId, List<OrderStatus> orderStatus);
+    Page<OrderInfo> findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Pageable pageRequest, Date startDate, Date endDate, String userId, List<OrderStatus> orderStatus);
 
     List<OrderInfo> findByUser_IdAndOrderStatus(String userId, OrderStatus orderStatus);
 
