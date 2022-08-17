@@ -256,13 +256,8 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     public ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationBo) {
         log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderList()");
         User user = this.authenticationService.currentUser();
-        Page<OrderInfo> allOrders = null;
         Sort sort = Sort.by("createdDate").descending();
-        if (authenticationService.isAdmin()) {
-            allOrders = this.orderInfoRepo.findAll(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort));
-        } else {
-            allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort), user);
-        }
+        Page<OrderInfo> allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort), user);
         List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
         allOrders.forEach(orderInfo -> {
             Sme sme = orderInfo.getSme();
@@ -382,11 +377,12 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     public Response previousOrderList(OrderInfoDto orderInfoDto) {
         User user = this.authenticationService.currentUser();
         List<OrderInfo> orderInfoList = null;
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
         if (orderInfoDto.isShowCancelledOrders()) {
-            orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
+            orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(PageRequest.of(orderInfoDto.getPageNumber(), pageSize, sort),
                     orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Arrays.asList(OrderStatus.CANCELLED));
         } else {
-            orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(Sort.by(Sort.Direction.DESC, "createdDate"),
+            orderInfoList = this.orderInfoRepo.findByCreatedDateBetweenAndUserIdAndOrderStatusIn(PageRequest.of(orderInfoDto.getPageNumber(), pageSize, sort),
                     orderInfoDto.getStartDate(), orderInfoDto.getEndDate(), user.getId(), Constants.ORDER_STATUSES);
         }
         List<OrderInfoBo> orderInfoBos = new ArrayList<>();

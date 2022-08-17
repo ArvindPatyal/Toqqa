@@ -17,4 +17,6 @@ public class OrderInfoDto {
     private Date startDate;
 
     private boolean showCancelledOrders = false;
+
+    private int pageNumber = 0;
 }
