@@ -78,13 +78,6 @@ public class ProductController {
 
 	}
 
-	@DeleteMapping("/delete/{id}")
-	public Response<?> deleteProduct(@PathVariable("id") @Valid String id) {
-		log.info("Invoked:: ProductController:: deleteProduct");
-		this.productService.deleteProduct(id);
-		return new Response<Boolean>(true, "deleted successfully");
-	}
-
 	@ApiOperation(value = " Product")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = ""),
 			@ApiResponse(code = 400, message = "Bad Request!") })

@@ -9,7 +9,6 @@ import com.toqqa.constants.OrderBy;
 import com.toqqa.domain.*;
 import com.toqqa.dto.UpdateSequenceNumberDTO;
 import com.toqqa.exception.BadRequestException;
-import com.toqqa.exception.InternalServerException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.*;
 import com.toqqa.repository.*;
@@ -73,6 +72,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private SmeRepository smeRepo;
+
 
     @Override
     public ProductBo addProduct(AddProduct addProduct) {
@@ -205,7 +205,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Invoked :: ProductServiceImpl :: fetchProductList()");
         User user = this.authenticationService.currentUser();
         Page<Product> allProducts = this.productRepo.findByUserAndIsDeleted(
-                    PageRequest.of(paginationBo.getPageNumber(), pageSize,Sort.by(Sort.Direction.ASC,"sequenceNumber")), user, paginationBo.getIsInActive());
+                PageRequest.of(paginationBo.getPageNumber(), pageSize, Sort.by(Sort.Direction.ASC, "sequenceNumber")), user, paginationBo.getIsInActive());
         List<ProductBo> bos = new ArrayList<>();
         allProducts.forEach(product -> {
             bos.add(this.toProductBo(product));
@@ -215,16 +215,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    public void deleteProduct(String id) {
-        log.info("Invoked :: ProductServiceImpl :: deleteProduct()");
-        Product prod = this.productRepo.findById(id).get();
-        prod.setIsDeleted(true);
-        Advertisement adv = this.advertisementRepo.findByProduct_Id(id);
-        if (adv != null)
-            adv.setIsActive(false);
-        this.productRepo.saveAndFlush(prod);
-
-    }
 
     @Override
     public Boolean deleteAttachment(String id) {
@@ -268,17 +258,18 @@ public class ProductServiceImpl implements ProductService {
         if (!this.authenticationService.isSME()) {
             throw new AccessDeniedException("user is not an sme");
         }
-        Optional<Product> prd = this.productRepo.findById(toggleStatus.getId());
-        if (prd.isPresent()) {
-            Product prds = prd.get();
-            prds.setIsDeleted(toggleStatus.getStatus());
-            prds = this.productRepo.saveAndFlush(prds);
-            ProductBo bo = new ProductBo(prds, this.helper.prepareProductAttachments(prds.getAttachments()));
-            bo.setBanner(this.helper.prepareAttachmentResource(prds.getBanner()));
-            return new ProductBo(prds);
+        Product product = this.productRepo.findById(toggleStatus.getId()).orElseThrow(() -> new BadRequestException("invalid product id " + toggleStatus.getId()));
+        product.setIsDeleted(toggleStatus.getStatus());
+        product = this.productRepo.saveAndFlush(product);
+        ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
+        bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
+        Optional<Advertisement> optionalAdvertisement = this.advertisementRepo.findByProduct_Id(product.getId());
+        if (optionalAdvertisement.isPresent()) {
+            optionalAdvertisement.get().setIsDeleted(toggleStatus.getStatus());
+            advertisementRepo.saveAndFlush(optionalAdvertisement.get());
         }
+        return new ProductBo(product);
 
-        throw new BadRequestException("invalid product id " + toggleStatus.getId());
     }
 
     @Override
@@ -370,12 +361,12 @@ public class ProductServiceImpl implements ProductService {
     public Boolean updateSequenceNumber(UpdateSequenceNumberDTO dto) {
         log.info("Invoked :: ProductServiceImpl :: updateSequenceNumber()");
         User user = this.authenticationService.currentUser();
-        Product product = this.productRepo.findById(dto.getProductId()).orElseThrow(() -> new ResourceNotFoundException("No product found with id "+ dto.getProductId()));
-        if (product.getUser()!=user){
+        Product product = this.productRepo.findById(dto.getProductId()).orElseThrow(() -> new ResourceNotFoundException("No product found with id " + dto.getProductId()));
+        if (product.getUser() != user) {
             throw new BadRequestException("This product is not associated with you");
         }
-            product.setSequenceNumber(dto.getSequenceNumber());
-            this.productRepo.saveAndFlush(product);
-            return true;
-        }
+        product.setSequenceNumber(dto.getSequenceNumber());
+        this.productRepo.saveAndFlush(product);
+        return true;
+    }
 }
