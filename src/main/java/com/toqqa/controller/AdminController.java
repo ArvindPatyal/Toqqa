@@ -3,6 +3,7 @@ package com.toqqa.controller;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.payload.ApprovalPayload;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
 import com.toqqa.service.AdminService;
 import io.swagger.annotations.ApiOperation;
@@ -130,7 +131,7 @@ public class AdminController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PostMapping(value = "/allUsers")
-    public Response allUsers(@RequestBody @Valid UserDetailsDto userDetailsDto) {
+    public ListResponseWithCount allUsers(@RequestBody @Valid UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminController -+- allUsers()");
         return this.adminService.allUsers(userDetailsDto);
     }

@@ -84,7 +84,7 @@ public class OrderInfoController {
     @ApiOperation(value = "list of previous orders placed by customers")
     @ApiResponses(value = {@ApiResponse(code = 200, message = ""), @ApiResponse(code = 400, message = "Bad Request")})
     @PostMapping("/previousOrders")
-    public Response previousOrderList(@RequestBody @Valid OrderInfoDto orderInfoDto) {
+    public  ListResponseWithCount previousOrderList(@RequestBody @Valid OrderInfoDto orderInfoDto) {
         log.info("Invoked:: OrderInfoController:: previousOrderList");
         return this.orderInfoService.previousOrderList(orderInfoDto);
     }

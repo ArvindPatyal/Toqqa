@@ -8,6 +8,7 @@ import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ApprovalPayload;
+import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
 import com.toqqa.repository.*;
 import com.toqqa.service.impls.PushNotificationService;
@@ -16,6 +17,7 @@ import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -169,13 +171,14 @@ public class AdminService {
         return new Response(this.usersWithVerificationStatus(users, AdminConstants.VerificationStatus), AdminConstants.NEW_USERS_RETURNED);
     }
 
-    public Response allUsers(UserDetailsDto userDetailsDto) {
+    public ListResponseWithCount allUsers(UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminService -+- newUsers()");
         if (userDetailsDto.getStatus() == null) {
             userDetailsDto.setStatus(AdminConstants.VerificationStatus);
         }
-        return new Response(this.usersWithVerificationStatus(this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent(),
-                userDetailsDto.getStatus()), AdminConstants.NEW_USERS_RETURNED);
+        Page<User> users = this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return new ListResponseWithCount(this.usersWithVerificationStatus(users.getContent(), userDetailsDto.getStatus()).collect(Collectors.toList()),
+                AdminConstants.NEW_USERS_RETURNED, users.getTotalElements(), userDetailsDto.getPageNumber(), users.getTotalPages());
     }
 
     private Stream<UserBo> usersWithVerificationStatus(List<User> users, List<VerificationStatusConstants> verificationStatusConstants) {

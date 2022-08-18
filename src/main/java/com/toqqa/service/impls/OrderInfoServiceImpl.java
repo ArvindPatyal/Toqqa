@@ -374,7 +374,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
     //TODO to be discussed further!!
     @Override
-    public Response previousOrderList(OrderInfoDto orderInfoDto) {
+    public ListResponseWithCount previousOrderList(OrderInfoDto orderInfoDto) {
         User user = this.authenticationService.currentUser();
         Page<OrderInfo> orderInfoList = null;
         Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
@@ -399,6 +399,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
             orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderInfo.getId(), user.getId()));
             orderInfoBos.add(orderInfoBo);
         });
-        return new Response<>(orderInfoBos, "User previous OrderList ");
+        return new ListResponseWithCount(orderInfoBos, "User previous OrderList ", orderInfoList.getTotalElements(), orderInfoDto.getPageNumber(), orderInfoList.getTotalPages());
     }
 }

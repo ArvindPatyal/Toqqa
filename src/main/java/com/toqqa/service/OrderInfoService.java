@@ -35,5 +35,5 @@ public interface OrderInfoService {
 
     Optional<Integer> getOrderCountBySmeAndDateAndStatus(String smeId, String orderStatus, LocalDate startDate, LocalDate endDate);
 
-    Response previousOrderList(OrderInfoDto orderInfoDto);
+    ListResponseWithCount previousOrderList(OrderInfoDto orderInfoDto);
 }
