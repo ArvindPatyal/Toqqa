@@ -2,10 +2,7 @@ package com.toqqa.payload;
 
 import java.util.List;
 
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 
 import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +13,7 @@ import lombok.Data;
 public class AddProduct {
 
 	@NotNull
+	@NotBlank
 	private String productName;
 
 	@NotNull

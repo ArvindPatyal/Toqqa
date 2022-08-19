@@ -48,6 +48,8 @@ public class UserBo {
 
     private List<String> roles = new ArrayList<>();
     private Map<String, String> verification = new HashedMap();
+    private Map<String, String> verificationIds = new HashedMap();
+
     private SmeBo smeBo;
     private AgentBo agentBo;
 

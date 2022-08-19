@@ -187,7 +187,14 @@ public class AdminService {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());
             Map<String, String> verificationMap = new HashMap<>();
-            verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
+            Map<String, String> verificationIdsMap = new HashMap<>();
+            verificationStatusList.forEach(verificationStatus -> {
+                verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString());
+                if (verificationStatus.getRole().equals("ROLE_CUSTOMER")) {
+                    verificationStatus.setId("HIDDEN");
+                }
+                verificationIdsMap.put(verificationStatus.getRole().getValue(), verificationStatus.getId());
+            });
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             if (userBo.getRoles().contains("ROLE_SME")) {
