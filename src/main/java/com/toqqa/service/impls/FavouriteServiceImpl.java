@@ -82,7 +82,6 @@ public class FavouriteServiceImpl implements FavouriteService {
         List<SmeBo> favoriteSmes = new ArrayList<>();
         smeList.getData().stream().forEach(smeBo -> {
             if (this.isFavSme(smeBo, favourite)) {
-                smeBo.setBusinessLogo(this.helper.prepareResource(smeBo.getBusinessLogo()));
                 favoriteSmes.add(smeBo);
             }
         });
