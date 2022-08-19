@@ -190,6 +190,14 @@ public class AdminService {
             verificationStatusList.forEach(verificationStatus -> verificationMap.put(verificationStatus.getRole().getValue(), verificationStatus.getStatus().toString()));
             userBo.setVerification(verificationMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
+            if (userBo.getRoles().contains("ROLE_SME")) {
+                Sme sme = this.smeRepository.findByUserId(user.getId());
+                userBo.setSmeBo(sme != null ? this.toSmeBo(sme) : null);
+            }
+            if (userBo.getRoles().contains("ROLE_AGENT")) {
+                Agent agent = this.agentRepository.findByUserId(user.getAgentId());
+                userBo.setAgentBo(agent != null ? this.toAgentBo(agent) : null);
+            }
             return userBo;
         });
     }
