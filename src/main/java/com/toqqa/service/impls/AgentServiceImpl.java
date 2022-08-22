@@ -77,6 +77,7 @@ public class AgentServiceImpl implements AgentService {
                 roles.add(this.roleRepo.findByRole(RoleConstants.AGENT.getValue()));
                 user.setRoles(roles);
                 try {
+                    agent.setAgentProfilePicture(user.getProfilePicture());
                     agent.setIdProof(this.storageService.uploadFileAsync(agentRegistration.getIdProof(), userId, FolderConstants.DOCUMENTS.getValue()).get());
                     agent.setAgentDocuments(this.storageService.uploadFileAsync(agentRegistration.getAgentDocuments(), userId, FolderConstants.DOCUMENTS.getValue()).get());
                 } catch (InterruptedException | ExecutionException e) {
@@ -156,6 +157,7 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = this.agentRepo.findByUserId(id);
         if (agent != null) {
             AgentBo bo = new AgentBo(agent);
+            bo.setProfilePicture(this.helper.prepareResource(agent.getAgentProfilePicture()));
             bo.setAgentDocuments(this.helper.prepareResource(agent.getAgentDocuments()));
             bo.setIdProof(this.helper.prepareResource(agent.getIdProof()));
             bo.setAgentId(agent.getAgentId());

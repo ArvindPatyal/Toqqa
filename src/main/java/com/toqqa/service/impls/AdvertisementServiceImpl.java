@@ -5,6 +5,7 @@ import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.ProductBo;
 import com.toqqa.constants.FolderConstants;
 import com.toqqa.domain.Advertisement;
+import com.toqqa.domain.Product;
 import com.toqqa.domain.User;
 import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.AdvertisementPayload;
@@ -66,7 +67,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         ads.setIsActive(false);
         ads.setDescription(advertisementPayload.getDescription());
         ads.setUser(user);
-        ads.setProduct(this.productRepo.findById(advertisementPayload.getProductId()).get());
+        Product product = this.productRepo.findById(advertisementPayload.getProductId()).orElseThrow(() -> new BadRequestException("Enter a valid product ID"));
+        if (product.getIsDeleted()) {
+            throw new BadRequestException("Cannot create ads for a disabled product");
+        }
+        ads.setProduct(product);
         ads.setClicks(0);
         ads.setQueueDate(new Date());
         try {
@@ -233,11 +238,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return adds;
     }
 
-    @Scheduled(fixedRate = 14400000,initialDelay =14400000)
+    @Scheduled(fixedRate = 14400000, initialDelay = 14400000)
     private void resetAdds() {
         log.info("Invoked :: AdvertisementServiceImpl :: resetAdds()");
         List<Advertisement> ads = this.advertisementRepo.findTop10ByIsActiveOrderByQueueDateAsc(true);
-        if(this.helper.notNullAndHavingData(ads)) {
+        if (this.helper.notNullAndHavingData(ads)) {
             Advertisement ad = ads.get(0);
             ad.setQueueDate(new Date());
             this.advertisementRepo.saveAndFlush(ad);
