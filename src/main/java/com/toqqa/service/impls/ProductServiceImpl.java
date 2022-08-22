@@ -73,6 +73,9 @@ public class ProductServiceImpl implements ProductService {
     private WishlistRepository wishlistRepository;
 
     @Autowired
+    private AdvertisementService advertisementService;
+
+    @Autowired
     private SmeRepository smeRepo;
 
 
@@ -258,17 +261,21 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(propagation = Propagation.REQUIRED)
     public ProductBo updateProductStatus(ToggleStatus toggleStatus) {
         log.info("Invoked :: ProductServiceImpl :: updateProductStatus()");
+        User user = this.authenticationService.currentUser();
         if (!this.authenticationService.isSME()) {
             throw new AccessDeniedException("user is not an sme");
         }
-        Product product = this.productRepo.findById(toggleStatus.getId()).orElseThrow(() -> new BadRequestException("invalid product id " + toggleStatus.getId()));
+        Product product = this.productRepo.findById(toggleStatus.getId()).orElseThrow(() -> new ResourceNotFoundException("invalid product id " + toggleStatus.getId()));
         product.setIsDeleted(toggleStatus.getStatus());
         product = this.productRepo.saveAndFlush(product);
         ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
         bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-        Optional<Advertisement> optionalAdvertisement = this.advertisementRepo.findByProduct_Id(product.getId());
+        Optional<Advertisement> optionalAdvertisement = this.advertisementRepo.findByProduct_IdAndIsDeleted(product.getId(),false);
         if (optionalAdvertisement.isPresent()) {
-            optionalAdvertisement.get().setIsDeleted(toggleStatus.getStatus());
+            if (toggleStatus.getStatus().equals(false)) {
+                this.advertisementService.updateOldAdsStatus(user);
+            }
+            optionalAdvertisement.get().setIsActive(!toggleStatus.getStatus());
             advertisementRepo.saveAndFlush(optionalAdvertisement.get());
         }
         return new ProductBo(product);

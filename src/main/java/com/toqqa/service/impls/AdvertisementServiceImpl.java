@@ -17,6 +17,7 @@ import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.AdvertisementService;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.StorageService;
+import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,8 +69,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         ads.setDescription(advertisementPayload.getDescription());
         ads.setUser(user);
         Product product = this.productRepo.findById(advertisementPayload.getProductId()).orElseThrow(() -> new BadRequestException("Enter a valid product ID"));
-        if (product.getIsDeleted()) {
-            throw new BadRequestException("Cannot create ads for a disabled product");
+        if (this.userAdvertisementList(user, product.getId())) {
+            if (product.getIsDeleted()) {
+                throw new BadRequestException(Constants.ADVERTISEMENT_NOT_CREATED);
+            }
+            throw new BadRequestException(Constants.ADVERTISEMENT_ALREADY_PRESENT + " " + product.getId());
         }
         ads.setProduct(product);
         ads.setClicks(0);
@@ -93,6 +97,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     }
 
+    private Boolean userAdvertisementList(User user, String id) {
+        List<Advertisement> ads = this.advertisementRepo.findByUserAndIsDeleted(user, false);
+        return ads.stream().anyMatch(ad -> ad.getProduct().getId().equals(id));
+    }
+
     /*
      * private ProductBo prepareProduct(AdvertisementBo bo){
      * log.info("inside prepare product"); bo.getProduct().getImages().forEach(image
@@ -102,7 +111,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
      * getBanner())); return bo.getProduct(); }
      */
 
-    private void updateOldAdsStatus(User user) {
+    public void updateOldAdsStatus(User user) {
         log.info("Invoked :: AdvertisementServiceImpl :: updateOldAdsStatus()");
         List<Advertisement> ads = this.advertisementRepo.findByUserAndIsActiveAndIsDeleted(user, true, false);
         ads.forEach(ad -> {

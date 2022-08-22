@@ -79,5 +79,9 @@ public class Constants {
 
     public static final String LIST_OF_NOTIFICATIONS = "List of notifications returned";
 
+    public static final String ADVERTISEMENT_NOT_CREATED = "Advertisement not created with disable product";
+
+    public static final String ADVERTISEMENT_ALREADY_PRESENT = "Already advertisement created with this product";
+
 
 }
