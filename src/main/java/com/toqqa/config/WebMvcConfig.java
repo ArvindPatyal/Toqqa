@@ -40,7 +40,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/customer/**", "api/cart/**", "/api/address/**", "/api/device/**", "/api/favourites/**",
                         "/api/feedback/**", "/api/notification/**", "/api/order/**", "/api/product/categories/sme", "/api/product/categories",
                         "/api/product/fetchProduct/**", "/api/product/fetchProductList", "/api/product/search", "/api/product/productsubcategories", "/api/sme/productList",
-                        "/api/user/**", "/api/wishlist/**", "/api/sme/fetchSme/**", "/api/rating/**"));
+                        "/api/user/**", "/api/wishlist/**", "/api/sme/fetchSme/**", "/api/rating/**","/api/verification"));
         registry.addInterceptor(customerInterceptor).addPathPatterns(Arrays.asList("/api/advertisement/**", "/api/agent/**", "/api/order/list",
                         "/api/order/updateStatus", "/api/product/**", "/api/sme/**"))
                 .excludePathPatterns(Arrays.asList("/api/product/fetchProduct/**", "/api/product/fetchProductList",

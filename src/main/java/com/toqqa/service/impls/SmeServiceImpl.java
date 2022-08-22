@@ -345,7 +345,7 @@ public class SmeServiceImpl implements SmeService {
                         OptionalDouble average = integers.stream().mapToDouble(value -> value).average();
                         dtoList.add(new NearbySmeRespDto(smeObj.getUserId(), smeObj.getNameOfBusiness(),
                                 smeObj.getBusinessAddress(), smeObj.getLatitude(), smeObj.getLongitude(),
-                                bindLogoUrl(smeObj.getBusinessLogo()),
+                                this.helper.prepareResource(smeObj.getBusinessLogo()),
                                 average.isPresent() ? average.getAsDouble() : 0.0));
                     }
                 }
