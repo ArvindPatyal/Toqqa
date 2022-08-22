@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.toqqa.bo.AdvertisementBo;
 import com.toqqa.bo.PaginationBo;
+import com.toqqa.domain.User;
 import com.toqqa.payload.AdvertisementPayload;
 import com.toqqa.payload.AdvertisementUpdate;
 import com.toqqa.payload.ListResponseWithCount;
@@ -26,6 +27,8 @@ public interface AdvertisementService {
 	AdvertisementBo updateAdsStatus(ToggleAdStatus toggleAdStatus);
 
 	List<AdvertisementBo> fetchTopActiveAdds();
+
+	void updateOldAdsStatus(User user);
 
 //	List<AdvertisementBo> alotQueueNumber(List<AdvertisementBo> bos);
 	
