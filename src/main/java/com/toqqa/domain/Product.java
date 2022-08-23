@@ -37,6 +37,8 @@ public class Product {
 
     private Double discount;
 
+    private Double discountedPrice;
+
     private Integer maximumUnitsInOneOrder;
 
     private Integer minimumUnitsInOneOrder;

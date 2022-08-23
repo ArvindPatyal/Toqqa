@@ -186,6 +186,12 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 orderItem.setDiscount(product.getDiscount());
                 orderItem.setPricePerUnit(product.getPricePerUnit());
                 orderItem.setProduct(product);
+                if (item.getQuantity() > product.getMaximumUnitsInOneOrder()) {
+                    throw new BadRequestException("Maximum quantity in" + " " + product.getProductName() + " " + product.getMaximumUnitsInOneOrder());
+                }
+                if (item.getQuantity() < product.getMinimumUnitsInOneOrder()) {
+                    throw new BadRequestException("Minimum quantity in" + " " + product.getProductName() + " " + product.getMinimumUnitsInOneOrder());
+                }
                 orderItem.setQuantity(item.getQuantity());
                 orderItem.setOrderInfo(order);
                 orderItem.setPrice((product.getPricePerUnit() * item.getQuantity())
