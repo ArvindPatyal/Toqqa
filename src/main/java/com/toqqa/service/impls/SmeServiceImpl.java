@@ -144,18 +144,18 @@ public class SmeServiceImpl implements SmeService {
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
-
+                VerificationStatus status = new VerificationStatus();
+                status.setStatus(VerificationStatusConstants.PENDING);
+                status.setUser(user);
+                status.setRole(RoleConstants.SME);
+                this.statusService.createVerificationStatus(status);
                 sme = this.smeRepo.saveAndFlush(sme);
                 SmeBo bo = new SmeBo(sme);
                 bo.setRegDoc(this.prepareResource(sme.getRegDoc()));
                 bo.setIdProof(this.prepareResource(sme.getIdProof()));
                 bo.setBusinessLogo(this.prepareResource(sme.getBusinessLogo()));
 
-                VerificationStatus status = new VerificationStatus();
-                status.setStatus(VerificationStatusConstants.PENDING);
-                status.setUser(user);
-                status.setRole(RoleConstants.SME);
-                this.statusService.createVerificationStatus(status);
+
 
                 return bo;
             } catch (Exception e) {

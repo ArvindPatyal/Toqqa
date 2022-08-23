@@ -196,6 +196,7 @@ public class AdminService {
                 verificationIdsMap.put(verificationStatus.getRole().getValue(), verificationStatus.getId());
             });
             userBo.setVerification(verificationMap);
+            userBo.setVerificationIds(verificationIdsMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
             if (userBo.getRoles().contains("ROLE_SME")) {
                 Sme sme = this.smeRepository.findByUserId(user.getId());
