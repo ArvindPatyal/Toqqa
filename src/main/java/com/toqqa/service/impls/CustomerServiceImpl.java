@@ -51,6 +51,9 @@ public class CustomerServiceImpl implements CustomerService {
         Page<Product> products = null;
         Sort sort = null;
         try {
+            if(bo.getSortKey().equals("pricePerUnit")){
+                bo.setSortKey("discountedPrice");
+            }
             if (bo.getSortOrder() != null) {
                 if (Objects.equals(bo.getSortOrder(), "ASC") || Objects.equals(bo.getSortOrder(), "DESC")) {
                     bo.setSortOrder(bo.getSortOrder());

@@ -97,6 +97,7 @@ public class ProductServiceImpl implements ProductService {
         product.setUnitsInStock(addProduct.getUnitsInStock());
         product.setPricePerUnit(addProduct.getPricePerUnit());
         product.setDiscount(addProduct.getDiscount());
+        product.setDiscountedPrice(this.discountedPrice(product));
         product.setMaximumUnitsInOneOrder(addProduct.getMaximumUnitsInOneOrder());
         product.setMinimumUnitsInOneOrder(addProduct.getMinimumUnitsInOneOrder());
         if (addProduct.getExpiryDate() != null)
@@ -137,7 +138,6 @@ public class ProductServiceImpl implements ProductService {
         return bo;
     }
 
-
 	/*private String prepareResource(String location) {
 		if (this.helper.notNullAndBlank(location)) {
 			return this.storageService.generatePresignedUrl(location);
@@ -168,6 +168,7 @@ public class ProductServiceImpl implements ProductService {
             product.setUnitsInStock(updateProduct.getUnitsInStock());
             product.setPricePerUnit(updateProduct.getPricePerUnit());
             product.setDiscount(updateProduct.getDiscount());
+            product.setDiscountedPrice(this.discountedPrice(product));
             product.setMaximumUnitsInOneOrder(updateProduct.getMaximumUnitsInOneOrder());
             product.setMinimumUnitsInOneOrder(updateProduct.getMinimumUnitsInOneOrder());
 
@@ -194,6 +195,15 @@ public class ProductServiceImpl implements ProductService {
         }
         throw new BadRequestException("Invalid Product Id");
     }
+
+    private Double discountedPrice(Product product) {
+        Double discountPrice = null;
+        discountPrice = product.getPricePerUnit() * product.getDiscount() / 100;
+        discountPrice = product.getPricePerUnit() - discountPrice;
+        return discountPrice;
+    }
+
+
 
     @Override
     public ProductBo fetchProduct(String id) {
@@ -270,7 +280,7 @@ public class ProductServiceImpl implements ProductService {
         product = this.productRepo.saveAndFlush(product);
         ProductBo bo = new ProductBo(product, this.helper.prepareProductAttachments(product.getAttachments()));
         bo.setBanner(this.helper.prepareAttachmentResource(product.getBanner()));
-        Optional<Advertisement> optionalAdvertisement = this.advertisementRepo.findByProduct_IdAndIsDeleted(product.getId(),false);
+        Optional<Advertisement> optionalAdvertisement = this.advertisementRepo.findByProduct_IdAndIsDeleted(product.getId(), false);
         if (optionalAdvertisement.isPresent()) {
             if (toggleStatus.getStatus().equals(false)) {
                 this.advertisementService.updateOldAdsStatus(user);
