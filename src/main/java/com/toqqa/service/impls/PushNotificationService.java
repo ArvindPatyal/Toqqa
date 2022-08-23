@@ -71,17 +71,18 @@ public class PushNotificationService {
 
     @Async
     public void sendNotificationToCustomerApproval(VerificationStatus verificationStatus) {
+        String title = verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED)? Constants.CUSTOMER_APPROVAL_TITLE:Constants.CUSTOMER_DECLINE_TITLE;
         String message = verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) ?
-                "Your Verification Request  for " + verificationStatus.getRole().name() + " is Approved" :
+                "Your Verification Request  for " + verificationStatus.getRole().name() + " is Approved"  :
                 "Your Verification Request  for " + verificationStatus.getRole().name() + " is Declined";
 
         for (Device deviceObj : deviceService.getAllByUser(verificationStatus.getUser())) {
-            sendPushNotificationToToken(bindNotificationObject(Constants.CUSTOMER_APPROVAL_TITLE,
+            sendPushNotificationToToken(bindNotificationObject(title,
                     message,
                     deviceObj.getToken()));
         }
         this.persistNotification(NotificationDto.builder()
-                .title(Constants.CUSTOMER_APPROVAL_TITLE)
+                .title(title)
                 .message(message)
                 .topic(Constants.CUSTOMER_APPROVAL_TITLE)
                 .role(NotificationRoles.CUSTOMER)
