@@ -68,6 +68,7 @@ public class ProductBo {
     private Integer sequenceNumber;
 
     private ProductRatingBo productRatingBo;
+    private Double discountedPrice;
 
     public ProductBo(Product product, List<FileBo> images) {
         this.id = product.getId();
@@ -95,6 +96,7 @@ public class ProductBo {
         this.delieveredOutsideSpecifiedRadius = product.getDelieveredOutsideSpecifiedRadius();
         this.productUserId = product.getUser().getId();
         this.sequenceNumber = product.getSequenceNumber();
+        this.discountedPrice=product.getDiscountedPrice();
     }
 
     public ProductBo(Product product) {
@@ -122,6 +124,7 @@ public class ProductBo {
         this.delieveredOutsideSpecifiedRadius = product.getDelieveredOutsideSpecifiedRadius();
         this.productUserId = product.getUser().getId();
         this.sequenceNumber = product.getSequenceNumber();
+        this.discountedPrice=product.getDiscountedPrice();
     }
 
 }

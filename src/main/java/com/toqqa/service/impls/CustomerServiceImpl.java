@@ -51,9 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
         Page<Product> products = null;
         Sort sort = null;
         try {
-            if(bo.getSortKey().equals("pricePerUnit")){
-                bo.setSortKey("discountedPrice");
-            }
+
             if (bo.getSortOrder() != null) {
                 if (Objects.equals(bo.getSortOrder(), "ASC") || Objects.equals(bo.getSortOrder(), "DESC")) {
                     bo.setSortOrder(bo.getSortOrder());
@@ -63,7 +61,10 @@ public class CustomerServiceImpl implements CustomerService {
             } else {
                 bo.setSortOrder("ASC");
             }
-            if (bo.getSortKey() != null) {
+            if (helper.notNullAndBlank(bo.getSortKey())) {
+                if(bo.getSortKey().equals("pricePerUnit")){
+                    bo.setSortKey("discountedPrice");
+                }
                 sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), bo.getSortKey());
             } else {
                 sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), "CreatedAt");
