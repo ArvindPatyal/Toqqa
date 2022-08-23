@@ -3,9 +3,11 @@ package com.toqqa.payload;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Getter
@@ -13,18 +15,23 @@ import java.util.List;
 @NoArgsConstructor
 public class SmeRegistration {
     @NotNull
+    @Size(max = 255)
     private String nameOfBusiness;
 
     @NotNull
+    @Size(max = 255)
     private String businessAddress;
 
     @NotNull
+    @Size(max = 255)
     private String city;
 
     @NotNull
+    @Size(max = 255)
     private String state;
 
     @NotNull
+    @Size(max = 255)
     private String country;
 
     @NotNull
@@ -36,9 +43,11 @@ public class SmeRegistration {
     @NotNull
     private List<String> businessSubCategory;
 
+    @Size(max = 500)
     private String description;
 
     @NotNull
+    @Size(max = 255)
     private String typeOfBusiness;
 
     @NotNull

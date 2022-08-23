@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @Entity
 @Getter
@@ -24,7 +25,7 @@ public class Agent {
     private String agentDocuments;
 
     private String idProof;
-
+    @Size(max = 255)
     private String userId;
 
     private String agentProfilePicture;
