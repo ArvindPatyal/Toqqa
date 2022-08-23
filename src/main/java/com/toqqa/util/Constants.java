@@ -38,6 +38,7 @@ public class Constants {
 
     public static final String CUSTOMER_NOTIFICATION_TITLE = "Order";
     public static final String CUSTOMER_APPROVAL_TITLE = "Approval Request";
+    public static final String CUSTOMER_DECLINE_TITLE = "Decline Request";
 
     public static final String CUSTOMER_NOTIFICATION_TOPIC = "ORDER";
 
