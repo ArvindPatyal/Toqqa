@@ -84,5 +84,7 @@ public class Constants {
 
     public static final String ADVERTISEMENT_ALREADY_PRESENT = "Already advertisement created with this product";
 
+    public static final String USER_SEARCH = "SELECT * FROM user_info u WHERE " + "u.first_name LIKE %:param%"
+            + " Or u.email LIKE %:param% And u.is_deleted=:isDeleted";
 
 }

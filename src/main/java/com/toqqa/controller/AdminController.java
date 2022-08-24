@@ -1,6 +1,9 @@
 package com.toqqa.controller;
 
+import com.toqqa.bo.PaginationBo;
+import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
+import com.toqqa.dto.AdminPaginationDto;
 import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.ListResponseWithCount;
@@ -131,7 +134,7 @@ public class AdminController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PostMapping(value = "/allUsers")
-    public ListResponseWithCount allUsers(@RequestBody @Valid UserDetailsDto userDetailsDto) {
+    public Response allUsers(@RequestBody @Valid UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminController -+- allUsers()");
         return this.adminService.allUsers(userDetailsDto);
     }
@@ -152,6 +155,15 @@ public class AdminController {
     public Response approve(@RequestBody @Valid ApprovalPayload approvalPayload) {
         log.info("Invoked -+- AdminController -+- approvalRequests");
         return this.adminService.approve(approvalPayload);
+    }
+
+    @ApiOperation(value = "Search user")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @PostMapping(value = "/userSearch")
+    public Response<AdminPaginationDto> userSearch(@RequestBody @Valid PaginationBo paginationBo) {
+        log.info("Invoked -+- AdminController -+- userSearch()");
+        return this.adminService.userSearch(paginationBo);
     }
 
     /* @ApiOperation(value = "get verification requests of a user")
