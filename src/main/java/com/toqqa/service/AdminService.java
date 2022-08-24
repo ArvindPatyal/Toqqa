@@ -176,7 +176,7 @@ public class AdminService {
         if (userDetailsDto.getStatus() == null) {
             userDetailsDto.setStatus(AdminConstants.VerificationStatus);
         }
-        Page<User> users = this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), pageSize, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<User> users = this.userRepository.findAll(PageRequest.of(userDetailsDto.getPageNumber(), 100, Sort.by(Sort.Direction.DESC, "createdAt")));
         return new Response<AdminPaginationDto>(new AdminPaginationDto<List<UserBo>>(
                 this.usersWithVerificationStatus(users.getContent(), userDetailsDto.getStatus()).collect(Collectors.toList()),
                 users.getTotalElements(), userDetailsDto.getPageNumber(), users.getTotalPages()),
@@ -185,8 +185,6 @@ public class AdminService {
 
     private Stream<UserBo> usersWithVerificationStatus(List<User> users, List<VerificationStatusConstants> verificationStatusConstants) {
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByUserInAndStatusIn(users, verificationStatusConstants);
-        // Role admin = this.roleRepository.findByRole(RoleConstants.ADMIN.getValue());
-        // users.removeIf(user -> user.getRoles().contains(admin));
         return users.stream().map(user -> {
             UserBo userBo = new UserBo(user);
             List<VerificationStatus> verificationStatusList = verificationStatuses.stream().filter(verificationStatus -> verificationStatus.getUser().equals(user)).collect(Collectors.toList());

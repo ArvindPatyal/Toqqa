@@ -100,10 +100,10 @@ public class UserServiceImpl implements UserService {
         if (isUserExists(userSignUp.getEmail(), userSignUp.getPhone())) {
             throw new UserAlreadyExists("user with email/number already exists");
         }
-        VerifyOtpResponseBo otpResponseBo = this.otpService.verifyOtp(userSignUp.getOtp(), userSignUp.getLoginId());
+       /* VerifyOtpResponseBo otpResponseBo = this.otpService.verifyOtp(userSignUp.getOtp(), userSignUp.getLoginId());
         if (!otpResponseBo.isStatus()) {
             throw new BadCredentialsException(otpResponseBo.getMessage());
-        }
+        }*/
         User user = new User();
         user.setCity(userSignUp.getCity());
         user.setCountry(userSignUp.getCountry());
