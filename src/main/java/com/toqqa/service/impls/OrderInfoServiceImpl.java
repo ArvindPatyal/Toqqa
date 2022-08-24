@@ -180,39 +180,34 @@ public class OrderInfoServiceImpl implements OrderInfoService {
         List<Product> products = new ArrayList<>();
         for (OrderItemPayload item : orderItems) {
             OrderItem orderItem = new OrderItem();
-            Optional<Product> optionalProduct = this.productRepo.findById(item.getProductId());
-            if (optionalProduct.isPresent()) {
-                Product product = optionalProduct.get();
-                orderItem.setDiscount(product.getDiscount());
-                orderItem.setPricePerUnit(product.getPricePerUnit());
-                orderItem.setProduct(product);
-                if (product.getMaximumUnitsInOneOrder() != null) {
+            Product product = this.productRepo.findById(item.getProductId()).orElseThrow(() -> new BadRequestException("invalid product id " + item.getProductId()));
+            orderItem.setDiscount(product.getDiscount());
+            orderItem.setPricePerUnit(product.getPricePerUnit());
+            orderItem.setProduct(product);
+            if (product.getMaximumUnitsInOneOrder() != null) {
 
-                    if (item.getQuantity() > product.getMaximumUnitsInOneOrder()) {
-                        throw new BadRequestException("Maximum quantity in" + " " + product.getProductName() + " " + product.getMaximumUnitsInOneOrder());
-                    }
+                if (item.getQuantity() > product.getMaximumUnitsInOneOrder()) {
+                    throw new BadRequestException("Maximum quantity in" + " " + product.getProductName() + " " + product.getMaximumUnitsInOneOrder());
                 }
-                if (product.getMinimumUnitsInOneOrder() != null) {
-                    if (item.getQuantity() < product.getMinimumUnitsInOneOrder()) {
-                        throw new BadRequestException("Minimum quantity in" + " " + product.getProductName() + " " + product.getMinimumUnitsInOneOrder());
-                    }
+            }
+            if (product.getMinimumUnitsInOneOrder() != null) {
+                if (item.getQuantity() < product.getMinimumUnitsInOneOrder()) {
+                    throw new BadRequestException("Minimum quantity in" + " " + product.getProductName() + " " + product.getMinimumUnitsInOneOrder());
                 }
+            }
 
-                orderItem.setQuantity(item.getQuantity());
-                orderItem.setOrderInfo(order);
-                orderItem.setPrice((product.getPricePerUnit() * item.getQuantity())
-                        - (product.getPricePerUnit() * product.getDiscount() * orderItem.getQuantity()) / 100);
-                orderItem = this.orderItemRepo.saveAndFlush(orderItem);
-                orderItemsList.add(orderItem);
-                if (orderItem.getQuantity() <= product.getUnitsInStock()) {
-                    product.setUnitsInStock(product.getUnitsInStock() - item.getQuantity());
-                    products.add(product);
-                } else {
-                    throw new BadRequestException("order quantity exceeds maximum unit with this product::"
-                            + product.getProductName() + "::Quantity left in Stock::" + product.getUnitsInStock());
-                }
+            orderItem.setQuantity(item.getQuantity());
+            orderItem.setOrderInfo(order);
+            orderItem.setPrice((product.getPricePerUnit() * item.getQuantity())
+                    - (product.getPricePerUnit() * product.getDiscount() * orderItem.getQuantity()) / 100);
+            orderItem = this.orderItemRepo.saveAndFlush(orderItem);
+            orderItemsList.add(orderItem);
+            if (orderItem.getQuantity() <= product.getUnitsInStock()) {
+                product.setUnitsInStock(product.getUnitsInStock() - item.getQuantity());
+                products.add(product);
             } else {
-                throw new BadRequestException("invalid product id " + item.getProductId());
+                throw new BadRequestException("order quantity exceeds maximum unit with this product::"
+                        + product.getProductName() + "::Quantity left in Stock::" + product.getUnitsInStock());
             }
             this.productRepo.saveAllAndFlush(products);
         }
