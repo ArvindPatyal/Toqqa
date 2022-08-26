@@ -38,4 +38,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query(value = Constants.USER_SEARCH, nativeQuery = true)
     Page<User> searchUsers(Pageable pageable, String param, @Param("isDeleted") Boolean isDeleted);
 
+    Page<User> findByRolesIn(Pageable pageable, List<Role> roles);
+
 }

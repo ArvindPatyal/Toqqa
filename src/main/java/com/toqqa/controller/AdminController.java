@@ -3,6 +3,7 @@ package com.toqqa.controller;
 import com.toqqa.bo.PaginationBo;
 import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
+import com.toqqa.dto.AdminOrderDto;
 import com.toqqa.dto.AdminPaginationDto;
 import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.payload.ApprovalPayload;
@@ -50,14 +51,14 @@ public class AdminController {
         return this.adminService.users(userRequestDto);
     }*/
 
-    /*@ApiOperation(value = "Enable or Disable a user")
+    @ApiOperation(value = "Enable or Disable a user")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PutMapping(value = "/user")
     public Response toggleUser(@RequestParam String id) {
         log.info("Invoked -+- AdminController -+-toggleUser()");
         return this.adminService.toggleUser(id);
-    }*/
+    }
 
     @ApiOperation(value = "Recent orders on Dashboard")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
@@ -67,14 +68,14 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- recentOrders()");
         return this.adminService.recentOrders();
     }
-    /*@ApiOperation(value = "All orders on Dashboard")
+    @ApiOperation(value = "All orders on Dashboard")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/all_orders")
-    public Response allOrders() {
-        log.info("Invoked -+- AdminController -+- recentOrders()");
-        return this.adminService.allOrders();
-    }*/
+    @PostMapping(value = "/all_orders")
+    public Response allOrders(@RequestBody @Valid AdminOrderDto adminOrderDto) {
+        log.info("Invoked -+- AdminController -+- allOrders()");
+        return this.adminService.allOrders(adminOrderDto);
+    }
 
     @ApiOperation(value = "check new users, orders and sale status in a specific time period")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
@@ -119,6 +120,15 @@ public class AdminController {
     public Response userStatsByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
         log.info("Invoked -+- AdminController -+- userStatsByDate()");
         return this.adminService.userStatsByDate(adminFilterDto);
+    }
+
+    @ApiOperation(value = "check new orders, cancelled and delivered total in a specific time period")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request")})
+    @PostMapping(value = "/orderStats")
+    public Response orderStatsByDate(@RequestBody @Valid AdminFilterDto adminFilterDto) {
+        log.info("Invoked -+- AdminController -+- orderStatsByDate()");
+        return this.adminService.orderStatsByDate(adminFilterDto);
     }
 
     @ApiOperation(value = "Top 4 new users")

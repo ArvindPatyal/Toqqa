@@ -87,4 +87,6 @@ public class Constants {
     public static final String USER_SEARCH = "SELECT * FROM user_info u WHERE " + "u.first_name LIKE %:param%"
             + " Or u.email LIKE %:param% And u.is_deleted=:isDeleted";
 
+    public static final String ALL_ORDERS = "'CANCELLED', 'PLACED', 'RECEIVED', 'CONFIRMED', 'READY_FOR_DISPATCH', 'OUT_FOR_DELIVERY', 'DELIVERED'";
+
 }

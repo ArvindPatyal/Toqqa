@@ -29,7 +29,8 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
 
     List<OrderInfo> findFirst4ByOrderByCreatedDateDesc();
 
-    //List<OrderInfo> findAllByOrderByCreatedDateDesc();
+    //@Query(value = Constants.ALL_ORDERS, nativeQuery = true)
+    Page<OrderInfo> findByOrderStatusIn(Pageable pageRequest,List<OrderStatus> orderStatus);
 
     @Query(value = Constants.TOTAL_ORDER_AMOUNT_DELIVERED_QUERY_BY_DATE, nativeQuery = true)
     Optional<Integer> findDelOrderAmountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate);
@@ -40,14 +41,18 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfo, String> {
     @Query(value = AdminConstants.TOTAL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
     Page<OrderInfo> findByModificationDate(Pageable pageRequest, LocalDate startDate, LocalDate endDate);
 
-    @Query(value = AdminConstants.CANCEL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
-    Page<OrderInfo> findByOrderStatus(Pageable pageRequest, LocalDate startDate, LocalDate endDate);
-
     @Query(value = AdminConstants.TOTAL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
     List<OrderInfo> findByCreatedDate(LocalDate startDate, LocalDate endDate);
 
     @Query(value = AdminConstants.TOTAL_ORDER_AMOUNT_DELIVERED_BY_DATE, nativeQuery = true)
     Optional<Double> findTotalAmountByDate(LocalDate startDate, LocalDate endDate);
 
+    @Query(value = AdminConstants.DELIVERED_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
+    List<OrderInfo> deliveredOrderStatus(LocalDate startDate, LocalDate endDate);
+
+    @Query(value = AdminConstants.CANCEL_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
+    List<OrderInfo> cancelledOrderStatus(LocalDate startDate, LocalDate endDate);
+    @Query(value = AdminConstants.NEW_ORDERS_COUNT_QUERY_BY_DATE, nativeQuery = true)
+    List<OrderInfo> newOrderStatus(LocalDate startDate, LocalDate endDate);
 
 }
