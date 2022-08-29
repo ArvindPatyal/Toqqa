@@ -25,7 +25,7 @@ public interface ProductService {
 
     ListResponse productList();
 
-    ListResponseWithCount<ProductBo> searchProducts(PaginationBo paginationbo);
+    //ListResponseWithCount<ProductBo> searchProducts(PaginationBo paginationbo);
 
     ProductBo toProductBo(Product product);
 

@@ -1,5 +1,6 @@
 package com.toqqa.dto;
 
+import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +12,12 @@ import java.util.List;
 @Setter
 public class UserDetailsDto {
     @NotNull
-    private int pageNumber;
-    private List<VerificationStatusConstants> status;
-   /* @NotNull
+    /* @NotNull
     private int pageSize;*/
+    private int pageNumber;
+    private String sortOrder;
+    private String sortKey;
+    private List<RoleConstants> roles;
+    private List<VerificationStatusConstants> status;
+    private String searchText;
 }

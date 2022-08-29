@@ -263,7 +263,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     public ListResponseWithCount<OrderInfoBo> fetchOrderList(PaginationBo paginationBo) {
         log.info("Invoked :: OrderInfoServiceImpl :: fetchOrderList()");
         User user = this.authenticationService.currentUser();
-        Sort sort = Sort.by("createdDate").descending();
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
         Page<OrderInfo> allOrders = this.orderInfoRepo.findByUser(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort), user);
         List<OrderInfoBo> bos = new ArrayList<OrderInfoBo>();
         allOrders.forEach(orderInfo -> {
@@ -369,7 +369,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
     @Override
     public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate) {
-        return orderInfoRepo.findDelOrderAmountBySmeAndDate(smeId, startDate, endDate);
+        return orderInfoRepo.findDelOrderAmountBySmeAndDate(smeId,startDate, endDate);
 
     }
 

@@ -20,11 +20,12 @@ public class AdminConstants {
     public static final String NO_AGENT_FOUND = "No Agent found";
     public static final String INVALID_REQUEST = "INVALID REQUEST";
     public static final String APPROVAL_REQUEST_DELETED = "Approval Request Deleted";
-    public static final String REQUEST_APPROVED="Request Approved";
-    public static final String REQUEST_DECLINED="Request Declined";
+    public static final String REQUEST_APPROVED = "Request Approved";
+    public static final String REQUEST_DECLINED = "Request Declined";
     public static final String RECENT_ORDERS_RETURNED = "Recent orders returned";
     public static final String NO_RECENT_ORDERS_FOUND = "No recent orders found";
     public static final List VerificationStatus = new ArrayList<>(Arrays.asList(VerificationStatusConstants.PENDING, VerificationStatusConstants.ACCEPTED, VerificationStatusConstants.DECLINED));
+    public static final List SORT_ORDERS = new ArrayList(Arrays.asList("ASC", "DESC"));
     public static final String DASHBOARD_STATS = "Dashboard Stats";
     public static final String ORDER_LIST = "List All Orders";
     public static final String TOTAL_USERS = "Total registered users list";
@@ -35,12 +36,15 @@ public class AdminConstants {
     public static final String APPROVAL_STATUS = "Already changed approval status";
 
     public static final String NO_APPROVAL_STATUS = "No approval status found with this ID : ";
-    public static final String ORDER_STATUS = "('DELIVERED')";
 
-    public static final String ORDER_INFO = "('CANCELLED')";
+    public static final String ORDER_PLACED = "('PLACED')";
+    public static final String ORDER_DELIVERED = "('DELIVERED')";
+    public static final String ORDER_CANCELLED = "('CANCELLED')";
     public static final String APPROVAL_REQUESTS = "Approval requests returned";
-    public static final String CANCEL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info o where o.order_status IN " + ORDER_STATUS + " cast(modification_date as Date) between ?1 AND ?2";
-    public static final String TOTAL_ORDER_AMOUNT_DELIVERED_BY_DATE = "select sum(o.amount + o.shipping_fee) from order_info o where o.order_status IN" + ORDER_STATUS
+    public static final String CANCEL_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info o WHERE cast(modification_date as Date)between ?1 AND ?2 AND  o.order_status = 'CANCELLED'";
+    public static final String DELIVERED_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info o WHERE cast(modification_date as Date)between ?1 AND ?2 AND  o.order_status = 'DELIVERED'";
+    public static final String NEW_ORDERS_COUNT_QUERY_BY_DATE = "select * from order_info o WHERE cast(modification_date as Date)between ?1 AND ?2 AND  o.order_status = 'PLACED'";
+    public static final String TOTAL_ORDER_AMOUNT_DELIVERED_BY_DATE = "select sum(o.amount + o.shipping_fee) from order_info o where o.order_status IN" + ORDER_DELIVERED
             + " and cast(created_date as DATE) between ?1 AND ?2";
     public static final String TOP_4_NEW_APPROVAL_REQUEST = "SELECT * from verification_status v where v.status = 'PENDING' order by created_date DESC limit 4";
     public static final String VERIFICATION_STATUS = "('ACCEPTED'+'PENDING')";

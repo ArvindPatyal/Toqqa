@@ -83,8 +83,14 @@ public class Constants {
     public static final String ADVERTISEMENT_NOT_CREATED = "Advertisement not created with disable product";
 
     public static final String ADVERTISEMENT_ALREADY_PRESENT = "Already advertisement created with this product";
+    public static final List SORT_ORDERS = new ArrayList(Arrays.asList("ASC","DESC"));
+    public static final List PRODUCT_SORT_KEYS = new ArrayList(Arrays.asList("id","productName","productName","unitsInStock","pricePerUnit",
+            "discount","discountedPrice","maximumUnitsInOneOrder","minimumUnitsInOneOrder","expiryDate","countryOfOrigin","manufacturerName",
+            "isDeleted","manufacturingDate","createdAt","deliveredInSpecifiedRadius"));
 
-    public static final String USER_SEARCH = "SELECT * FROM user_info u WHERE " + "u.first_name LIKE %:param%"
+    public static final String USER_SEARCH = "SELECT * FROM user_info u WHERE " + "u.first_name LIKE %:param%" + " Or u.last_name LIKE %:param%"
             + " Or u.email LIKE %:param% And u.is_deleted=:isDeleted";
+
+    public static final String ALL_ORDERS = "'CANCELLED', 'PLACED', 'RECEIVED', 'CONFIRMED', 'READY_FOR_DISPATCH', 'OUT_FOR_DELIVERY', 'DELIVERED'";
 
 }
