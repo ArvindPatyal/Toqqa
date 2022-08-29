@@ -2,14 +2,15 @@ package com.toqqa.service.impls;
 
 import com.toqqa.bo.ProductBo;
 import com.toqqa.domain.Product;
-import com.toqqa.exception.BadRequestException;
 import com.toqqa.payload.CustomerProductRequest;
 import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.ProductRequestFilter;
+import com.toqqa.repository.ProductCategoryRepository;
 import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.CustomerService;
 import com.toqqa.service.ProductService;
 import com.toqqa.service.SmeService;
+import com.toqqa.util.Constants;
 import com.toqqa.util.Helper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,78 +20,57 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class CustomerServiceImpl implements CustomerService {
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private Helper helper;
-
+    private final ProductRepository productRepository;
+    private final Helper helper;
+    private final ProductService productService;
+    private final SmeService smeService;
+    private final ProductCategoryRepository productCategoryRepository;
+    private final List<String> PRODUCT_CATEGORIES;
     @Value("${pageSize}")
     private Integer pageSize;
     @Value("${bulk.product.minimum.quantity}")
     private Integer bulkProductQuantity;
 
     @Autowired
-    private ProductService productService;
-
-    @Autowired
-    private SmeService smeService;
+    public CustomerServiceImpl(ProductRepository productRepository, Helper helper,
+                               ProductService productService, SmeService smeService,
+                               ProductCategoryRepository productCategoryRepository) {
+        this.productRepository = productRepository;
+        this.helper = helper;
+        this.productService = productService;
+        this.smeService = smeService;
+        this.productCategoryRepository = productCategoryRepository;
+        PRODUCT_CATEGORIES = productCategoryRepository.findAll().stream().map(productCategory -> productCategory.getId()).collect(Collectors.toList());
+    }
 
     @Override
-    public ListResponseWithCount<ProductBo> productList(CustomerProductRequest bo) {
+    public ListResponseWithCount<ProductBo> productList(CustomerProductRequest customerProductRequest) {
         log.info("Invoked :: CustomerServiceImpl :: productList()");
-
-        Page<Product> products = null;
-        Sort sort = null;
-        try {
-
-            if (bo.getSortOrder() != null) {
-                if (Objects.equals(bo.getSortOrder(), "ASC") || Objects.equals(bo.getSortOrder(), "DESC")) {
-                    bo.setSortOrder(bo.getSortOrder());
-                } else {
-                    bo.setSortOrder("ASC");
-                }
-            } else {
-                bo.setSortOrder("ASC");
-            }
-            if (helper.notNullAndBlank(bo.getSortKey())) {
-                if(bo.getSortKey().equals("pricePerUnit")){
-                    bo.setSortKey("discountedPrice");
-                }
-                sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), bo.getSortKey());
-            } else {
-                sort = Sort.by(Sort.Direction.fromString(bo.getSortOrder()), "CreatedAt");
-            }
-            if (helper.notNullAndHavingData(bo.getProductCategoryIds()) && bo.getShowBulkProducts()) {
-                products = this.productRepository
-                        .findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
-                                bo.getProductCategoryIds(), false, PageRequest.of(bo.getPageNumber(), pageSize, sort), 2);
-            } else if (bo.getShowBulkProducts()) {
-                products = this.productRepository.findByIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(false,
-                        PageRequest.of(bo.getPageNumber(), pageSize, sort), bulkProductQuantity);
-            } else if (helper.notNullAndHavingData(bo.getProductCategoryIds())) {
-                products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
-                        PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getProductCategoryIds(), false);
-            } else {
-                products = productRepository.findByIsDeleted(PageRequest.of(bo.getPageNumber(), pageSize, sort), false);
-            }
-            List<ProductBo> productBos = new ArrayList<>();
-            products.forEach(product -> {
-                productBos.add(this.productService.toProductBo(product));
-            });
-            return new ListResponseWithCount<ProductBo>(productBos, "", products.getTotalElements(), bo.getPageNumber(),
-                    products.getTotalPages());
-        } catch (Exception e) {
-            throw new BadRequestException("Enter a valid sortKey");
+        customerProductRequest.setSortOrder(Constants.SORT_ORDERS.contains(customerProductRequest.getSortOrder()) ? customerProductRequest.getSortOrder() : "DESC");
+        customerProductRequest.setSortKey(Constants.PRODUCT_SORT_KEYS.contains(customerProductRequest.getSortKey()) ? customerProductRequest.getSortKey() : "discountedPrice");
+        customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : PRODUCT_CATEGORIES);
+        Page<Product> products;
+        if (this.helper.notNullAndBlank(customerProductRequest.getSearchText())) {
+            products = this.productRepository.findByProductCategoriesIdInAndProductNameContainsAndIsDeletedOrProductCategoriesIdInAndDescriptionContainsAndIsDeleted(
+                    PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())),
+                    customerProductRequest.getProductCategoryIds(), customerProductRequest.getSearchText().trim(), false, customerProductRequest.getProductCategoryIds(), customerProductRequest.getSearchText().trim(), false);
+        } else if (customerProductRequest.getShowBulkProducts()) {
+            products = this.productRepository
+                    .findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
+                            customerProductRequest.getProductCategoryIds(), false, PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), 2);
+        } else {
+            products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
+                    PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), customerProductRequest.getProductCategoryIds(), false);
         }
+        return new ListResponseWithCount<ProductBo>(products.stream().map(this.productService::toProductBo).collect(Collectors.toList()),
+                "", products.getTotalElements(), customerProductRequest.getPageNumber(),
+                products.getTotalPages());
     }
 
     @Override

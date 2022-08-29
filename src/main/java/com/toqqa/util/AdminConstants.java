@@ -25,6 +25,7 @@ public class AdminConstants {
     public static final String RECENT_ORDERS_RETURNED = "Recent orders returned";
     public static final String NO_RECENT_ORDERS_FOUND = "No recent orders found";
     public static final List VerificationStatus = new ArrayList<>(Arrays.asList(VerificationStatusConstants.PENDING, VerificationStatusConstants.ACCEPTED, VerificationStatusConstants.DECLINED));
+    public static final List SORT_ORDERS = new ArrayList(Arrays.asList("ASC", "DESC"));
     public static final String DASHBOARD_STATS = "Dashboard Stats";
     public static final String ORDER_LIST = "List All Orders";
     public static final String TOTAL_USERS = "Total registered users list";

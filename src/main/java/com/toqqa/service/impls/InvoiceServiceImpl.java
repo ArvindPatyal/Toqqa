@@ -105,15 +105,16 @@ public class InvoiceServiceImpl implements InvoiceService {
             soldByCell.setBorder(Rectangle.NO_BORDER);
             detailsTable.addCell(soldByCell);
 
-            /* BILLING ADDRESS */
-            Paragraph billingAddress = new Paragraph();
-            billingAddress.add(new Chunk("Billing Address :", fontBold));
-            billingAddress.add(new Chunk("\n" + address, fontLite));
-//            billingAddress.setAlignment(Element.ALIGN_RIGHT);
-            PdfPCell billingCell = new PdfPCell(billingAddress);
-            billingCell.setBorder(Rectangle.NO_BORDER);
-            billingCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            detailsTable.addCell(billingCell);
+            /* SHIPPING ADDRESS */
+            Paragraph shippingAddress = new Paragraph();
+            shippingAddress.add(new Chunk("Shipping Address :", fontBold));
+            shippingAddress.add(new Chunk("\n" + address, fontLite));
+//            shippingAddress.setAlignment(Element.ALIGN_RIGHT);
+            PdfPCell shippingCell = new PdfPCell(shippingAddress);
+            shippingCell.setBorder(Rectangle.NO_BORDER);
+            shippingCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            detailsTable.addCell(shippingCell);
+
 
             /* PAN WITH BLANK CELL */
 			/*Paragraph pan = new Paragraph();
@@ -133,15 +134,17 @@ public class InvoiceServiceImpl implements InvoiceService {
             invoiceNumberCell.setBorder(Rectangle.NO_BORDER);
             detailsTable.addCell(invoiceNumberCell);
 
-            /* SHIPPING ADDRESS */
-            Paragraph shippingAddress = new Paragraph();
-            shippingAddress.add(new Chunk("Shipping Address :", fontBold));
-            shippingAddress.add(new Chunk("\n" + address, fontLite));
-//            shippingAddress.setAlignment(Element.ALIGN_RIGHT);
-            PdfPCell shippingCell = new PdfPCell(shippingAddress);
-            shippingCell.setBorder(Rectangle.NO_BORDER);
-            shippingCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            detailsTable.addCell(shippingCell);
+            /* BILLING ADDRESS */
+           /* Paragraph billingAddress = new Paragraph();
+            billingAddress.add(new Chunk("Billing Address :", fontBold));
+            billingAddress.add(new Chunk("\n" + address, fontLite));
+//            billingAddress.setAlignment(Element.ALIGN_RIGHT);
+            PdfPCell billingCell = new PdfPCell(billingAddress);
+            billingCell.setBorder(Rectangle.NO_BORDER);
+            billingCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            detailsTable.addCell(billingCell);*/
+
+            detailsTable.addCell(blankCell);
 
             /* REG NO WITH BLANK CELL */
             Paragraph regNo = new Paragraph();

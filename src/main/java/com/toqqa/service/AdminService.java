@@ -1,7 +1,6 @@
 package com.toqqa.service;
 
 import com.toqqa.bo.*;
-import com.toqqa.constants.OrderBy;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
@@ -9,7 +8,6 @@ import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.AdminOrderDto;
 import com.toqqa.dto.AdminPaginationDto;
 import com.toqqa.dto.UserDetailsDto;
-import com.toqqa.exception.BadRequestException;
 import com.toqqa.exception.ResourceNotFoundException;
 import com.toqqa.payload.ApprovalPayload;
 import com.toqqa.payload.Response;
@@ -156,16 +154,8 @@ public class AdminService {
         if (adminOrderDto.getSortKey() == null) {
             adminOrderDto.setSortKey("createdDate");
         }
-        if (adminOrderDto.getSortOrder() != null) {
-            if (Objects.equals(adminOrderDto.getSortOrder(), "ASC") || Objects.equals(adminOrderDto.getSortOrder(), "DESC")) {
-                adminOrderDto.setSortOrder(adminOrderDto.getSortOrder());
-            } else {
-                adminOrderDto.setSortOrder("ASC");
-            }
-        }else{
-            adminOrderDto.setSortOrder("ASC");
-        }
-        Sort sort = Sort.by(Sort.Direction.fromString(adminOrderDto.getSortOrder()),adminOrderDto.getSortKey());
+        adminOrderDto.setSortOrder(AdminConstants.SORT_ORDERS.contains(adminOrderDto.getSortOrder()) ? adminOrderDto.getSortOrder() : "ASC");
+        Sort sort = Sort.by(Sort.Direction.fromString(adminOrderDto.getSortOrder()), adminOrderDto.getSortKey());
         orders = this.orderInfoRepository.findByOrderStatusIn(PageRequest.of(adminOrderDto.getPageNumber(), 100, sort), adminOrderDto.getStatus());
         return orders.equals(null) ? new Response(null, AdminConstants.NO_RECENT_ORDERS_FOUND) :
                 new Response(new AdminPaginationDto<>(orders.stream().map(
@@ -220,33 +210,26 @@ public class AdminService {
 
     public Response allUsers(UserDetailsDto userDetailsDto) {
         log.info("Invoked -+- AdminService -+- newUsers()");
-        if (userDetailsDto.getStatus() == null) {
-            userDetailsDto.setStatus(AdminConstants.VerificationStatus);
+        userDetailsDto.setStatus(userDetailsDto.getStatus() == null ? AdminConstants.VerificationStatus : userDetailsDto.getStatus());
+        userDetailsDto.setSortOrder(AdminConstants.SORT_ORDERS.contains(userDetailsDto.getSortOrder()) ? userDetailsDto.getSortOrder() : "DESC");
+        Page<User> users = null;
+        if (this.helper.notNullAndBlank(userDetailsDto.getSearchText())) {
+            users = this.userRepository.searchUsers(PageRequest.of(userDetailsDto.getPageNumber(), 100,
+                    Sort.by(Sort.Direction.fromString(userDetailsDto.getSortOrder()), "created_at")), userDetailsDto.getSearchText().trim(), false);
+        } else {
+            List<Role> roles = new ArrayList<>();
+            if (!this.helper.notNullAndHavingData(userDetailsDto.getRoles())) {
+                roles.addAll(Arrays.asList(customer, seller, agent));
+            } else {
+                if (userDetailsDto.getRoles().contains(RoleConstants.SME)) {
+                    roles.add(seller);
+                } else {
+                    roles.add(agent);
+                }
+            }
+            users = this.userRepository.findByRolesIn(PageRequest.of(userDetailsDto.getPageNumber(), 100, Sort.by(Sort.Direction.DESC, "createdAt")), roles);
         }
 
-        List<Role> roles = new ArrayList<>();
-        if (userDetailsDto.getRoles().contains(RoleConstants.SME)) {
-            roles.add(seller);
-        } else if (userDetailsDto.getRoles().contains(RoleConstants.AGENT)) {
-            roles.add(agent);
-        } else {
-            roles.addAll(Arrays.asList(customer, seller, agent));
-        }
-        if (userDetailsDto.getSortOrder() != null) {
-            if (Objects.equals(userDetailsDto.getSortOrder(), "ASC") || Objects.equals(userDetailsDto.getSortOrder(), "DESC")) {
-                userDetailsDto.setSortOrder(userDetailsDto.getSortOrder());
-            } else {
-                userDetailsDto.setSortOrder("ASC");
-            }
-        } else {
-            userDetailsDto.setSortOrder("ASC");
-        }
-        Page<User> users = null;
-        try {
-            users = this.userRepository.findByRolesIn(PageRequest.of(userDetailsDto.getPageNumber(), 100, Sort.by(Sort.Direction.DESC, userDetailsDto.getSortKey())), roles);
-        } catch (Exception e) {
-            throw new BadRequestException("Enter a valid sortKey ");
-        }
         return new Response<AdminPaginationDto>(new AdminPaginationDto<List<UserBo>>(
                 this.usersWithVerificationStatus(users.getContent(), userDetailsDto.getStatus()).collect(Collectors.toList()),
                 users.getTotalElements(), userDetailsDto.getPageNumber(), users.getTotalPages()),
@@ -270,11 +253,11 @@ public class AdminService {
             userBo.setVerification(verificationMap);
             userBo.setVerificationIds(verificationIdsMap);
             userBo.setProfilePicture(this.helper.prepareResource(userBo.getProfilePicture()));
-            if (userBo.getRoles().contains("ROLE_SME")) {
+            if (user.getRoles().contains(seller)) {
                 Sme sme = this.smeRepository.findByUserId(user.getId());
                 userBo.setSmeBo(sme != null ? this.toSmeBo(sme) : null);
             }
-            if (userBo.getRoles().contains("ROLE_AGENT")) {
+            if (user.getRoles().contains(agent)) {
                 Agent agent = this.agentRepository.findByUserId(user.getId());
                 userBo.setAgentBo(agent != null ? this.toAgentBo(agent) : null);
             }
@@ -286,13 +269,6 @@ public class AdminService {
     public Response newApprovalRequests() {
         log.info("Invoked -+- AdminService -+- newApprovalRequests");
         List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findFirst4NewRequest();
-        return new Response(this.verificationStatusToBo(verificationStatuses), AdminConstants.APPROVAL_REQUESTS);
-    }
-
-    public Response allApprovalRequests() {
-        log.info("Invoked -+- AdminService -+- approvalRequests()");
-        List<VerificationStatus> verificationStatuses = this.verificationStatusRepository.findByRoleIn(
-                Sort.by(Sort.Direction.DESC, "createdDate"), Arrays.asList(RoleConstants.SME, RoleConstants.AGENT));
         return new Response(this.verificationStatusToBo(verificationStatuses), AdminConstants.APPROVAL_REQUESTS);
     }
 
@@ -343,71 +319,4 @@ public class AdminService {
         return new Response(true, AdminConstants.APPROVAL_REQUEST_DELETED);
     }*/
 
-   /* public ListResponseWithCount<UserBo> listUsersByDate(UsersDto usersDto) {
-
-        Page<User> users = this.userRepository.findByCreatedDate(PageRequest.of(usersDto.getPageNumber(), pageSize), usersDto.getStartDate(), usersDto.getEndDate());
-        List<UserBo> userBos = new ArrayList<>();
-        Role agent = this.roleRepository.findByRole(RoleConstants.AGENT.getValue());
-        Role sme = this.roleRepository.findByRole(RoleConstants.SME.getValue());
-        users.forEach(user -> {
-            UserBo userBo = new UserBo(user);
-            if (user.getRoles().contains(agent)) {
-                userBo.setAgentBo(this.toAgentBo(user.getId()));
-            }
-            if (user.getRoles().contains(sme)) {
-                userBo.setSmeBo(this.toSmeBo(user.getId()));
-            }
-            userBos.add(userBo);
-        });
-        return new ListResponseWithCount<>(userBos, "List All Users", users.getTotalElements(), usersDto.getPageNumber(), users.getTotalPages());
-    }*/
-
-
-   /* public ListResponseWithCount<OrderInfoBo> listOrdersByDate(OrderDto orderDto) {
-
-        Page<OrderInfo> orders = this.orderInfoRepository.findByModificationDate(PageRequest.of(orderDto.getPageNumber(), pageSize), orderDto.getStartDate(), orderDto.getEndDate());
-        List<OrderInfoBo> orderInfoBos = new ArrayList<>();
-        orders.forEach(info -> {
-            List<OrderItem> orderItem = info.getOrderItems();
-            List<OrderItemBo> orderItemBo = new ArrayList<>();
-            orderItem.forEach(item -> {
-                ProductBo productBo = new ProductBo(item.getProduct());
-                productBo.setBanner(this.helper.prepareAttachmentResource(item.getProduct().getBanner()));
-                orderItemBo.add(new OrderItemBo(item, productBo));
-            });
-            SmeBo smeBo = this.toSmeBo(info.getSme());
-            OrderInfoBo orderInfoBo = new OrderInfoBo(info, orderItemBo, smeBo);
-            orderInfoBos.add(orderInfoBo);
-        });
-        return new ListResponseWithCount<>(orderInfoBos, AdminConstants.ORDER_LIST, orders.getTotalElements(), orderDto.getPageNumber(), orders.getTotalPages());
-    }*/
-
-    private Sort sortBy(PaginationBo paginationBo) {
-        if (this.helper.notNullAndBlank(paginationBo.getSortKey()) && helper.notNullAndBlank(paginationBo.getSortOrder())) {
-            if (paginationBo.getSortOrder().equals(OrderBy.DESC.name())) {
-
-                return Sort.by(paginationBo.getSortKey()).descending();
-            } else {
-                return Sort.by(paginationBo.getSortKey()).ascending();
-            }
-        }
-        return Sort.by("created_At").descending();
-    }
-
-    public Response<AdminPaginationDto> userSearch(PaginationBo paginationBo) {
-        log.info("Invoked -+- AdminService -+- userSearch");
-        Page<User> page = null;
-        Sort sort = this.sortBy(paginationBo);
-        if (this.helper.notNullAndBlank(paginationBo.getSearchText())) {
-            page = this.userRepository.searchUsers(PageRequest.of(paginationBo.getPageNumber(), pageSize, sort), paginationBo.getSearchText().trim(), false);
-        } else {
-            return new Response<>();
-        }
-        List<UserBo> userBos = new ArrayList<>();
-        page.get().forEach(user -> {
-            userBos.add(new UserBo(user));
-        });
-        return new Response<>(new AdminPaginationDto<>(userBos, page.getTotalElements(), paginationBo.getPageNumber(),
-                page.getTotalPages()), "");
-    }
 }

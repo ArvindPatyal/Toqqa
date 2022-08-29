@@ -1,13 +1,9 @@
 package com.toqqa.controller;
 
-import com.toqqa.bo.PaginationBo;
-import com.toqqa.bo.UserBo;
 import com.toqqa.dto.AdminFilterDto;
 import com.toqqa.dto.AdminOrderDto;
-import com.toqqa.dto.AdminPaginationDto;
 import com.toqqa.dto.UserDetailsDto;
 import com.toqqa.payload.ApprovalPayload;
-import com.toqqa.payload.ListResponseWithCount;
 import com.toqqa.payload.Response;
 import com.toqqa.service.AdminService;
 import io.swagger.annotations.ApiOperation;
@@ -68,7 +64,8 @@ public class AdminController {
         log.info("Invoked -+- AdminController -+- recentOrders()");
         return this.adminService.recentOrders();
     }
-    @ApiOperation(value = "All orders on Dashboard")
+
+    @ApiOperation(value = "orders on trackOrders")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 400, message = "Bad Request")})
     @PostMapping(value = "/all_orders")
@@ -86,14 +83,6 @@ public class AdminController {
         return this.adminService.statsByDate(adminFilterDto);
     }
 
-    @ApiOperation(value = "Approval requests")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @GetMapping(value = "/approval_requests")
-    public Response allApprovalRequests() {
-        log.info("Invoked -+- AdminController -+- allApprovalRequests");
-        return this.adminService.allApprovalRequests();
-    }
 
 //    @ApiOperation(value = "check user register in a specific time period")
 //    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
@@ -167,14 +156,6 @@ public class AdminController {
         return this.adminService.approve(approvalPayload);
     }
 
-    @ApiOperation(value = "Search user")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad Request")})
-    @PostMapping(value = "/userSearch")
-    public Response<AdminPaginationDto> userSearch(@RequestBody @Valid PaginationBo paginationBo) {
-        log.info("Invoked -+- AdminController -+- userSearch()");
-        return this.adminService.userSearch(paginationBo);
-    }
 
     /* @ApiOperation(value = "get verification requests of a user")
      @ApiResponses(value = {@ApiResponse(code = 200, message = "Success"),

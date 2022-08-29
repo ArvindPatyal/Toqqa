@@ -204,7 +204,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
     @Override
     public ProductBo fetchProduct(String id) {
         log.info("Invoked :: ProductServiceImpl :: fetchProduct()");
@@ -306,21 +305,20 @@ public class ProductServiceImpl implements ProductService {
         return new ListResponse<ProductBo>(productBos, "");
     }
 
-    @Override
+  /*  @Override
     public ListResponseWithCount<ProductBo> searchProducts(PaginationBo bo) {
         log.info("Invoked :: ProductServiceImpl :: searchProducts()");
         Page<Product> page = null;
 
         Sort sort = this.sortBy(bo);
         if (this.helper.notNullAndBlank(bo.getSearchText()) && this.helper.notNullAndBlank(bo.getCategoryId())) {
-            page = this.productRepo.findByProductCategories_IdAndProductNameContainsOrDescriptionContainsAndIsDeleted(
+            page = this.productRepo.findByProductCategories_IdAndProductNameContainsAndIsDeletedOrDescriptionContainsAndIsDeleted(
                     PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getCategoryId(),
-                    bo.getSearchText().trim(), bo.getSearchText().trim(), false);
-
+                    bo.getSearchText().trim(), false, bo.getSearchText().trim(), false);
         } else if (this.helper.notNullAndBlank(bo.getSearchText())) {
-            page = this.productRepo.findByIsDeletedAndProductNameContainsOrDescriptionContains(
+            page = this.productRepo.findByIsDeletedAndProductNameContainsOrDescriptionContainsAndIsDeleted(
                     PageRequest.of(bo.getPageNumber(), pageSize, sort), false, bo.getSearchText().trim(),
-                    bo.getSearchText().trim());
+                    bo.getSearchText().trim(), false);
         } else if (this.helper.notNullAndBlank(bo.getCategoryId())) {
             page = this.productRepo.findByProductCategories_IdAndIsDeleted(
                     PageRequest.of(bo.getPageNumber(), pageSize, sort), bo.getCategoryId(), false);
@@ -334,7 +332,7 @@ public class ProductServiceImpl implements ProductService {
         });
         return new ListResponseWithCount<ProductBo>(productBos, "", page.getTotalElements(), bo.getPageNumber(),
                 page.getTotalPages());
-    }
+    }*/
 
     private Sort sortBy(PaginationBo bo) {
         if (this.helper.notNullAndBlank(bo.getSortKey()) && helper.notNullAndBlank(bo.getSortOrder())) {

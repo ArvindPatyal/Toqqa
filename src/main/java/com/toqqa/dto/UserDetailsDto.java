@@ -19,4 +19,5 @@ public class UserDetailsDto {
     private String sortKey;
     private List<RoleConstants> roles;
     private List<VerificationStatusConstants> status;
+    private String searchText;
 }
