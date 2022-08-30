@@ -9,7 +9,7 @@ public class NotificationConstants {
     public static final String RATING_NOTIFICATION_TITLE = "New ratings arrived";
     public static final String PRODUCT_RATING_NOTIFICATION_MESSAGE = "%s has a new rating!";
     public static final String VERIFICATION_REQUEST_APPROVED_TITLE = "%s Request Approved";
-    public static final String VERIFICATION_REQUEST_APPROVED_TOPIC = "Approval Request";
+    public static final String VERIFICATION_REQUEST_TOPIC = "Approval Request";
     public static final String VERIFICATION_REQUEST_ACCEPT_MESSAGE = "Your request to be an %s has been approved. Now you can login as %s";
     public static final String VERIFICATION_REQUEST_DECLINE_MESSAGE = "Your request has been declined. Please reach out to the support team for any concerns/issues";
     public static final String ORDER_CANCEL_NOTIFICATION = "This order has been cancelled by the customer";

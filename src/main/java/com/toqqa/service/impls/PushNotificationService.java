@@ -49,7 +49,7 @@ public class PushNotificationService {
         String message = verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) ?
                 String.format(NotificationConstants.VERIFICATION_REQUEST_ACCEPT_MESSAGE, role, role) :
                 NotificationConstants.VERIFICATION_REQUEST_DECLINE_MESSAGE;
-        this.sendNotification(NotificationConstants.VERIFICATION_REQUEST_APPROVED_TOPIC, title,
+        this.sendNotification(NotificationConstants.VERIFICATION_REQUEST_TOPIC, title,
                 message, NotificationRoles.CUSTOMER, user);
     }
 
