@@ -1,16 +1,19 @@
 package com.toqqa.dto;
 
-import lombok.Data;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-
-@Data
-@ToString
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PushNotificationRequestDto {
-	
-	private String title;
-	private String message;
-	private String topic;
-	private String token;
+
+    private String title;
+    private String message;
+    private String topic;
+    private String token;
 
 }

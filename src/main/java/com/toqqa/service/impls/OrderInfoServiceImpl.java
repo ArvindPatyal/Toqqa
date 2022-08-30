@@ -122,7 +122,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 orderInfo.setOrderItems(orderItemList);
                 orderItemList.forEach(orderItem -> orderAmount.set(orderAmount.get() + orderItem.getPrice()));
                 orderInfo.setAmount(orderAmount.get());
-                this.orderInfoRepo.saveAndFlush(orderInfo);
+                orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
                 SmeBo smeBo = new SmeBo(sme);
                 OrderInfoBo bo = new OrderInfoBo(orderInfo, this.fetchOrderItems(orderInfo), smeBo);
                 this.invoiceService.generateInvoice(bo, user);
@@ -135,7 +135,8 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                     emailRequestDto.setOrder(true);
                     this.emailService.sendEmail(emailRequestDto);
                 }
-                pushNotificationService.sendNotificationToSmeForOrder(bo);
+                this.pushNotificationService.orderNotification(orderInfo, this.userService.getById(orderInfo.getSme().getUserId()));
+                this.pushNotificationService.lowProductStockNotification(orderInfo);
                 pushNotificationService.sendNotificationToSmeForProduct(bo);
             });
         } else {
@@ -148,30 +149,21 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     @Override
     public Response<?> cancelOrder(OrderCancelPayload cancelPayload) {
         log.info("Invoked :: OrderInfoServiceImpl :: cancelOrder()");
-        Optional<OrderInfo> optionalOrderInfo = this.orderInfoRepo.findById(cancelPayload.getOrderId());
-        if (optionalOrderInfo.isPresent()) {
-            OrderInfo orderInfo = optionalOrderInfo.get();
-            if (orderInfo.getOrderStatus().ordinal() >= OrderStatus.READY_FOR_DISPATCH.ordinal()) {
-                throw new BadRequestException("Order cannot be cancelled");
-            }
-            orderInfo.setOrderStatus(OrderStatus.CANCELLED);
-            orderInfo.setCancellationReason(cancelPayload.getCancellationReason());
-
-            orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
-
-            orderInfo.getOrderItems().forEach(orderItem -> {
-                Product product = orderItem.getProduct();
-                product.setUnitsInStock(product.getUnitsInStock() + orderItem.getQuantity());
-
-                this.productRepo.saveAndFlush(product);
-            });
-            this.pushNotificationService.orderCancelToSme(this.userService.getById(orderInfo.getSme().getUserId()));
-            return new Response<>(true, "Order cancelled successfully ");
-        } else {
-            throw new BadRequestException(
-                    "Order not found with id" + cancelPayload.getOrderId() + " Enter a valid orderId");
+        OrderInfo orderInfo = this.orderInfoRepo.findById(cancelPayload.getOrderId()).orElseThrow(() ->
+                new BadRequestException("Order not found with id" + cancelPayload.getOrderId() + " Enter a valid orderId"));
+        if (orderInfo.getOrderStatus().ordinal() >= OrderStatus.READY_FOR_DISPATCH.ordinal()) {
+            throw new BadRequestException("Order cannot be cancelled");
         }
-
+        orderInfo.setOrderStatus(OrderStatus.CANCELLED);
+        orderInfo.setCancellationReason(cancelPayload.getCancellationReason());
+        orderInfo = this.orderInfoRepo.saveAndFlush(orderInfo);
+        orderInfo.getOrderItems().forEach(orderItem -> {
+            Product product = orderItem.getProduct();
+            product.setUnitsInStock(product.getUnitsInStock() + orderItem.getQuantity());
+            this.productRepo.saveAndFlush(product);
+        });
+        this.pushNotificationService.orderNotification(orderInfo, this.userService.getById(orderInfo.getSme().getUserId()));
+        return new Response<>(true, "Order cancelled successfully ");
     }
 
     private List<OrderItem> persistOrderItems(List<OrderItemPayload> orderItems, OrderInfo order) {
@@ -350,10 +342,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 if (orderInfo.getOrderStatus().ordinal() + 1 == (orderStatusUpdatePayload.getOrderStatus().ordinal())) {
                     orderInfo.setOrderStatus((orderStatusUpdatePayload.getOrderStatus()));
                     this.orderInfoRepo.saveAndFlush(orderInfo);
-                    pushNotificationService.sendNotificationToCustomer(orderStatusUpdatePayload, orderInfo.getUser());
-                    if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
-                        this.pushNotificationService.sendNotificationToCustomerForRating(orderInfo.getUser());
-                    }
+                    this.pushNotificationService.orderNotification(orderInfo, user);
                     return new Response<>("", "ORDER STATUS UPDATED SUCCESSFULLY");
                 } else {
                     throw new BadRequestException("Cannot update orderStatus");
@@ -369,7 +358,7 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 
     @Override
     public Optional<Integer> getDeliveredOrderCountBySmeAndDate(String smeId, LocalDate startDate, LocalDate endDate) {
-        return orderInfoRepo.findDelOrderAmountBySmeAndDate(smeId,startDate, endDate);
+        return orderInfoRepo.findDelOrderAmountBySmeAndDate(smeId, startDate, endDate);
 
     }
 

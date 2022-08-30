@@ -1,6 +1,7 @@
 package com.toqqa.service;
 
 import com.toqqa.bo.*;
+import com.toqqa.constants.OrderStatus;
 import com.toqqa.constants.RoleConstants;
 import com.toqqa.constants.VerificationStatusConstants;
 import com.toqqa.domain.*;
@@ -40,6 +41,7 @@ public class AdminService {
     private final VerificationStatusRepository verificationStatusRepository;
     private final AuthenticationService authenticationService;
     private final PushNotificationService pushNotificationService;
+    private final InvoiceService invoiceService;
     private final Role customer;
     private final Role seller;
     private final Role agent;
@@ -52,7 +54,7 @@ public class AdminService {
                         RoleRepository roleRepository, AgentRepository agentRepository,
                         SmeRepository smeRepository, OrderInfoRepository orderInfoRepository,
                         VerificationStatusRepository verificationStatusRepository, AuthenticationService authenticationService,
-                        PushNotificationService pushNotificationService) {
+                        PushNotificationService pushNotificationService, InvoiceService invoiceService) {
         this.userRepository = userRepository;
         this.helper = helper;
         this.roleRepository = roleRepository;
@@ -62,6 +64,7 @@ public class AdminService {
         this.verificationStatusRepository = verificationStatusRepository;
         this.authenticationService = authenticationService;
         this.pushNotificationService = pushNotificationService;
+        this.invoiceService = invoiceService;
         this.customer = this.roleRepository.findByRole(RoleConstants.CUSTOMER.getValue());
         this.agent = this.roleRepository.findByRole(RoleConstants.AGENT.getValue());
         this.seller = this.roleRepository.findByRole(RoleConstants.SME.getValue());
@@ -147,27 +150,28 @@ public class AdminService {
 
     public Response allOrders(AdminOrderDto adminOrderDto) {
         log.info("Invoked -+- AdminService -+- allOrders()");
-        Page<OrderInfo> orders = null;
-        if (adminOrderDto.getStatus() == null) {
-            adminOrderDto.setStatus(Constants.ORDER_STATUSES);
-        }
-        if (adminOrderDto.getSortKey() == null) {
-            adminOrderDto.setSortKey("createdDate");
-        }
+        List<OrderStatus> orderStatuses = this.helper.notNullAndHavingData(adminOrderDto.getStatus())
+                ? adminOrderDto.getStatus().stream().map(s -> OrderStatus.valueOf(s)).collect(Collectors.toList())
+                : Constants.ORDER_STATUSES;
+        adminOrderDto.setSortKey(this.helper.notNullAndBlank(adminOrderDto.getSortKey()) ? adminOrderDto.getSortKey() : "createdDate");
         adminOrderDto.setSortOrder(AdminConstants.SORT_ORDERS.contains(adminOrderDto.getSortOrder()) ? adminOrderDto.getSortOrder() : "ASC");
-        Sort sort = Sort.by(Sort.Direction.fromString(adminOrderDto.getSortOrder()), adminOrderDto.getSortKey());
-        orders = this.orderInfoRepository.findByOrderStatusIn(PageRequest.of(adminOrderDto.getPageNumber(), 100, sort), adminOrderDto.getStatus());
+        Page<OrderInfo> orders = null;
+        orders = this.orderInfoRepository.findByOrderStatusIn(PageRequest.of(adminOrderDto.getPageNumber(), 100,
+                Sort.by(Sort.Direction.fromString(adminOrderDto.getSortOrder()), adminOrderDto.getSortKey())), orderStatuses);
         return orders.equals(null) ? new Response(null, AdminConstants.NO_RECENT_ORDERS_FOUND) :
                 new Response(new AdminPaginationDto<>(orders.stream().map(
-                        orderInfo -> new OrderInfoBo(orderInfo,
-                                orderInfo.getOrderItems().stream().map(
-                                        orderItem -> {
-                                            ProductBo productBo = new ProductBo(orderItem.getProduct());
-                                            productBo.setImages(this.helper.prepareProductAttachments(orderItem.getProduct().getAttachments()));
-                                            return new OrderItemBo(orderItem, productBo);
-                                        }
-                                ).collect(Collectors.toList()),
-                                null)).collect(Collectors.toList()),
+                        orderInfo -> {
+                            OrderInfoBo orderInfoBo = new OrderInfoBo(orderInfo,
+                                    orderInfo.getOrderItems().stream().map(
+                                            orderItem -> {
+                                                ProductBo productBo = new ProductBo(orderItem.getProduct());
+                                                productBo.setImages(this.helper.prepareProductAttachments(orderItem.getProduct().getAttachments()));
+                                                return new OrderItemBo(orderItem, productBo);
+                                            }
+                                    ).collect(Collectors.toList()), null);
+                            orderInfoBo.setInvoiceUrl(this.invoiceService.fetchInvoice(orderInfo.getId(), orderInfo.getUser().getId()));
+                            return orderInfoBo;
+                        }).collect(Collectors.toList()),
                         orders.getTotalElements(), adminOrderDto.getPageNumber(), orders.getTotalPages()), AdminConstants.RECENT_ORDERS_RETURNED);
     }
 
@@ -289,7 +293,7 @@ public class AdminService {
         verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
         verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
         this.verificationStatusRepository.saveAndFlush(verificationStatus);
-        pushNotificationService.sendNotificationToCustomerApproval(verificationStatus);
+        pushNotificationService.approvalNotification(verificationStatus, verificationStatus.getUser());
         return new Response<>(approvalPayload.isAction() ? AdminConstants.REQUEST_APPROVED : AdminConstants.REQUEST_DECLINED, "Successful");
     }
 

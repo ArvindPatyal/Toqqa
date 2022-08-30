@@ -16,6 +16,7 @@ import com.toqqa.repository.ProductRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.ProductRatingService;
 import com.toqqa.util.Helper;
+import com.toqqa.util.NotificationConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -67,7 +68,10 @@ public class ProductRatingServiceImpl implements ProductRatingService {
             productRating.setProduct(product);
             productRating.setUser(user);
             productRating = this.productRatingRepository.saveAndFlush(productRating);
-            this.pushNotificationService.sendNotificationToSmeForRating(product.getUser());
+
+            this.pushNotificationService.ratingReceivedNotification(
+                    String.format(NotificationConstants.PRODUCT_RATING_NOTIFICATION_MESSAGE, product.getProductName()), product.getUser());
+
             return new Response(new ProductRatingBo(productRating), "Product rated Successfully");
         } else {
             throw new BadRequestException("Already reviewed this product");

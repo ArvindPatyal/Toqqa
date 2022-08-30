@@ -36,8 +36,6 @@ public class OtpService {
     private String authUrl;
     @Value("${otp.sms.template.id}")
     private String smsTemplateId;
-
-
     private final UserService userService;
 
     @Autowired

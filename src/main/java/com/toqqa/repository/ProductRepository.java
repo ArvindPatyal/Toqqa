@@ -31,6 +31,10 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     Page<Product> findByProductCategoriesIdInAndProductNameContainsAndIsDeletedOrProductCategoriesIdInAndDescriptionContainsAndIsDeleted(
             Pageable pageRequest, List<String> categoryId, String nameParam, Boolean isDeleted, List<String> categoryIds,String descParam, Boolean deleted);
 
+//    @Query(value = "SELECT * FROM product p Where ")
+
+//    Page<Product> findByProductCategoriesIdInAndProductNameContainsAndIsDeletedOrDescriptionContainsAndIsDeleted(
+//            Pageable pageRequest, List<String> categoryId, String nameParam, Boolean isDeleted, String descParam, Boolean deleted);
 
     Page<Product> findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
             List<String> categoryId, Boolean isDeleted, Pageable pageRequest, Integer minimumUnitsInOneOrder);
