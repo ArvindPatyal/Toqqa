@@ -34,9 +34,9 @@ public class ProductBo {
 
     private Double discount;
 
-    private Integer maximumUnitsInOneOrder;
+    private Long maximumUnitsInOneOrder;
 
-    private Integer minimumUnitsInOneOrder;
+    private Long minimumUnitsInOneOrder;
 
     private Date expiryDate;
 
@@ -96,7 +96,7 @@ public class ProductBo {
         this.delieveredOutsideSpecifiedRadius = product.getDelieveredOutsideSpecifiedRadius();
         this.productUserId = product.getUser().getId();
         this.sequenceNumber = product.getSequenceNumber();
-        this.discountedPrice=product.getDiscountedPrice();
+        this.discountedPrice = product.getDiscountedPrice();
     }
 
     public ProductBo(Product product) {
@@ -124,7 +124,7 @@ public class ProductBo {
         this.delieveredOutsideSpecifiedRadius = product.getDelieveredOutsideSpecifiedRadius();
         this.productUserId = product.getUser().getId();
         this.sequenceNumber = product.getSequenceNumber();
-        this.discountedPrice=product.getDiscountedPrice();
+        this.discountedPrice = product.getDiscountedPrice();
     }
 
 }

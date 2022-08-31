@@ -39,9 +39,9 @@ public class Product {
 
     private Double discountedPrice;
 
-    private Integer maximumUnitsInOneOrder;
+    private Long maximumUnitsInOneOrder;
 
-    private Integer minimumUnitsInOneOrder;
+    private Long minimumUnitsInOneOrder;
 
     private Date expiryDate;
 
