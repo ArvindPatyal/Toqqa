@@ -13,5 +13,5 @@ public class AdminOrderDto {
     private int pageNumber;
     private String sortOrder;
     private String sortKey;
-    private List<OrderStatus> status;
+    private List<String> status;
 }

@@ -20,6 +20,7 @@ import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.SellerRatingService;
 import com.toqqa.service.UserService;
 import com.toqqa.util.Helper;
+import com.toqqa.util.NotificationConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,16 +58,13 @@ public class SellerRatingServiceImpl implements SellerRatingService {
         if (this.sellerRatingRepository.findBySmeIdAndUser_Id(sellerRatingPayload.getSmeId(), user.getId()) == null) {
             List<Sme> smeList = new ArrayList<>();
             List<OrderInfo> orderInfos = this.orderInfoRepository.findByUser_IdAndOrderStatus(user.getId(), OrderStatus.DELIVERED);
-            if (orderInfos==null) {
+            if (orderInfos == null) {
                 throw new BadRequestException("you have not ordered anything yet or order is yet to be delivered");
             }
 
             orderInfos.forEach(orderInfo -> smeList.add(orderInfo.getSme()));
-            Optional<Sme> optionalSme = smeList.stream().filter(s -> s.getId().equals(sellerRatingPayload.getSmeId())).findFirst();
-            if (!optionalSme.isPresent()) {
-                throw new BadRequestException("Enter a valid smeId!!!!");
-            }
-            Sme sme = optionalSme.get();
+            Sme sme = smeList.stream().filter(s -> s.getId().equals(sellerRatingPayload.getSmeId())).findFirst()
+                    .orElseThrow(() -> new BadRequestException("Enter a valid smeId!!!!"));
             SellerRating sellerRating = new SellerRating();
             sellerRating.setSellerRating(sellerRatingPayload.getStars());
             sellerRating.setSme(sme);
@@ -76,7 +74,9 @@ public class SellerRatingServiceImpl implements SellerRatingService {
             sellerRating.setReviewComment(sellerRating.getReviewComment());
             sellerRating.setUser(user);
             sellerRating = this.sellerRatingRepository.saveAndFlush(sellerRating);
-            this.pushNotificationService.sendNotificationToSmeForRating(this.userService.getById(sme.getUserId()));
+
+            this.pushNotificationService.ratingReceivedNotification(NotificationConstants.SELLER_RATING_NOTIFICATION_MESSAGE,this.userService.getById(sme.getUserId()));
+
             return new Response(new SellerRatingBo(sellerRating), "Seller rated Successfully");
         } else {
             throw new BadRequestException("Already reviewed this Seller");
