@@ -84,7 +84,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Invoked :: ProductServiceImpl :: addProduct()");
         if (addProduct.getMaximumUnitsInOneOrder() != null && addProduct.getMinimumUnitsInOneOrder() != null) {
             if (addProduct.getMaximumUnitsInOneOrder() < addProduct.getMinimumUnitsInOneOrder()) {
-                throw new BadRequestException("Max. value greater then min. value");
+                throw new BadRequestException("Maximum units in one order should be greater than Minimum units in one order.");
             }
         }
         User user = this.authenticationService.currentUser();
@@ -151,7 +151,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (updateProduct.getMaximumUnitsInOneOrder() != null && updateProduct.getMinimumUnitsInOneOrder() != null) {
             if (updateProduct.getMaximumUnitsInOneOrder() < updateProduct.getMinimumUnitsInOneOrder()) {
-                throw new BadRequestException("Max. value greater then min. value");
+                throw new BadRequestException("Maximum units in one order should be greater than Minimum units in one order.");
             }
         }
 
