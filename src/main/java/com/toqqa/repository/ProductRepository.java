@@ -5,8 +5,6 @@ import com.toqqa.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
                                                            Boolean isDeleted);
 
     Page<Product> findByProductCategoriesIdInAndProductNameContainsAndIsDeletedOrProductCategoriesIdInAndDescriptionContainsAndIsDeleted(
-            Pageable pageRequest, List<String> categoryId, String nameParam, Boolean isDeleted, List<String> categoryIds,String descParam, Boolean deleted);
+            Pageable pageRequest, List<String> categoryId, String nameParam, Boolean isDeleted, List<String> categoryIds, String descParam, Boolean deleted);
 
 //    @Query(value = "SELECT * FROM product p Where ")
 
@@ -37,7 +35,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 //            Pageable pageRequest, List<String> categoryId, String nameParam, Boolean isDeleted, String descParam, Boolean deleted);
 
     Page<Product> findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
-            List<String> categoryId, Boolean isDeleted, Pageable pageRequest, Integer minimumUnitsInOneOrder);
+            List<String> categoryId, Boolean isDeleted, Pageable pageRequest, Long minimumUnitsInOneOrder);
 
 
    /* Page<Product> findByIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(Boolean isDeleted, Pageable pageRequest,

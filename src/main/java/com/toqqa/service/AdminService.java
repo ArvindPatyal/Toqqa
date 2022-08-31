@@ -213,7 +213,7 @@ public class AdminService {
     }
 
     public Response allUsers(UserDetailsDto userDetailsDto) {
-        log.info("Invoked -+- AdminService -+- newUsers()");
+        log.info("Invoked -+- AdminService -+- allUsers()");
         userDetailsDto.setStatus(userDetailsDto.getStatus() == null ? AdminConstants.VerificationStatus : userDetailsDto.getStatus());
         userDetailsDto.setSortOrder(AdminConstants.SORT_ORDERS.contains(userDetailsDto.getSortOrder()) ? userDetailsDto.getSortOrder() : "DESC");
         Page<User> users = null;

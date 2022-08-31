@@ -20,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +31,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final ProductService productService;
     private final SmeService smeService;
     private final ProductCategoryRepository productCategoryRepository;
-    private final HashSet<String> PRODUCT_CATEGORIES;
+    private final List<String> PRODUCT_CATEGORIES;
     @Value("${pageSize}")
     private Integer pageSize;
     @Value("${bulk.product.minimum.quantity}")
@@ -47,7 +46,7 @@ public class CustomerServiceImpl implements CustomerService {
         this.productService = productService;
         this.smeService = smeService;
         this.productCategoryRepository = productCategoryRepository;
-        PRODUCT_CATEGORIES = (HashSet<String>) productCategoryRepository.findAll().stream().map(productCategory -> productCategory.getId()).collect(Collectors.toSet());
+        PRODUCT_CATEGORIES = productCategoryRepository.findAll().stream().map(productCategory -> productCategory.getId()).collect(Collectors.toList());
     }
 
     @Override
@@ -55,7 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Invoked :: CustomerServiceImpl :: productList()");
         customerProductRequest.setSortOrder(Constants.SORT_ORDERS.contains(customerProductRequest.getSortOrder()) ? customerProductRequest.getSortOrder() : "DESC");
         customerProductRequest.setSortKey(Constants.PRODUCT_SORT_KEYS.contains(customerProductRequest.getSortKey()) ? customerProductRequest.getSortKey() : "discountedPrice");
-        customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : (List<String>) PRODUCT_CATEGORIES);
+        customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : PRODUCT_CATEGORIES);
         Page<Product> products;
         if (this.helper.notNullAndBlank(customerProductRequest.getSearchText())) {
             products = this.productRepository.findByProductCategoriesIdInAndProductNameContainsAndIsDeletedOrProductCategoriesIdInAndDescriptionContainsAndIsDeleted(
@@ -65,7 +64,7 @@ public class CustomerServiceImpl implements CustomerService {
         } else if (customerProductRequest.getShowBulkProducts()) {
             products = this.productRepository
                     .findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
-                            customerProductRequest.getProductCategoryIds(), false, PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), 2);
+                            customerProductRequest.getProductCategoryIds(), false, PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), 2L);
         } else {
             products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
                     PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), customerProductRequest.getProductCategoryIds(), false);
