@@ -292,7 +292,7 @@ public class AdminService {
         }*/
         verificationStatus.setStatus(approvalPayload.isAction() ? VerificationStatusConstants.ACCEPTED : VerificationStatusConstants.DECLINED);
         verificationStatus.setUpdatedBy(this.authenticationService.currentUser());
-        this.verificationStatusRepository.saveAndFlush(verificationStatus);
+        verificationStatus = this.verificationStatusRepository.saveAndFlush(verificationStatus);
         pushNotificationService.approvalNotification(verificationStatus, verificationStatus.getUser());
         return new Response<>(approvalPayload.isAction() ? AdminConstants.REQUEST_APPROVED : AdminConstants.REQUEST_DECLINED, "Successful");
     }

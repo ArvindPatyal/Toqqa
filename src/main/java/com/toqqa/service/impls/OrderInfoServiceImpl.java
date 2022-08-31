@@ -137,7 +137,6 @@ public class OrderInfoServiceImpl implements OrderInfoService {
                 }
                 this.pushNotificationService.orderNotification(orderInfo, this.userService.getById(orderInfo.getSme().getUserId()));
                 this.pushNotificationService.lowProductStockNotification(orderInfo);
-                pushNotificationService.sendNotificationToSmeForProduct(bo);
             });
         } else {
             throw new BadRequestException("Invalid address id");

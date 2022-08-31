@@ -16,11 +16,8 @@ import com.toqqa.payload.Response;
 import com.toqqa.repository.NotificationRepository;
 import com.toqqa.service.AuthenticationService;
 import com.toqqa.service.UserService;
-import com.toqqa.util.Constants;
-import com.toqqa.util.Helper;
 import com.toqqa.util.NotificationConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -31,28 +28,29 @@ import java.util.concurrent.ExecutionException;
 @Service
 @Slf4j
 public class PushNotificationService {
+    private final DeviceService deviceService;
+    private final UserService userService;
+    private final AuthenticationService authenticationService;
+    private final NotificationRepository notificationRepository;
 
-    @Autowired
-    private DeviceService deviceService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private AuthenticationService authenticationService;
-    @Autowired
-    private NotificationRepository notificationRepository;
-    @Autowired
-    private Helper helper;
-
-    public void approvalNotification(VerificationStatus verificationStatus, User user) {
-        String role = verificationStatus.getRole() == RoleConstants.SME ? "SELLER" : verificationStatus.getRole().name();
-        String title = String.format(NotificationConstants.VERIFICATION_REQUEST_APPROVED_TITLE, role);
-        String message = verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) ?
-                String.format(NotificationConstants.VERIFICATION_REQUEST_ACCEPT_MESSAGE, role, role) :
-                NotificationConstants.VERIFICATION_REQUEST_DECLINE_MESSAGE;
-        this.sendNotification(NotificationConstants.VERIFICATION_REQUEST_TOPIC, title,
-                message, NotificationRoles.CUSTOMER, user);
+    public PushNotificationService(DeviceService deviceService, UserService userService,
+                                   AuthenticationService authenticationService, NotificationRepository notificationRepository) {
+        this.deviceService = deviceService;
+        this.userService = userService;
+        this.authenticationService = authenticationService;
+        this.notificationRepository = notificationRepository;
     }
 
+    @Async
+    public void approvalNotification(VerificationStatus verificationStatus, User user) {
+        String role = verificationStatus.getRole() == RoleConstants.SME ? NotificationConstants.SELLER : verificationStatus.getRole().name();
+        this.sendNotification(verificationStatus.getStatus() == VerificationStatusConstants.ACCEPTED ? NotificationConstants.APPROVED_REQUEST_TOPIC : NotificationConstants.DECLINED_REQUEST_TOPIC,
+                String.format(NotificationConstants.VERIFICATION_REQUEST_TITLE, role, verificationStatus.getStatus().toString().toLowerCase()),
+                verificationStatus.getStatus().equals(VerificationStatusConstants.ACCEPTED) ? String.format(NotificationConstants.VERIFICATION_REQUEST_ACCEPT_MESSAGE, role, role) : NotificationConstants.VERIFICATION_REQUEST_DECLINE_MESSAGE,
+                NotificationRoles.CUSTOMER, user);
+    }
+
+    @Async
     public void ratingReceivedNotification(String message, User user) {
         this.sendNotification(NotificationConstants.RATING_NOTIFICATION_TOPIC,
                 NotificationConstants.RATING_NOTIFICATION_TITLE,
@@ -60,10 +58,11 @@ public class PushNotificationService {
                 NotificationRoles.SME, user);
     }
 
+    @Async
     public void lowProductStockNotification(OrderInfo orderInfo) {
         orderInfo.getOrderItems().forEach(orderItem -> {
             if (orderItem.getProduct().getUnitsInStock() <= NotificationConstants.PRODUCT_LOW_COUNT) {
-                this.sendNotification(NotificationConstants.PRODUCT_NOTIFICATION_TOPIC,
+                this.sendNotification(NotificationConstants.LOW_STOCK_NOTIFICATION_TOPIC,
                         String.format(NotificationConstants.LOW_STOCK_NOTIFICATION_TITLE, orderItem.getProduct().getProductName()),
                         String.format(NotificationConstants.LOW_STOCK_NOTIFICATION_MESSAGE, orderItem.getProduct().getProductName(), orderItem.getProduct().getUnitsInStock()),
                         NotificationRoles.SME, this.userService.getById(orderInfo.getSme().getUserId()));
@@ -71,31 +70,31 @@ public class PushNotificationService {
         });
     }
 
+    @Async
     public void orderNotification(OrderInfo orderInfo, User user) {
-        if (orderInfo.getOrderStatus() != OrderStatus.PLACED) {
-            this.sendNotification(NotificationConstants.ORDER_NOTIFICATION_TOPIC,
+        if (orderInfo.getOrderStatus() == OrderStatus.PLACED) {
+            this.sendNotification(NotificationConstants.ORDER_PLACED_NOTIFICATION_TOPIC,
                     orderInfo.getOrderTransactionId() + " " + orderInfo.getOrderStatus().getValue(),
                     NotificationConstants.NEW_ORDER_PLACED,
                     NotificationRoles.SME, user);
-        } else if (orderInfo.getOrderStatus() != OrderStatus.CANCELLED) {
-            this.sendNotification(NotificationConstants.ORDER_NOTIFICATION_TOPIC,
+        } else if (orderInfo.getOrderStatus() == OrderStatus.CANCELLED) {
+            this.sendNotification(NotificationConstants.ORDER_CANCELLED_NOTIFICATION_TOPIC,
                     orderInfo.getOrderTransactionId() + " " + orderInfo.getOrderStatus().getValue(),
                     NotificationConstants.ORDER_CANCEL_NOTIFICATION,
                     NotificationRoles.SME, user);
-        } else if (orderInfo.getOrderStatus() != OrderStatus.DELIVERED) {
-            this.sendNotification(NotificationConstants.ORDER_NOTIFICATION_TOPIC,
-                    orderInfo.getOrderTransactionId() + " " + orderInfo.getOrderStatus().getValue(),
-                    String.format(NotificationConstants.ORDER_NOTIFICATION_MESSAGE, orderInfo.getOrderStatus().getValue()),
-                    NotificationRoles.CUSTOMER, user);
-        } else {
-            this.sendNotification(NotificationConstants.RATING_NOTIFICATION_TOPIC,
+        } else if (orderInfo.getOrderStatus() == OrderStatus.DELIVERED) {
+            this.sendNotification(String.format(NotificationConstants.ORDER_NOTIFICATION_TOPIC, orderInfo.getOrderStatus().name()),
                     orderInfo.getOrderTransactionId() + " " + orderInfo.getOrderStatus().getValue(),
                     NotificationConstants.ORDER_DELIVERED_MESSAGE,
+                    NotificationRoles.CUSTOMER, user);
+        } else {
+            this.sendNotification(String.format(NotificationConstants.ORDER_NOTIFICATION_TOPIC, orderInfo.getOrderStatus().name()),
+                    orderInfo.getOrderTransactionId() + " " + orderInfo.getOrderStatus().getValue(),
+                    String.format(NotificationConstants.ORDER_NOTIFICATION_MESSAGE, orderInfo.getOrderStatus().getValue()),
                     NotificationRoles.CUSTOMER, user);
         }
     }
 
-    @Async
     private void sendNotification(String topic, String title, String message, NotificationRoles role, User user) {
         this.deviceService.getAllByUser(user).forEach(device ->
         {
@@ -164,7 +163,7 @@ public class PushNotificationService {
     public Response notifications(NotificationHistoryDto notificationHistoryDto) {
         User user = this.authenticationService.currentUser();
         return new Response(this.notificationRepository
-                .findByUserAndRole(Sort.by(Sort.Direction.DESC, "createdDate"), user, notificationHistoryDto.getNotificationFor())
-                .stream().map(NotificationHistoryBo::new), Constants.LIST_OF_NOTIFICATIONS);
+                .findByUserAndRole(Sort.by(Sort.Direction.DESC, NotificationConstants.NOTIFICATION_SORT_KEY), user, notificationHistoryDto.getNotificationFor())
+                .stream().map(NotificationHistoryBo::new), NotificationConstants.LIST_OF_NOTIFICATIONS);
     }
 }
