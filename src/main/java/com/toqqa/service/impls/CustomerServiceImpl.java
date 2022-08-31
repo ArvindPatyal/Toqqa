@@ -54,25 +54,20 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Invoked :: CustomerServiceImpl :: productList()");
         customerProductRequest.setSortOrder(Constants.SORT_ORDERS.contains(customerProductRequest.getSortOrder()) ? customerProductRequest.getSortOrder() : "DESC");
         customerProductRequest.setSortKey(Constants.PRODUCT_SORT_KEYS.contains(customerProductRequest.getSortKey()) ? customerProductRequest.getSortKey() : "discountedPrice");
-
+        customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : PRODUCT_CATEGORIES);
         Page<Product> products;
         if (this.helper.notNullAndBlank(customerProductRequest.getSearchText())) {
-            customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : PRODUCT_CATEGORIES);
             products = this.productRepository.findByProductCategoriesIdInAndProductNameContainsAndIsDeletedOrProductCategoriesIdInAndDescriptionContainsAndIsDeleted(
                     PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())),
                     customerProductRequest.getProductCategoryIds(), customerProductRequest.getSearchText().trim(), false, customerProductRequest.getProductCategoryIds()
                     , customerProductRequest.getSearchText().trim(), false);
         } else if (customerProductRequest.getShowBulkProducts()) {
-            customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : PRODUCT_CATEGORIES);
             products = this.productRepository
                     .findByProductCategories_IdInAndIsDeletedAndMinimumUnitsInOneOrderGreaterThanEqual(
                             customerProductRequest.getProductCategoryIds(), false, PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), 2L);
-        } else if (this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds())) {
-            customerProductRequest.setProductCategoryIds(this.helper.notNullAndHavingData(customerProductRequest.getProductCategoryIds()) && PRODUCT_CATEGORIES.containsAll(customerProductRequest.getProductCategoryIds()) ? customerProductRequest.getProductCategoryIds() : PRODUCT_CATEGORIES);
+        } else {
             products = this.productRepository.findByProductCategories_IdInAndIsDeleted(
                     PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), customerProductRequest.getProductCategoryIds(), false);
-        } else {
-            products = this.productRepository.findByIsDeleted(PageRequest.of(customerProductRequest.getPageNumber(), pageSize, Sort.by(Sort.Direction.fromString(customerProductRequest.getSortOrder()), customerProductRequest.getSortKey())), false);
         }
         return new ListResponseWithCount<ProductBo>(products.stream().map(this.productService::toProductBo).collect(Collectors.toList()),
                 "", products.getTotalElements(), customerProductRequest.getPageNumber(),
